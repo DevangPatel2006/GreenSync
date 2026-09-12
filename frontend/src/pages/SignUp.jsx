@@ -1,21 +1,60 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import useAuth from '../hooks/useAuth';
 
 export default function SignUp() {
   const navigate = useNavigate();
+  const { register } = useAuth();
+
   const [role, setRole] = useState('residential');
   const [fullName, setFullName] = useState('Devang Patel');
   const [email, setEmail] = useState('devang.patel@greensync.energy');
   const [password, setPassword] = useState('GreenFlex2025!');
+  const [confirmPassword, setConfirmPassword] = useState('GreenFlex2025!');
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [errorMessage, setErrorMessage] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e) => {
+  const validateForm = () => {
+    const errors = {};
+    if (!fullName.trim()) {
+      errors.fullName = 'Full name is required.';
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || !emailRegex.test(email.trim())) {
+      errors.email = 'Please enter a valid work email format.';
+    }
+    if (!password || password.length < 8) {
+      errors.password = 'Password must be at least 8 characters long.';
+    }
+    if (password !== confirmPassword) {
+      errors.confirmPassword = 'Passwords do not match.';
+    }
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setErrorMessage(null);
+
+    if (!validateForm()) return;
+
     setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      await register(fullName.trim(), email.trim(), password);
       navigate('/dashboard');
-    }, 1200);
+    } catch (err) {
+      if (err.isNetworkError) {
+        setErrorMessage("We couldn't reach GreenSync. Check your connection and try again.");
+      } else if (err.status >= 500) {
+        setErrorMessage("Something went wrong on our end. Please try again in a moment.");
+      } else {
+        setErrorMessage(err.message || "Registration failed. Please check your information and try again.");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -163,6 +202,22 @@ export default function SignUp() {
                   </p>
                 </div>
 
+                {errorMessage && (
+                  <div className="mb-space-md p-space-md rounded-lg bg-error-container text-on-error-container flex items-start justify-between space-x-2">
+                    <div className="flex items-start space-x-2">
+                      <span className="material-symbols-outlined text-[20px] text-error">warning</span>
+                      <div className="text-body-sm font-body-sm">{errorMessage}</div>
+                    </div>
+                    <button
+                      className="text-label-sm font-label-sm text-on-error-container hover:underline ml-2 whitespace-nowrap"
+                      onClick={() => setErrorMessage(null)}
+                      type="button"
+                    >
+                      Dismiss
+                    </button>
+                  </div>
+                )}
+
                 <form className="space-y-space-md" onSubmit={handleSubmit}>
                   {/* Account Role Selector */}
                   <div className="space-y-1.5">
@@ -212,8 +267,14 @@ export default function SignUp() {
                       required
                       type="text"
                       value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
+                      onChange={(e) => {
+                        setFullName(e.target.value);
+                        if (fieldErrors.fullName) setFieldErrors({ ...fieldErrors, fullName: null });
+                      }}
                     />
+                    {fieldErrors.fullName && (
+                      <span className="text-label-sm font-label-sm text-error block">{fieldErrors.fullName}</span>
+                    )}
                   </div>
 
                   {/* Email Input */}
@@ -227,8 +288,14 @@ export default function SignUp() {
                       required
                       type="email"
                       value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        if (fieldErrors.email) setFieldErrors({ ...fieldErrors, email: null });
+                      }}
                     />
+                    {fieldErrors.email && (
+                      <span className="text-label-sm font-label-sm text-error block">{fieldErrors.email}</span>
+                    )}
                   </div>
 
                   {/* Password Input */}
@@ -239,11 +306,40 @@ export default function SignUp() {
                     <input
                       className="w-full h-11 px-space-md bg-surface-container-lowest text-on-surface text-body-md font-body-md rounded-lg border border-surface-variant outline-none transition-all focus:border-primary"
                       id="signup-password"
+                      placeholder="At least 8 characters"
                       required
                       type="password"
                       value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      onChange={(e) => {
+                        setPassword(e.target.value);
+                        if (fieldErrors.password) setFieldErrors({ ...fieldErrors, password: null });
+                      }}
                     />
+                    {fieldErrors.password && (
+                      <span className="text-label-sm font-label-sm text-error block">{fieldErrors.password}</span>
+                    )}
+                  </div>
+
+                  {/* Confirm Password Input */}
+                  <div className="space-y-1.5">
+                    <label className="block text-label-md font-label-md text-on-surface" htmlFor="confirm-password">
+                      Confirm Password
+                    </label>
+                    <input
+                      className="w-full h-11 px-space-md bg-surface-container-lowest text-on-surface text-body-md font-body-md rounded-lg border border-surface-variant outline-none transition-all focus:border-primary"
+                      id="confirm-password"
+                      placeholder="Repeat password"
+                      required
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => {
+                        setConfirmPassword(e.target.value);
+                        if (fieldErrors.confirmPassword) setFieldErrors({ ...fieldErrors, confirmPassword: null });
+                      }}
+                    />
+                    {fieldErrors.confirmPassword && (
+                      <span className="text-label-sm font-label-sm text-error block">{fieldErrors.confirmPassword}</span>
+                    )}
                   </div>
 
                   <div className="pt-2">

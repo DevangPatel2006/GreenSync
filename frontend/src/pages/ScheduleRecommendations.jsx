@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
+import { useSchedule } from '../hooks/useSchedule';
 
 export default function ScheduleRecommendations() {
   const [screenState, setScreenState] = useState('populated');
   const [isAccepted, setIsAccepted] = useState(false);
   const [toastMessage, setToastMessage] = useState(null);
+
+  const { recommendation, acceptSchedule, accepting, infeasibleMessage, loading } = useSchedule();
 
   const showToast = (msg) => {
     setToastMessage(msg);
@@ -12,10 +15,12 @@ export default function ScheduleRecommendations() {
     }, 3500);
   };
 
-  const handleAccept = () => {
+  const handleAccept = async () => {
+    const recId = recommendation?._id || recommendation?.id || 'rec_sample_1';
+    const res = await acceptSchedule(recId);
     setIsAccepted(true);
     setScreenState('accepted');
-    showToast('Schedule locked! Asset scheduled for 11:15 PM (+75 FlexCoins)');
+    showToast(res?.message || 'Schedule locked! Asset scheduled for 11:15 PM (+75 FlexCoins)');
   };
 
   return (
@@ -74,6 +79,21 @@ export default function ScheduleRecommendations() {
         </div>
       </div>
 
+      {/* SECTION 28 INFEASIBLE WINDOW NOTIFICATION */}
+      {infeasibleMessage && (
+        <div className="bg-surface-container-lowest border border-secondary-fixed-dim rounded-xl p-space-md mb-space-lg flex items-start gap-space-md">
+          <div className="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center shrink-0 text-primary-container">
+            <span className="material-symbols-outlined text-[22px]">info</span>
+          </div>
+          <div>
+            <span className="font-title-sm text-title-sm text-primary-container">Dispatch Optimization Notice</span>
+            <p className="font-body-md text-body-md text-on-surface-variant mt-0.5">
+              {infeasibleMessage}
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* VIEW STATE: EMPTY */}
       {screenState === 'empty' && (
         <div className="bg-surface-container-lowest border border-surface-variant rounded-xl p-space-xl text-center flex flex-col items-center justify-center my-space-md">
@@ -103,14 +123,16 @@ export default function ScheduleRecommendations() {
             <span className="material-symbols-outlined text-[36px]">check_circle</span>
           </div>
           <h2 className="font-headline-lg text-headline-lg text-primary-container mb-space-xs">
-            Schedule Locked for 11:15 PM
+            Schedule Locked for {recommendation?.recommendedSlot?.startTime || '11:15 PM'}
           </h2>
           <p className="font-body-lg text-body-lg text-on-surface-variant max-w-xl mb-space-lg">
-            Commercial Fleet Depot Bay #4 Charger will activate at 11:15 PM tonight to leverage 82% regional wind and hydro power.
+            {recommendation?.deviceName || 'Commercial Fleet Depot Bay #4 Charger'} will activate at {recommendation?.recommendedSlot?.startTime || '11:15 PM'} tonight to leverage 82% regional wind and hydro power.
           </p>
           <div className="flex items-center gap-space-md p-space-md bg-secondary-container/30 rounded-xl border border-secondary-fixed-dim mb-space-lg">
             <span className="material-symbols-outlined text-secondary text-[24px]">toll</span>
-            <span className="font-title-md text-title-md text-primary-container font-bold">+75 FlexCoins Credited Upon Cycle Completion</span>
+            <span className="font-title-md text-title-md text-primary-container font-bold">
+              +{recommendation?.flexCoins ?? 75} FlexCoins Credited Upon Cycle Completion
+            </span>
           </div>
           <button
             className="px-5 py-2.5 rounded border border-surface-variant text-on-surface font-title-sm text-title-sm hover:border-primary-container transition-colors"
@@ -133,13 +155,15 @@ export default function ScheduleRecommendations() {
               </div>
               <div>
                 <div className="flex items-center gap-space-xs">
-                  <span className="font-title-md text-title-md text-on-surface">Commercial Fleet Depot • Bay #4 Charger</span>
+                  <span className="font-title-md text-title-md text-on-surface">
+                    {recommendation?.deviceName || 'Commercial Fleet Depot • Bay #4 Charger'}
+                  </span>
                   <span className="px-2 py-0.5 rounded-full text-label-sm font-label-sm bg-surface-container text-on-surface-variant">
                     High Flexibility
                   </span>
                 </div>
                 <p className="font-body-sm text-body-sm text-on-surface-variant">
-                  Target delivery: 62.0 kWh by 06:30 AM tomorrow • Current buffer: +5.25 hrs
+                  {recommendation?.targetDelivery || 'Target delivery: 62.0 kWh by 06:30 AM tomorrow • Current buffer: +5.25 hrs'}
                 </p>
               </div>
             </div>
@@ -179,7 +203,9 @@ export default function ScheduleRecommendations() {
                   Requested Start
                 </span>
                 <div className="flex items-baseline gap-space-xs mb-space-sm">
-                  <h2 className="font-headline-lg text-headline-lg text-on-surface">Today • 6:30 PM</h2>
+                  <h2 className="font-headline-lg text-headline-lg text-on-surface">
+                    {recommendation?.requestedStart || 'Today • 6:30 PM'}
+                  </h2>
                   <span className="font-body-sm text-body-sm text-on-surface-variant">EDT</span>
                 </div>
                 <p className="font-body-md text-body-md text-on-surface-variant mb-space-lg">
@@ -227,7 +253,8 @@ export default function ScheduleRecommendations() {
                       GreenSync Algorithmic Pick
                     </span>
                     <span className="flex items-center gap-1 text-secondary font-label-sm text-label-sm font-semibold">
-                      <span className="w-1.5 h-1.5 rounded-full bg-secondary inline-block"></span> 99.4% Confidence
+                      <span className="w-1.5 h-1.5 rounded-full bg-secondary inline-block"></span>
+                      {recommendation?.confidenceScore ? `${(recommendation.confidenceScore * 100).toFixed(1)}% Confidence` : '99.4% Confidence'}
                     </span>
                   </div>
                   <span className="material-symbols-outlined text-secondary text-[22px]">verified</span>
@@ -237,7 +264,9 @@ export default function ScheduleRecommendations() {
                   Recommended Dispatch
                 </span>
                 <div className="flex items-baseline gap-space-xs mb-space-sm">
-                  <h2 className="font-headline-lg text-headline-lg text-primary-container">Tonight • 11:15 PM</h2>
+                  <h2 className="font-headline-lg text-headline-lg text-primary-container">
+                    {recommendation?.recommendedSlot?.startTime ? `Tonight • ${recommendation.recommendedSlot.startTime}` : 'Tonight • 11:15 PM'}
+                  </h2>
                   <span className="font-body-sm text-body-sm text-on-surface-variant">EDT (Late Evening)</span>
                 </div>
                 <p className="font-body-md text-body-md text-on-surface-variant mb-space-lg">
@@ -295,7 +324,9 @@ export default function ScheduleRecommendations() {
                   <span className="material-symbols-outlined text-[20px] text-primary-container">sync_alt</span>
                 </div>
                 <div className="flex items-baseline gap-1">
-                  <span className="font-display-mobile text-display-mobile text-primary-container font-bold">18.5</span>
+                  <span className="font-display-mobile text-display-mobile text-primary-container font-bold">
+                    {recommendation?.energyShiftedKWh ?? 18.5}
+                  </span>
                   <span className="font-title-sm text-title-sm text-on-surface-variant">kWh</span>
                 </div>
                 <span className="font-body-sm text-body-sm text-on-surface-variant mt-1">100% of charging cycle</span>
@@ -307,7 +338,9 @@ export default function ScheduleRecommendations() {
                   <span className="material-symbols-outlined text-[20px] text-secondary">trending_down</span>
                 </div>
                 <div className="flex items-baseline gap-1">
-                  <span className="font-display-mobile text-display-mobile text-secondary font-bold">4.2</span>
+                  <span className="font-display-mobile text-display-mobile text-secondary font-bold">
+                    {recommendation?.peakReductionKW ?? 4.2}
+                  </span>
                   <span className="font-title-sm text-title-sm text-on-surface-variant">kW</span>
                 </div>
                 <span className="font-body-sm text-body-sm text-on-surface-variant mt-1">Relieves substation #04</span>
@@ -319,7 +352,9 @@ export default function ScheduleRecommendations() {
                   <span className="material-symbols-outlined text-[20px] text-secondary">cloud_off</span>
                 </div>
                 <div className="flex items-baseline gap-1">
-                  <span className="font-display-mobile text-display-mobile text-on-surface font-bold">9.8</span>
+                  <span className="font-display-mobile text-display-mobile text-on-surface font-bold">
+                    {recommendation?.co2AvoidedKg ?? 9.8}
+                  </span>
                   <span className="font-title-sm text-title-sm text-on-surface-variant">kg</span>
                 </div>
                 <span className="font-body-sm text-body-sm text-secondary font-semibold mt-1">Equivalent to 24 mi driving</span>
@@ -331,7 +366,9 @@ export default function ScheduleRecommendations() {
                   <span className="material-symbols-outlined text-[22px] text-secondary">toll</span>
                 </div>
                 <div className="flex items-baseline gap-1">
-                  <span className="font-display-mobile text-display-mobile text-primary-container font-bold">+75</span>
+                  <span className="font-display-mobile text-display-mobile text-primary-container font-bold">
+                    +{recommendation?.flexCoins ?? 75}
+                  </span>
                   <span className="font-title-sm text-title-sm text-primary-container font-bold">FC</span>
                 </div>
                 <span className="font-body-sm text-body-sm text-on-secondary-fixed-variant font-semibold mt-1">

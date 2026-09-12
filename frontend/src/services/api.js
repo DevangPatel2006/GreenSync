@@ -24,12 +24,22 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response Interceptor: Centralized error handling
+// Response Interceptor: Centralized error handling preserving status & code
 api.interceptors.response.use(
   (response) => response.data,
   (error) => {
-    const message = error.response?.data?.message || error.message || 'An error occurred';
-    return Promise.reject(new Error(message));
+    const status = error.response?.status;
+    const errorData = error.response?.data;
+    const backendMessage = errorData?.message || errorData?.error?.message;
+    const backendCode = errorData?.error?.code || errorData?.code;
+    
+    const err = new Error(backendMessage || error.message || 'An error occurred');
+    err.status = status;
+    err.code = backendCode;
+    err.data = errorData;
+    err.isNetworkError = !error.response;
+    
+    return Promise.reject(err);
   }
 );
 

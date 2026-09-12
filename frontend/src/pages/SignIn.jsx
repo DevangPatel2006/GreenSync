@@ -1,12 +1,17 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import useAuth from '../hooks/useAuth';
 
 export default function SignIn() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { login } = useAuth();
+
   const [email, setEmail] = useState('alex.chen@gridflow-energy.org');
   const [password, setPassword] = useState('DemandResponse2025!');
   const [showPassword, setShowPassword] = useState(false);
-  const [showError, setShowError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(location.state?.message || null);
+  const [fieldErrors, setFieldErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
@@ -14,17 +19,46 @@ export default function SignIn() {
   const [resetSuccess, setResetSuccess] = useState(false);
   const [resetSubmitting, setResetSubmitting] = useState(false);
 
-  const handleSignIn = (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+  const validateForm = () => {
+    const errors = {};
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || !emailRegex.test(email.trim())) {
+      errors.email = 'Please enter a valid work email format.';
+    }
+    if (!password || password.length < 8) {
+      errors.password = 'Password must be at least 8 characters long.';
+    }
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
-    setTimeout(() => {
-      setIsSubmitting(false);
+  const handleSignIn = async (e) => {
+    e.preventDefault();
+    setErrorMessage(null);
+
+    if (!validateForm()) return;
+
+    setIsSubmitting(true);
+    try {
+      await login(email.trim(), password);
       setSubmitSuccess(true);
       setTimeout(() => {
-        navigate('/dashboard');
-      }, 1000);
-    }, 1200);
+        const destination = location.state?.from || '/dashboard';
+        navigate(destination, { replace: true });
+      }, 500);
+    } catch (err) {
+      if (err.isNetworkError) {
+        setErrorMessage("We couldn't reach GreenSync. Check your connection and try again.");
+      } else if (err.status === 401 || err.status === 400 || err.code === 'INVALID_CREDENTIALS') {
+        setErrorMessage("That email or password doesn't match our records.");
+      } else if (err.status >= 500) {
+        setErrorMessage("Something went wrong on our end. Please try again in a moment.");
+      } else {
+        setErrorMessage("That email or password doesn't match our records.");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleResetSubmit = (e) => {
@@ -128,37 +162,16 @@ export default function SignIn() {
                   </p>
                 </div>
 
-                {/* Sandbox / Error Banner */}
-                {!showError ? (
-                  <div className="mb-space-md p-space-md rounded-lg bg-surface-container-low flex items-start justify-between">
-                    <div className="flex items-start space-x-2.5">
-                      <span className="material-symbols-outlined text-secondary text-[20px] mt-0.5">info</span>
-                      <div>
-                        <p className="text-title-sm font-title-sm text-on-surface">Interactive Sandbox Active</p>
-                        <p className="text-body-sm font-body-sm text-on-surface-variant">
-                          Prefilled credentials for enterprise demand operator role.
-                        </p>
-                      </div>
-                    </div>
-                    <button
-                      className="text-label-sm font-label-sm text-primary hover:underline ml-2 whitespace-nowrap"
-                      onClick={() => setShowError(true)}
-                      type="button"
-                    >
-                      Simulate Error
-                    </button>
-                  </div>
-                ) : (
+                {/* Feedback / Error Alert */}
+                {errorMessage && (
                   <div className="mb-space-md p-space-md rounded-lg bg-error-container text-on-error-container flex items-start justify-between space-x-2">
                     <div className="flex items-start space-x-2">
                       <span className="material-symbols-outlined text-[20px] text-error">warning</span>
-                      <div className="text-body-sm font-body-sm">
-                        <span className="font-semibold">Authentication failed:</span> Invalid security token or unrecognized password.
-                      </div>
+                      <div className="text-body-sm font-body-sm">{errorMessage}</div>
                     </div>
                     <button
                       className="text-label-sm font-label-sm text-on-error-container hover:underline ml-2 whitespace-nowrap"
-                      onClick={() => setShowError(false)}
+                      onClick={() => setErrorMessage(null)}
                       type="button"
                     >
                       Dismiss
@@ -183,12 +196,18 @@ export default function SignIn() {
                         required
                         type="email"
                         value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        onChange={(e) => {
+                          setEmail(e.target.value);
+                          if (fieldErrors.email) setFieldErrors({ ...fieldErrors, email: null });
+                        }}
                       />
                       <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-secondary text-[20px]">
                         check_circle
                       </span>
                     </div>
+                    {fieldErrors.email && (
+                      <span className="text-label-sm font-label-sm text-error block">{fieldErrors.email}</span>
+                    )}
                   </div>
 
                   <div className="space-y-1.5">
@@ -216,7 +235,10 @@ export default function SignIn() {
                         required
                         type={showPassword ? 'text' : 'password'}
                         value={password}
-                        onChange={(e) => setPassword(e.target.value)}
+                        onChange={(e) => {
+                          setPassword(e.target.value);
+                          if (fieldErrors.password) setFieldErrors({ ...fieldErrors, password: null });
+                        }}
                       />
                       <button
                         aria-label="Toggle password visibility"
@@ -229,6 +251,9 @@ export default function SignIn() {
                         </span>
                       </button>
                     </div>
+                    {fieldErrors.password && (
+                      <span className="text-label-sm font-label-sm text-error block">{fieldErrors.password}</span>
+                    )}
                   </div>
 
                   <div className="flex items-center justify-between pt-1">

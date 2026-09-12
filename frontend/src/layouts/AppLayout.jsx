@@ -1,7 +1,10 @@
 import React from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, Link } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 
 export default function AppLayout() {
+  const { user } = useAuth();
+
   const navItems = [
     { label: 'Dashboard', path: '/dashboard', icon: 'grid_view' },
     { label: 'My Loads / Devices', path: '/my-loads-devices', icon: 'devices' },
@@ -18,7 +21,7 @@ export default function AppLayout() {
       {/* Top Navigation Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-surface-container-lowest border-b border-surface-variant">
         <div className="h-16 w-full px-gutter flex items-center justify-between">
-          <div className="flex items-center gap-space-md">
+          <Link to="/" className="flex items-center gap-space-md">
             <svg className="h-8 w-auto object-contain" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 40" fill="none">
               <rect width="32" height="32" x="4" y="4" rx="8" fill="#450C3F" />
               <path d="M20 9L13 21H19L17 31L27 19H21L23 9H20Z" fill="#B9D175" />
@@ -27,7 +30,7 @@ export default function AppLayout() {
               </text>
             </svg>
             <span className="font-headline-sm text-headline-sm text-primary-container tracking-tight">GreenSync</span>
-          </div>
+          </Link>
 
           <div className="flex items-center gap-space-lg">
             <div className="hidden sm:flex items-center gap-space-xs px-3 py-1 rounded-full bg-secondary-container text-on-secondary-fixed border border-secondary-fixed-dim">
@@ -36,23 +39,27 @@ export default function AppLayout() {
             </div>
 
             <div className="flex items-center gap-space-sm">
-              <button
+              <Link
+                to="/profile-settings"
                 className="w-9 h-9 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors"
-                type="button"
-                aria-label="Notifications"
+                aria-label="Settings"
               >
-                <span className="material-symbols-outlined text-[20px]">notifications</span>
-              </button>
+                <span className="material-symbols-outlined text-[20px]">settings</span>
+              </Link>
               <div className="h-5 w-[1px] bg-surface-variant"></div>
-              <div className="flex items-center gap-space-sm pl-space-xs">
+              <Link to="/profile-settings" className="flex items-center gap-space-sm pl-space-xs hover:opacity-90 transition-opacity">
                 <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
                   <span className="material-symbols-outlined text-on-primary text-[18px]">person</span>
                 </div>
                 <div className="hidden md:flex flex-col text-left">
-                  <span className="font-label-md text-label-md text-on-surface leading-tight">Alex Mercer</span>
-                  <span className="font-label-sm text-label-sm text-on-surface-variant leading-tight">Enterprise Facility</span>
+                  <span className="font-label-md text-label-md text-on-surface leading-tight">
+                    {user?.name || 'Alex Mercer'}
+                  </span>
+                  <span className="font-label-sm text-label-sm text-on-surface-variant leading-tight capitalize">
+                    {user?.role === 'admin' ? 'Grid Operator' : 'Enterprise Facility'}
+                  </span>
                 </div>
-              </div>
+              </Link>
             </div>
           </div>
         </div>

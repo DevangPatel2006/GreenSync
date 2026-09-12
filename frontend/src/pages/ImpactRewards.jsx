@@ -1,9 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useImpact } from '../hooks/useImpact';
 
 export default function ImpactRewards() {
   const [viewMode, setViewMode] = useState('populated');
-  const [balance, setBalance] = useState(1420);
+  const { impact, balance: hookBalance, rewardsBreakdown, redeemReward, loading } = useImpact();
+  const [localBalance, setLocalBalance] = useState(1420);
   const [toastMessage, setToastMessage] = useState(null);
+
+  useEffect(() => {
+    if (hookBalance != null) {
+      setLocalBalance(hookBalance);
+    }
+  }, [hookBalance]);
 
   const showToast = (msg) => {
     setToastMessage(msg);
@@ -12,13 +20,14 @@ export default function ImpactRewards() {
     }, 3500);
   };
 
-  const handleRedeem = (item, cost) => {
-    if (balance < cost) {
+  const handleRedeem = async (item, cost) => {
+    if (localBalance < cost) {
       showToast(`Insufficient FlexCoins for ${item}.`);
       return;
     }
-    setBalance((prev) => prev - cost);
-    showToast(`Redeemed: ${item}! Remaining balance: ${balance - cost} FC`);
+    const res = await redeemReward(item, cost);
+    setLocalBalance((prev) => prev - cost);
+    showToast(res?.message || `Redeemed: ${item}! Remaining balance: ${localBalance - cost} FC`);
   };
 
   return (
@@ -238,16 +247,78 @@ export default function ImpactRewards() {
               </div>
               <div>
                 <span className="font-headline-lg text-headline-lg text-primary-container block tracking-tight font-bold">
-                  {balance} <span className="text-title-md font-bold text-secondary">FC</span>
+                  {localBalance} <span className="text-title-md font-bold text-secondary">FC</span>
                 </span>
                 <span className="font-body-sm text-body-sm text-on-secondary-fixed-variant font-semibold mt-1 block">
-                  Catalog value: ~${(balance * 0.1).toFixed(2)} USD
+                  Catalog value: ~${(localBalance * 0.1).toFixed(2)} USD
                 </span>
               </div>
               <div className="mt-space-md pt-space-xs">
                 <div className="w-full bg-secondary-fixed-dim h-1.5 rounded-full overflow-hidden">
                   <div className="bg-secondary h-full rounded-full" style={{ width: '92%' }}></div>
                 </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Section 6: Transparent FlexCoin Incentive Model Breakdown */}
+          <div className="bg-surface-container-lowest border border-surface-variant rounded-xl p-space-lg">
+            <div className="flex flex-wrap items-center justify-between gap-space-md mb-space-md pb-space-sm border-b border-surface-variant">
+              <div>
+                <span className="font-label-sm text-label-sm text-secondary uppercase font-semibold">
+                  Transparent Token Model
+                </span>
+                <h3 className="font-headline-sm text-headline-sm text-primary-container">
+                  FlexCoins Incentive Formula Breakdown
+                </h3>
+                <p className="font-body-sm text-body-sm text-on-surface-variant">
+                  Calculated dynamically from verified grid relief factors per kilowatt-hour shifted.
+                </p>
+              </div>
+              <span className="px-2.5 py-1 rounded text-label-sm font-label-sm bg-surface-container text-on-surface-variant font-semibold">
+                Impact Simulation / Future Redemption
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-space-md">
+              <div className="p-space-md rounded-lg bg-surface-container-low border border-surface-variant">
+                <span className="font-label-sm text-label-sm text-on-surface-variant uppercase block">Renewable Pts</span>
+                <span className="font-headline-sm text-headline-sm text-primary-container block mt-1">
+                  +{rewardsBreakdown?.breakdown?.renewablePoints ?? 420} <span className="text-title-sm text-secondary">FC</span>
+                </span>
+                <span className="font-body-sm text-body-sm text-on-surface-variant mt-0.5 block">High clean share</span>
+              </div>
+
+              <div className="p-space-md rounded-lg bg-surface-container-low border border-surface-variant">
+                <span className="font-label-sm text-label-sm text-on-surface-variant uppercase block">Peak Relief Pts</span>
+                <span className="font-headline-sm text-headline-sm text-primary-container block mt-1">
+                  +{rewardsBreakdown?.breakdown?.peakPoints ?? 380} <span className="text-title-sm text-secondary">FC</span>
+                </span>
+                <span className="font-body-sm text-body-sm text-on-surface-variant mt-0.5 block">Off-peak shed</span>
+              </div>
+
+              <div className="p-space-md rounded-lg bg-surface-container-low border border-surface-variant">
+                <span className="font-label-sm text-label-sm text-on-surface-variant uppercase block">Shift Hours Pts</span>
+                <span className="font-headline-sm text-headline-sm text-primary-container block mt-1">
+                  +{rewardsBreakdown?.breakdown?.shiftPoints ?? 320} <span className="text-title-sm text-secondary">FC</span>
+                </span>
+                <span className="font-body-sm text-body-sm text-on-surface-variant mt-0.5 block">Duration delta</span>
+              </div>
+
+              <div className="p-space-md rounded-lg bg-surface-container-low border border-surface-variant">
+                <span className="font-label-sm text-label-sm text-on-surface-variant uppercase block">Flexibility Bonus</span>
+                <span className="font-headline-sm text-headline-sm text-primary-container block mt-1">
+                  +{rewardsBreakdown?.breakdown?.flexibilityBonus ?? 180} <span className="text-title-sm text-secondary">FC</span>
+                </span>
+                <span className="font-body-sm text-body-sm text-on-surface-variant mt-0.5 block">Wide window</span>
+              </div>
+
+              <div className="p-space-md rounded-lg bg-surface-container-low border border-surface-variant">
+                <span className="font-label-sm text-label-sm text-on-surface-variant uppercase block">Urgency Bonus</span>
+                <span className="font-headline-sm text-headline-sm text-primary-container block mt-1">
+                  +{rewardsBreakdown?.breakdown?.urgencyBonus ?? 120} <span className="text-title-sm text-secondary">FC</span>
+                </span>
+                <span className="font-body-sm text-body-sm text-on-surface-variant mt-0.5 block">Grid strain alert</span>
               </div>
             </div>
           </div>
@@ -321,7 +392,7 @@ export default function ImpactRewards() {
               </div>
               <div className="flex items-center gap-2 bg-secondary-container/40 px-3 py-1.5 rounded-lg border border-secondary-fixed-dim">
                 <span className="text-label-md font-label-md text-on-secondary-fixed">Available:</span>
-                <span className="font-title-sm text-title-sm text-primary-container font-bold">{balance} FC</span>
+                <span className="font-title-sm text-title-sm text-primary-container font-bold">{localBalance} FC</span>
               </div>
             </div>
 

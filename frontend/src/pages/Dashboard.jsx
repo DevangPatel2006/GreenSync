@@ -1,14 +1,18 @@
 import React, { useState } from 'react';
+import { useEnergy } from '../hooks/useEnergy';
+import { useDevices } from '../hooks/useDevices';
+import { useSchedule } from '../hooks/useSchedule';
+import { useImpact } from '../hooks/useImpact';
 
 export default function Dashboard() {
   const [dashboardState, setDashboardState] = useState('populated');
   const [isAccepted, setIsAccepted] = useState(false);
   const [toastMessage, setToastMessage] = useState(null);
-  const [devices, setDevices] = useState([
-    { id: 'ev', name: 'EV Charger #1', desc: 'Level 2 • 9.6 kW cap', time: 'Scheduled: 1:00 AM', tag: 'Auto-Sync', active: true, icon: 'ev_station' },
-    { id: 'hvac', name: 'Heat Pump System', desc: 'Zone 1 & 2 • 4.2 kW', time: 'Eco-mode Active', tag: 'Pre-cooling', active: true, icon: 'hvac' },
-    { id: 'washer', name: 'Laundry Washer', desc: 'Cycle Delay • 1.8 kW', time: 'Schedule Pending', tag: 'Approve Shift', active: false, icon: 'local_laundry_service' },
-  ]);
+
+  const { current, loading: energyLoading } = useEnergy();
+  const { devices, loading: devicesLoading, toggleDeviceFlexibility } = useDevices();
+  const { recommendation, acceptSchedule, accepting } = useSchedule();
+  const { impact, balance, loading: impactLoading } = useImpact();
 
   const showToast = (msg) => {
     setToastMessage(msg);
@@ -17,22 +21,19 @@ export default function Dashboard() {
     }, 3500);
   };
 
-  const handleAcceptSchedule = () => {
+  const handleAcceptSchedule = async () => {
+    if (isAccepted) return;
+    const recId = recommendation?._id || recommendation?.id || 'rec_sample_1';
+    const res = await acceptSchedule(recId);
     setIsAccepted(true);
-    showToast('Schedule applied! 14.2 kWh moved to 1:00 PM (+45 FC)');
+    showToast(res.message || 'Schedule applied! 14.2 kWh moved to 1:00 PM (+45 FC)');
   };
 
-  const handleToggleDevice = (id) => {
-    setDevices((prev) =>
-      prev.map((d) => {
-        if (d.id === id) {
-          const updated = !d.active;
-          showToast(`${d.name} flexibility mode ${updated ? 'activated' : 'paused'}`);
-          return { ...d, active: updated };
-        }
-        return d;
-      })
-    );
+  const handleToggleDevice = async (id) => {
+    const updated = await toggleDeviceFlexibility(id);
+    if (updated) {
+      showToast(`${updated.name} flexibility mode ${updated.status === 'active' ? 'activated' : 'paused'}`);
+    }
   };
 
   return (
@@ -104,17 +105,24 @@ export default function Dashboard() {
               <div className="flex items-center gap-space-xs mb-1">
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-label-sm font-label-sm bg-[#F1F6E3] text-[#2F3D13] border border-secondary-fixed-dim">
                   <span className="w-2 h-2 rounded-full bg-secondary"></span>
-                  Optimal for flexible use
+                  {current?.gridStatus || 'Optimal for flexible use'}
                 </span>
-                <span className="text-on-surface-variant font-label-sm text-label-sm">• Regional Grid Node #4</span>
+                <span className="text-on-surface-variant font-label-sm text-label-sm">
+                  • {current?.node || 'Regional Grid Node #4'}
+                  {current?.source !== 'live' && ' (simulated data)'}
+                </span>
               </div>
-              <div className="font-title-md text-title-md text-on-surface">Cleaner energy available now (74% Wind + Solar)</div>
+              <div className="font-title-md text-title-md text-on-surface">
+                Cleaner energy available now ({current?.renewablePercentage ?? 74}% Wind + Solar)
+              </div>
             </div>
           </div>
           <div className="flex items-center gap-space-md w-full lg:w-auto justify-between lg:justify-end border-t lg:border-t-0 border-surface-variant pt-space-xs lg:pt-0">
             <div className="text-left lg:text-right">
               <div className="text-label-sm font-label-sm text-on-surface-variant uppercase">Current Hourly Recommendation</div>
-              <div className="text-body-md font-title-sm text-primary-container">Shift high-power cycles to 1:00 PM – 3:30 PM</div>
+              <div className="text-body-md font-title-sm text-primary-container">
+                {current?.recommendation?.summary || 'Shift high-power cycles to 1:00 PM – 3:30 PM'}
+              </div>
             </div>
             <div className="w-10 h-10 rounded-lg bg-surface-container-low flex items-center justify-center text-primary-container">
               <span className="material-symbols-outlined text-[22px]">schedule</span>
@@ -151,14 +159,13 @@ export default function Dashboard() {
           <p className="font-body-md text-body-md text-on-surface-variant max-w-md mb-space-lg">
             Connect smart breakers, heat pumps, or electric vehicle chargers to start shifting loads to cleaner, lower-cost hours.
           </p>
-          <button
+          <a
             className="px-5 py-2.5 rounded bg-primary-container text-on-primary font-title-sm text-title-sm hover:opacity-95 transition-opacity inline-flex items-center gap-space-xs"
-            onClick={() => setDashboardState('populated')}
-            type="button"
+            href="/my-loads-devices?add=1"
           >
             <span className="material-symbols-outlined text-[18px]">add_circle</span>
             Connect First Device
-          </button>
+          </a>
         </div>
       )}
 
@@ -176,7 +183,9 @@ export default function Dashboard() {
                 </span>
               </div>
               <div className="flex items-baseline gap-space-xs">
-                <span className="font-display text-display text-primary-container tracking-tight">1,420</span>
+                <span className="font-display text-display text-primary-container tracking-tight">
+                  {(balance ?? impact?.totalFlexCoins ?? 1420).toLocaleString()}
+                </span>
                 <span className="font-title-md text-title-md text-primary font-bold">FC</span>
               </div>
               <div className="mt-space-xs flex items-center gap-1 text-on-secondary-container font-label-md text-label-md font-semibold">
@@ -192,11 +201,13 @@ export default function Dashboard() {
                 <span className="material-symbols-outlined text-secondary text-[20px]">forest</span>
               </div>
               <div className="flex items-baseline gap-space-xs">
-                <span className="font-display text-display text-primary-container tracking-tight">184</span>
+                <span className="font-display text-display text-primary-container tracking-tight">
+                  {impact?.co2AvoidedKg ?? 184}
+                </span>
                 <span className="font-title-md text-title-md text-on-surface-variant">kg</span>
               </div>
               <div className="mt-space-xs text-on-surface-variant font-label-md text-label-md">
-                Equivalent to <span className="font-semibold text-on-surface">9 planted trees</span>
+                Equivalent to <span className="font-semibold text-on-surface">{impact?.treesPlantedEquivalent ?? 9} planted trees</span>
               </div>
             </div>
 
@@ -207,7 +218,9 @@ export default function Dashboard() {
                 <span className="material-symbols-outlined text-secondary text-[20px]">sync_alt</span>
               </div>
               <div className="flex items-baseline gap-space-xs">
-                <span className="font-display text-display text-primary-container tracking-tight">420</span>
+                <span className="font-display text-display text-primary-container tracking-tight">
+                  {impact?.energyShiftedKwh ?? 420}
+                </span>
                 <span className="font-title-md text-title-md text-on-surface-variant">kWh</span>
               </div>
               <div className="mt-space-xs text-on-surface-variant font-label-md text-label-md">
@@ -222,7 +235,9 @@ export default function Dashboard() {
                 <span className="material-symbols-outlined text-secondary text-[20px]">offline_bolt</span>
               </div>
               <div className="flex items-baseline gap-space-xs">
-                <span className="font-display text-display text-primary-container tracking-tight">3.8</span>
+                <span className="font-display text-display text-primary-container tracking-tight">
+                  {impact?.peakReductionKw ?? 3.8}
+                </span>
                 <span className="font-title-md text-title-md text-on-surface-variant">kW</span>
               </div>
               <div className="mt-space-xs text-on-surface-variant font-label-md text-label-md">
@@ -450,54 +465,63 @@ export default function Dashboard() {
 
                 {/* Device List */}
                 <div className="flex flex-col gap-space-md">
-                  {devices.map((device) => (
-                    <div key={device.id} className="p-space-md bg-surface rounded-lg border border-surface-variant flex flex-col gap-space-sm">
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center gap-space-xs">
-                          <div className="w-9 h-9 rounded bg-surface-container-high flex items-center justify-center text-primary-container">
-                            <span className="material-symbols-outlined text-[20px]">{device.icon}</span>
+                  {devices.map((device) => {
+                    const id = device._id || device.id;
+                    const isActive = device.status ? device.status === 'active' : Boolean(device.active);
+                    const icon = device.icon || (device.type === 'ev_charging' ? 'ev_station' : device.type === 'washing_machine' ? 'local_laundry_service' : device.type === 'battery' ? 'battery_charging_full' : 'hvac');
+                    const desc = device.desc || `${device.type?.replace('_', ' ') || 'Device'} • ${device.energyRequired || 2.5} kW cap`;
+                    const time = device.time || (isActive ? 'Auto-Flex Active' : 'Schedule Pending');
+                    const tag = device.tag || (isActive ? 'Auto-Sync' : 'Approve Shift');
+
+                    return (
+                      <div key={id} className="p-space-md bg-surface rounded-lg border border-surface-variant flex flex-col gap-space-sm">
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-center gap-space-xs">
+                            <div className="w-9 h-9 rounded bg-surface-container-high flex items-center justify-center text-primary-container">
+                              <span className="material-symbols-outlined text-[20px]">{icon}</span>
+                            </div>
+                            <div>
+                              <div className="font-title-sm text-title-sm text-on-surface">{device.name}</div>
+                              <span className="text-label-sm font-label-sm text-on-surface-variant">{desc}</span>
+                            </div>
                           </div>
-                          <div>
-                            <div className="font-title-sm text-title-sm text-on-surface">{device.name}</div>
-                            <span className="text-label-sm font-label-sm text-on-surface-variant">{device.desc}</span>
-                          </div>
+
+                          {/* Custom Toggle Checkbox */}
+                          <label className="relative inline-flex items-center cursor-pointer">
+                            <input
+                              type="checkbox"
+                              className="sr-only peer"
+                              checked={isActive}
+                              onChange={() => handleToggleDevice(id)}
+                            />
+                            <div className="w-9 h-5 bg-surface-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-surface-variant after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary-container"></div>
+                          </label>
                         </div>
 
-                        {/* Custom Toggle Checkbox */}
-                        <label className="relative inline-flex items-center cursor-pointer">
-                          <input
-                            type="checkbox"
-                            className="sr-only peer"
-                            checked={device.active}
-                            onChange={() => handleToggleDevice(device.id)}
-                          />
-                          <div className="w-9 h-5 bg-surface-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-surface-variant after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary-container"></div>
-                        </label>
-                      </div>
-
-                      <div className="flex items-center justify-between pt-space-xs border-t border-surface-variant">
-                        <span className="inline-flex items-center gap-1 text-label-sm font-label-sm text-on-surface-variant">
-                          <span className="material-symbols-outlined text-[16px] text-secondary">
-                            {device.active ? 'schedule' : 'pending'}
+                        <div className="flex items-center justify-between pt-space-xs border-t border-surface-variant">
+                          <span className="inline-flex items-center gap-1 text-label-sm font-label-sm text-on-surface-variant">
+                            <span className="material-symbols-outlined text-[16px] text-secondary">
+                              {isActive ? 'schedule' : 'pending'}
+                            </span>
+                            {time}
                           </span>
-                          {device.time}
-                        </span>
-                        {device.id === 'washer' && !device.active ? (
-                          <button
-                            className="px-2 py-0.5 rounded text-label-sm font-label-sm text-primary-container hover:bg-surface-container font-semibold transition-colors"
-                            onClick={() => handleToggleDevice('washer')}
-                            type="button"
-                          >
-                            Approve Shift
-                          </button>
-                        ) : (
-                          <span className="px-2 py-0.5 rounded text-label-sm font-label-sm bg-[#F1F6E3] text-[#2F3D13] font-semibold">
-                            {device.tag}
-                          </span>
-                        )}
+                          {!isActive ? (
+                            <button
+                              className="px-2 py-0.5 rounded text-label-sm font-label-sm text-primary-container hover:bg-surface-container font-semibold transition-colors"
+                              onClick={() => handleToggleDevice(id)}
+                              type="button"
+                            >
+                              Approve Shift
+                            </button>
+                          ) : (
+                            <span className="px-2 py-0.5 rounded text-label-sm font-label-sm bg-[#F1F6E3] text-[#2F3D13] font-semibold">
+                              {tag}
+                            </span>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 {/* Add device link */}
