@@ -26,6 +26,13 @@ router.post('/:id/accept', auth, scheduleController.accept);
 router.post('/:id/complete', auth, scheduleController.complete);
 
 /**
+ * @route   GET /api/schedule/pending
+ * @desc    Get user's current pending schedule recommendation
+ * @access  Private (Authenticated user)
+ */
+router.get('/pending', auth, scheduleController.pending);
+
+/**
  * @route   GET /api/schedule/history
  * @desc    Get user's schedule history
  * @access  Private (Authenticated user)

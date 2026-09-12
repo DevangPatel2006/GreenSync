@@ -27,14 +27,13 @@ export default function ProfileSettings() {
       setError(null);
       try {
         const res = await api.get('/users/profile');
-        const data = res?.data || res;
-        if (data && typeof data === 'object') {
-          setProfileData(data);
-          if (data.name) setName(data.name);
+        const u = res?.user || res?.data?.user || (res?.name ? res : null);
+        if (u && typeof u === 'object') {
+          setProfileData(u);
+          if (u.name) setName(u.name);
         }
       } catch (err) {
-        // TODO(backend): Endpoint /api/users/profile not yet mounted on backend.
-        console.warn('Backend /api/users/profile not available, displaying session profile.');
+        console.warn('Backend /api/users/profile error, falling back to session user:', err.message);
       } finally {
         setLoading(false);
       }
@@ -71,10 +70,10 @@ export default function ProfileSettings() {
   };
 
   const displayUser = profileData || user || {
-    name: 'Operator',
-    email: 'user@greensync.energy',
+    name: '',
+    email: '',
     role: 'residential',
-    flexCoins: 1420,
+    flexCoins: 0,
   };
 
   return (
@@ -168,7 +167,7 @@ export default function ProfileSettings() {
               <div className="flex items-center justify-between text-body-sm font-body-sm py-1 border-b border-surface-variant/60">
                 <span className="text-on-surface-variant">FlexCoin Balance</span>
                 <Link to="/rewards-flexcoins" className="font-bold text-secondary flex items-center gap-1 hover:underline">
-                  <span>{displayUser.flexCoins ?? 1420} FC</span>
+                  <span>{displayUser.flexCoins ?? 0} FC</span>
                   <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
                 </Link>
               </div>

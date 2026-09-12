@@ -125,10 +125,31 @@ async function complete(req, res) {
   }
 }
 
+/**
+ * Retrieves the user's active pending recommendation.
+ * 
+ * @route   GET /api/schedule/pending
+ * @access  Private (Authenticated user)
+ * @param {import('express').Request} req - Express request
+ * @param {import('express').Response} res - Express response
+ */
+async function pending(req, res) {
+  try {
+    const userId = req.user.id || req.user._id;
+    const schedule = await schedulingService.getPendingSchedule(userId);
+
+    return success(res, schedule, 'Pending schedule recommendation retrieved successfully', 200);
+  } catch (err) {
+    logger.error(`[scheduleController.pending] Unexpected error: ${err.message}`, err);
+    return error(res, 'Internal server error occurred while retrieving pending schedule', 500, 'SERVER_ERROR');
+  }
+}
+
 module.exports = {
   recommend,
   accept,
   complete,
   history,
+  pending,
 };
 

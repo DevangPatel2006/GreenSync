@@ -5,7 +5,7 @@ import { mapBackendError } from '../utils/errorMapper';
 export default function Rewards() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [balance, setBalance] = useState(1420);
+  const [balance, setBalance] = useState(null);
   const [history, setHistory] = useState([]);
   const [toastMessage, setToastMessage] = useState(null);
 
@@ -27,60 +27,20 @@ export default function Rewards() {
 
       if (balRes.status === 'fulfilled' && balRes.value) {
         const val = balRes.value.balance !== undefined ? balRes.value.balance : balRes.value;
-        if (typeof val === 'number') setBalance(val);
+        setBalance(typeof val === 'number' ? val : (Number(val) || 0));
+      } else {
+        setBalance(0);
       }
 
       if (histRes.status === 'fulfilled' && Array.isArray(histRes.value)) {
         setHistory(histRes.value);
       } else {
-        // Contract fallback with breakdown fields for explainability
-        setHistory([
-          {
-            _id: 'tx-1',
-            coins: 48,
-            reason: 'Off-peak EV Charging shifted to solar noon window',
-            impactType: 'renewable',
-            createdAt: new Date(Date.now() - 3600000 * 4).toISOString(),
-            breakdown: {
-              renewablePoints: 36,
-              peakPoints: 8,
-              shiftPoints: 4,
-              flexibilityBonus: 0,
-              urgencyBonus: 0,
-            },
-          },
-          {
-            _id: 'tx-2',
-            coins: 35,
-            reason: 'Heat pump pre-cooling prior to regional peak alert',
-            impactType: 'peak_reduction',
-            createdAt: new Date(Date.now() - 3600000 * 28).toISOString(),
-            breakdown: {
-              renewablePoints: 12,
-              peakPoints: 18,
-              shiftPoints: 5,
-              flexibilityBonus: 0,
-              urgencyBonus: 0,
-            },
-          },
-          {
-            _id: 'tx-3',
-            coins: 25,
-            reason: 'Automated laundry load delay during grid stress window',
-            impactType: 'bonus',
-            createdAt: new Date(Date.now() - 3600000 * 72).toISOString(),
-            breakdown: {
-              renewablePoints: 8,
-              peakPoints: 7,
-              shiftPoints: 5,
-              flexibilityBonus: 5,
-              urgencyBonus: 0,
-            },
-          },
-        ]);
+        setHistory([]);
       }
     } catch (err) {
       setError(mapBackendError(err));
+      setBalance(0);
+      setHistory([]);
     } finally {
       setLoading(false);
     }
@@ -99,7 +59,7 @@ export default function Rewards() {
     showToast(`Redeemed: ${item}! Remaining balance: ${balance - cost} FC (Impact Simulation)`);
   };
 
-  const isEmpty = balance === 0 && history.length === 0;
+  const isEmpty = (balance === null || balance === 0) && history.length === 0;
 
   return (
     <div className="flex flex-col w-full">
@@ -210,15 +170,15 @@ export default function Rewards() {
               </div>
               <div>
                 <span className="font-headline-lg text-headline-lg text-primary-container block tracking-tight font-bold">
-                  {balance} <span className="text-title-md font-bold text-secondary">FC</span>
+                  {(balance || 0).toLocaleString()} <span className="text-title-md font-bold text-secondary">FC</span>
                 </span>
                 <span className="font-body-sm text-body-sm text-on-secondary-fixed-variant font-semibold mt-1 block">
-                  Est. catalog value: ~${(balance * 0.1).toFixed(2)} USD
+                  Est. catalog value: ~${((balance || 0) * 0.1).toFixed(2)} USD
                 </span>
               </div>
               <div className="mt-space-md pt-space-xs">
                 <div className="w-full bg-secondary-fixed-dim h-1.5 rounded-full overflow-hidden">
-                  <div className="bg-secondary h-full rounded-full" style={{ width: '92%' }}></div>
+                  <div className="bg-secondary h-full rounded-full" style={{ width: `${Math.min(100, Math.round(((balance || 0) / 2000) * 100))}%` }}></div>
                 </div>
               </div>
             </div>
@@ -235,15 +195,17 @@ export default function Rewards() {
               </div>
               <div>
                 <span className="font-headline-sm text-headline-sm text-primary-container block font-bold">
-                  Level 3: Community Grid Champion
+                  {(balance || 0) >= 1000 ? 'Level 3: Community Grid Champion' : (balance || 0) >= 500 ? 'Level 2: Flex Shifter' : (balance || 0) >= 100 ? 'Level 1: Active Participant' : 'Starter Tier'}
                 </span>
                 <span className="font-body-sm text-body-sm text-on-surface-variant mt-1 block">
-                  Next reward multiplier (+15% FlexCoins bonus) unlocks at 2,000 FC.
+                  {(balance || 0) >= 2000
+                    ? 'Top tier achieved! Maximum FlexCoin multiplier active.'
+                    : `Next reward milestone unlocks in ${Math.max(0, 1000 - (balance || 0))} FC.`}
                 </span>
               </div>
               <div className="mt-space-md pt-space-xs">
                 <div className="w-full bg-surface-container-high h-1.5 rounded-full overflow-hidden">
-                  <div className="bg-primary-container h-full rounded-full" style={{ width: '71%' }}></div>
+                  <div className="bg-primary-container h-full rounded-full" style={{ width: `${Math.min(100, Math.round(((balance || 0) / 1000) * 100))}%` }}></div>
                 </div>
               </div>
             </div>

@@ -207,8 +207,38 @@ async function completeSchedule(userId, scheduleId) {
  */
 async function getScheduleHistory(userId) {
   return Schedule.find({ userId })
+    .populate('deviceId')
     .sort({ createdAt: -1 })
     .lean();
+}
+
+/**
+ * Retrieves or generates the most relevant pending schedule recommendation for the user.
+ * 
+ * @param {string} userId - Requesting user ID
+ * @returns {Promise<object|null>} Pending Schedule document or null
+ */
+async function getPendingSchedule(userId) {
+  let pending = await Schedule.findOne({ userId, status: 'proposed' })
+    .populate('deviceId')
+    .sort({ createdAt: -1 });
+
+  if (pending) return pending;
+
+  // Check if user has active devices and create a fresh recommendation for the first active one
+  const activeDevice = await Device.findOne({ userId, status: 'active' });
+  if (activeDevice) {
+    try {
+      const rec = await recommendSchedule(userId, activeDevice._id.toString());
+      if (rec) {
+        return Schedule.findById(rec._id).populate('deviceId');
+      }
+    } catch (e) {
+      // Infeasible or validation error
+    }
+  }
+
+  return null;
 }
 
 module.exports = {
@@ -216,5 +246,6 @@ module.exports = {
   acceptSchedule,
   completeSchedule,
   getScheduleHistory,
+  getPendingSchedule,
   SchedulingServiceError,
 };

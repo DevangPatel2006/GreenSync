@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import useDevices from '../hooks/useDevices';
+import api from '../services/api';
 
 export default function MyLoadsDevices() {
   const location = useLocation();
@@ -26,6 +27,30 @@ export default function MyLoadsDevices() {
 
   const [formErrors, setFormErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [flexCoinsBalance, setFlexCoinsBalance] = useState(0);
+  const [gridRenewableIndex, setGridRenewableIndex] = useState(0);
+
+  useEffect(() => {
+    async function loadExtraStats() {
+      try {
+        const [rewRes, energyRes] = await Promise.allSettled([
+          api.get('/rewards/balance'),
+          api.get('/energy/current'),
+        ]);
+        if (rewRes.status === 'fulfilled') {
+          const b = rewRes.value?.balance ?? rewRes.value?.data?.balance ?? (typeof rewRes.value === 'number' ? rewRes.value : 0);
+          setFlexCoinsBalance(Number(b) || 0);
+        }
+        if (energyRes.status === 'fulfilled') {
+          const ren = energyRes.value?.renewableAvailability ?? energyRes.value?.renewablePercentage ?? energyRes.value?.data?.renewableAvailability ?? 0;
+          setGridRenewableIndex(Math.round(ren));
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
+    loadExtraStats();
+  }, []);
 
   useEffect(() => {
     if (location.search.includes('add=1')) {
@@ -233,7 +258,7 @@ export default function MyLoadsDevices() {
           <div className="flex flex-col">
             <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">Active Load Capacity</span>
             <span className="font-headline-md text-headline-md text-on-surface mt-1">
-              {(devices.reduce((acc, d) => acc + (parseFloat(d.energyRequired) || 10), 0) / 3).toFixed(1)} kW
+              {devices.length === 0 ? '0.0' : (devices.reduce((acc, d) => acc + (parseFloat(d.energyRequired) || 0), 0) / 3).toFixed(1)} kW
             </span>
             <span className="font-label-sm text-label-sm text-secondary flex items-center gap-1 mt-0.5">
               <span className="material-symbols-outlined text-[14px]">bolt</span> {activeCount} of {devices.length} devices online
@@ -247,9 +272,9 @@ export default function MyLoadsDevices() {
         <div className="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex items-center justify-between border border-surface-variant">
           <div className="flex flex-col">
             <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">FlexCoins Earned</span>
-            <span className="font-headline-md text-headline-md text-on-surface mt-1">530 FC</span>
+            <span className="font-headline-md text-headline-md text-on-surface mt-1">{flexCoinsBalance} FC</span>
             <span className="font-label-sm text-label-sm text-secondary flex items-center gap-1 mt-0.5">
-              <span className="material-symbols-outlined text-[14px]">trending_up</span> +84 FC this cycle
+              <span className="material-symbols-outlined text-[14px]">trending_up</span> {flexCoinsBalance > 0 ? `+${flexCoinsBalance} FC balance` : '0 FC this cycle'}
             </span>
           </div>
           <div className="w-10 h-10 rounded-lg bg-secondary-container flex items-center justify-center text-on-secondary-fixed">
@@ -260,8 +285,12 @@ export default function MyLoadsDevices() {
         <div className="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex items-center justify-between border border-surface-variant">
           <div className="flex flex-col">
             <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">Automated Shifts</span>
-            <span className="font-headline-md text-headline-md text-on-surface mt-1">92.4%</span>
-            <span className="font-label-sm text-label-sm text-on-surface-variant mt-0.5">Zero manual override</span>
+            <span className="font-headline-md text-headline-md text-on-surface mt-1">
+              {devices.length > 0 ? `${Math.round((activeCount / devices.length) * 100)}%` : '0%'}
+            </span>
+            <span className="font-label-sm text-label-sm text-on-surface-variant mt-0.5">
+              {devices.length > 0 ? 'Active dispatch automation' : 'No active loads'}
+            </span>
           </div>
           <div className="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary-container">
             <span className="material-symbols-outlined">published_with_changes</span>
@@ -271,8 +300,8 @@ export default function MyLoadsDevices() {
         <div className="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex items-center justify-between border border-surface-variant">
           <div className="flex flex-col">
             <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">Grid Renewable Index</span>
-            <span className="font-headline-md text-headline-md text-secondary mt-1">74%</span>
-            <span className="font-label-sm text-label-sm text-on-surface-variant mt-0.5">Solar + Wind baseline</span>
+            <span className="font-headline-md text-headline-md text-secondary mt-1">{gridRenewableIndex}%</span>
+            <span className="font-label-sm text-label-sm text-on-surface-variant mt-0.5">Real-time solar + wind</span>
           </div>
           <div className="w-10 h-10 rounded-lg bg-secondary-container flex items-center justify-center text-on-secondary-fixed">
             <span className="material-symbols-outlined">solar_power</span>
