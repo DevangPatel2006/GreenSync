@@ -186,7 +186,11 @@ export default function Dashboard() {
                 </span>
               </div>
               <p className="font-body-md text-body-md text-on-surface-variant">
-                Regional grid conditions support automated load shifting. Peak clean supply window currently active.
+                {currentEnergy.renewablePercentage > 60
+                  ? 'Regional clean supply window currently active. Conditions optimal for automated flexible load dispatch.'
+                  : currentEnergy.renewablePercentage > 35
+                  ? 'Moderate clean generation on regional grid. Automated load shifting recommended before peak demand.'
+                  : 'Elevated grid demand and low renewable share. Conserving and shifting non-essential loads recommended.'}
               </p>
             </div>
           </div>
