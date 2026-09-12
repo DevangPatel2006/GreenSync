@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@600;700&amp;family=Inter:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: 'class', theme: { extend: { 'colors': { 'inverse-primary': '#fbaee9', 'surface-variant': '#e8e0eb', 'inverse-on-surface': '#f7eef9', 'secondary-fixed-dim': '#b8d074', 'on-primary-fixed-variant': '#6c3063', 'primary-fixed-dim': '#fbaee9', 'secondary': '#526615', 'surface-tint': '#88487c', 'primary': '#260023', 'surface-bright': '#fff7ff', 'tertiary': '#0a1300', 'on-tertiary': '#ffffff', 'tertiary-fixed-dim': '#b9ce91', 'tertiary-fixed': '#d5ebaa', 'tertiary-container': '#1b2a00', 'inverse-surface': '#332f37', 'outline': '#81737c', 'surface-dim': '#e0d7e3', 'outline-variant': '#d3c2cc', 'error': '#ba1a1a', 'on-error-container': '#93000a', 'on-secondary-fixed-variant': '#3b4d00', 'background': '#fff7ff', 'surface': '#fff7ff', 'primary-fixed': '#ffd7f2', 'error-container': '#ffdad6', 'on-secondary-container': '#586c1b', 'on-surface-variant': '#50434b', 'on-secondary': '#ffffff', 'on-primary-container': '#bc75ad', 'on-tertiary-container': '#80945c', 'on-error': '#ffffff', 'secondary-container': '#d4ed8d', 'surface-container': '#f4ebf7', 'surface-container-high': '#eee5f1', 'on-tertiary-fixed-variant': '#3b4c1c', 'on-tertiary-fixed': '#131f00', 'surface-container-lowest': '#ffffff', 'on-primary': '#ffffff', 'on-primary-fixed': '#390134', 'on-surface': '#1e1a22', 'on-secondary-fixed': '#161f00', 'secondary-fixed': '#d4ed8d', 'primary-container': '#450c3f', 'surface-container-low': '#faf1fc', 'surface-container-highest': '#e8e0eb', 'on-background': '#1e1a22' }, 'borderRadius': { 'DEFAULT': '0.125rem', 'lg': '0.25rem', 'xl': '0.5rem', 'full': '0.75rem' }, 'spacing': { 'gutter': '1.5rem', 'margin-mobile': '1rem', 'space-xl': '2.5rem', 'space-md': '1rem', 'margin': '2rem', 'space-xs': '0.25rem', 'space-sm': '0.5rem', 'space-lg': '1.5rem', 'gutter-mobile': '1rem' }, 'fontFamily': { 'title-sm': ['Inter'], 'headline-lg': ['Hanken Grotesk'], 'headline-md': ['Hanken Grotesk'], 'title-md': ['Inter'], 'body-md': ['Inter'], 'headline-sm': ['Hanken Grotesk'], 'body-sm': ['Inter'], 'display': ['Hanken Grotesk'], 'label-sm': ['Inter'], 'label-md': ['Inter'], 'headline-lg-mobile': ['Hanken Grotesk'], 'display-mobile': ['Hanken Grotesk'], 'body-lg': ['Inter'] }, 'fontSize': { 'title-sm': ['14px', {'lineHeight': '20px', 'fontWeight': '600'}], 'headline-lg': ['32px', {'lineHeight': '40px', 'letterSpacing': '-0.015em', 'fontWeight': '700'}], 'headline-md': ['24px', {'lineHeight': '32px', 'letterSpacing': '-0.01em', 'fontWeight': '600'}], 'title-md': ['16px', {'lineHeight': '24px', 'fontWeight': '600'}], 'body-md': ['15px', {'lineHeight': '22px', 'fontWeight': '400'}], 'headline-sm': ['20px', {'lineHeight': '28px', 'fontWeight': '600'}], 'body-sm': ['13px', {'lineHeight': '18px', 'fontWeight': '400'}], 'display': ['48px', {'lineHeight': '56px', 'letterSpacing': '-0.02em', 'fontWeight': '700'}], 'label-sm': ['11px', {'lineHeight': '14px', 'letterSpacing': '0.04em', 'fontWeight': '600'}], 'label-md': ['13px', {'lineHeight': '16px', 'letterSpacing': '0.01em', 'fontWeight': '600'}], 'headline-lg-mobile': ['26px', {'lineHeight': '34px', 'letterSpacing': '-0.01em', 'fontWeight': '600'}], 'display-mobile': ['36px', {'lineHeight': '44px', 'letterSpacing': '-0.02em', 'fontWeight': '700'}], 'body-lg': ['18px', {'lineHeight': '28px', 'fontWeight': '400'}] } } } };</script></head><body class="bg-surface font-body-md text-on-surface antialiased"><header class="fixed top-0 left-0 right-0 z-50 bg-surface-container-lowest border-b border-surface-variant"><div class="h-16 w-full px-gutter flex items-center justify-between"><div class="flex items-center gap-space-md"><img alt="GreenSync Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1Xa-uYDZDJUPOxjIXg4SDipWcIcXQdawOBTMdaQReTF4qA347DOTIXphndYcLWLv2PHlKUlkZY7whLZ4oaCXq4Yzfs9QQlZLzyn74Zqj9uJ2QJtD9oh4DjBp2zR3a4D7VfIi_kGtK71fS4Jd9RX36ZAAa_YUIuTBchtwUijpwCPhcov6GmmrT9d9xi_TOU9BpDzekYrvj72lqeqaqXmB94dDornjj1-_hU1MpRNDPKybmC0eXQBSdjLrP0"/><span class="font-headline-sm text-headline-sm text-primary-container tracking-tight">GreenSync</span></div><div class="flex items-center gap-space-lg"><div class="hidden sm:flex items-center gap-space-xs px-3 py-1 rounded-full bg-secondary-container text-on-secondary-fixed border border-secondary-fixed-dim"><span class="w-2 h-2 rounded-full bg-secondary inline-block animate-pulse"></span><span class="font-label-md text-label-md">Grid Status: Balanced • 68% Renewable</span></div><div class="flex items-center gap-space-sm"><button class="w-9 h-9 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" type="button"><span class="material-symbols-outlined text-[20px]">notifications</span></button><div class="h-5 w-[1px] bg-surface-variant"></div><div class="flex items-center gap-space-sm pl-space-xs"><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div><div class="hidden md:flex flex-col text-left"><span class="font-label-md text-label-md text-on-surface leading-tight">Alex Mercer</span><span class="font-label-sm text-label-sm text-on-surface-variant leading-tight">Enterprise Facility</span></div></div></div></div></div></header><aside class="fixed left-0 top-16 bottom-0 w-64 bg-surface-container-lowest border-r border-surface-variant z-40 flex flex-col justify-between overflow-y-auto"><div class="p-space-md"><div class="px-space-sm py-space-xs mb-space-sm text-label-sm font-label-sm uppercase tracking-wider text-on-surface-variant">Navigation</div><nav class="flex flex-col gap-1" data-active-classes="bg-primary-container text-on-primary font-title-sm"><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors font-body-md text-body-md" data-path="dashboard" href="#"><span class="material-symbols-outlined text-[20px]">grid_view</span><span>Dashboard</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors font-body-md text-body-md" data-path="my-loads-devices" href="#"><span class="material-symbols-outlined text-[20px]">devices</span><span>My Loads / Devices</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors font-body-md text-body-md" data-path="add-flexible-load" href="#"><span class="material-symbols-outlined text-[20px]">add_circle</span><span>Add Flexible Load</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors font-body-md text-body-md" data-path="schedule-recommendations" href="#"><span class="material-symbols-outlined text-[20px]">calendar_clock</span><span>Schedule &amp; Recommendations</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors font-body-md text-body-md" data-path="impact" href="#"><span class="material-symbols-outlined text-[20px]">energy_savings_leaf</span><span>Impact</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors font-body-md text-body-md" data-path="rewards-flexcoins" href="#"><span class="material-symbols-outlined text-[20px]">monetization_on</span><span>Rewards &amp; FlexCoins</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors font-body-md text-body-md" data-path="admin-grid" href="#"><span class="material-symbols-outlined text-[20px]">tune</span><span>Admin Grid</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors font-body-md text-body-md" data-path="profile-settings" href="#"><span class="material-symbols-outlined text-[20px]">settings</span><span>Profile &amp; Settings</span></a></nav></div><div class="p-space-md border-t border-surface-variant bg-surface-container-low"><div class="flex items-center justify-between"><div class="flex flex-col"><span class="font-label-sm text-label-sm text-on-surface-variant">Active Flex Capacity</span><span class="font-title-sm text-title-sm text-primary-container">142.8 kW</span></div><span class="material-symbols-outlined text-secondary text-[22px]">bolt</span></div></div></aside><div class="pl-64"><main class="w-full min-h-[calc(100vh-4rem)] pt-16 px-gutter py-space-lg bg-surface"><div class="flex flex-col w-full">
+<!-- Interactive View State Controller -->
+<div class="flex flex-wrap items-center justify-between gap-space-md mb-space-lg pb-space-sm border-b border-surface-variant">
+<div class="flex flex-col">
+<div class="flex items-center gap-space-xs text-on-surface-variant mb-1">
+<span class="font-label-sm text-label-sm uppercase tracking-wider">Demand Flexibility Dispatch</span>
+<span class="text-xs">•</span>
+<span class="font-label-sm text-label-sm text-secondary font-semibold">Node #TX-8801 Optimal Window</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-primary-container tracking-tight">Schedule Recommendation</h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">Find a better time to use electricity, lower peak congestion, and reduce system carbon emissions.</p>
+</div>
+<!-- Prototype State Switcher -->
+<div class="flex items-center p-1 bg-surface-container rounded-lg border border-surface-variant">
+<button class="px-space-sm py-1.5 rounded text-label-md font-label-md transition-all bg-primary text-on-primary shadow-sm flex items-center gap-1.5" id="tab-populated" onclick="setScreenState('populated')">
+<span class="w-2 h-2 rounded-full bg-secondary-fixed"></span>
+        Active Recommendation
+      </button>
+<button class="px-space-sm py-1.5 rounded text-label-md font-label-md text-on-surface-variant hover:text-on-surface transition-all flex items-center gap-1.5" id="tab-accepted" onclick="setScreenState('accepted')">
+<span class="w-2 h-2 rounded-full bg-surface-variant"></span>
+        Accepted Confirmation
+      </button>
+<button class="px-space-sm py-1.5 rounded text-label-md font-label-md text-on-surface-variant hover:text-on-surface transition-all flex items-center gap-1.5" id="tab-empty" onclick="setScreenState('empty')">
+<span class="w-2 h-2 rounded-full bg-surface-variant"></span>
+        Empty / Idle
+      </button>
+</div>
+</div>
+<!-- VIEW STATE: 1. POPULATED (DEFAULT) -->
+<div class="flex flex-col gap-space-xl" id="state-populated">
+<!-- Top Level Load Summary Bar -->
+<div class="bg-surface-container-lowest border border-surface-variant rounded-xl p-space-md flex flex-wrap items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-md">
+<div class="w-12 h-12 rounded-lg bg-surface-container-low flex items-center justify-center border border-surface-variant text-primary-container">
+<span class="material-symbols-outlined text-[28px]">electric_car</span>
+</div>
+<div>
+<div class="flex items-center gap-space-xs">
+<span class="font-title-md text-title-md text-on-surface">Commercial Fleet Depot • Bay #4 Charger</span>
+<span class="px-2 py-0.5 rounded-full text-label-sm font-label-sm bg-surface-container text-on-surface-variant">High Flexibility</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Target delivery: 62.0 kWh by 06:30 AM tomorrow • Current buffer: +5.25 hrs</p>
+</div>
+</div>
+<div class="flex items-center gap-space-md">
+<div class="text-right hidden sm:block">
+<span class="font-label-sm text-label-sm text-on-surface-variant block uppercase">Shift Window Urgency</span>
+<span class="font-title-sm text-title-sm text-primary-container">Moderate • 4 hr 45 min flexible span</span>
+</div>
+<div class="h-8 w-[1px] bg-surface-variant hidden sm:block"></div>
+<button class="px-3 py-1.5 border border-surface-variant hover:border-primary-container text-on-surface font-label-md text-label-md rounded flex items-center gap-1 transition-colors" onclick="setScreenState('empty')">
+<span class="material-symbols-outlined text-[16px]">tune</span>
+          Load Constraints
+        </button>
+</div>
+</div>
+<!-- Comparison Arena: Requested vs Recommended -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-space-lg">
+<!-- Card: Requested Time (Suboptimal) -->
+<div class="bg-surface-container-lowest border border-surface-variant rounded-xl p-space-lg flex flex-col justify-between relative overflow-hidden">
+<div class="absolute top-0 right-0 left-0 h-1 bg-outline-variant"></div>
+<div>
+<div class="flex items-center justify-between mb-space-md">
+<div class="flex items-center gap-2">
+<span class="px-2.5 py-1 rounded text-label-sm font-label-sm bg-surface-container-high text-on-surface-variant uppercase tracking-wider font-semibold">User Default</span>
+<span class="text-on-surface-variant font-label-sm text-label-sm">Peak Demand Period</span>
+</div>
+<span class="material-symbols-outlined text-outline text-[20px]">warning</span>
+</div>
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant block mb-1">Requested Start</span>
+<div class="flex items-baseline gap-space-xs mb-space-sm">
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Today • 6:30 PM</h2>
+<span class="font-body-sm text-body-sm text-on-surface-variant">EDT</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-space-lg">
+            Immediate dispatch overlaps directly with peak municipal power draw and fossil-fuel peaker plant activation.
+          </p>
+<div class="space-y-3 pt-space-sm border-t border-surface-variant">
+<div class="flex items-center justify-between py-1">
+<span class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-error">speed</span>
+                Grid Load Pressure
+              </span>
+<span class="font-title-sm text-title-sm text-error">Severe Strain (94% Cap)</span>
+</div>
+<div class="flex items-center justify-between py-1">
+<span class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">eco</span>
+                Renewable Supply Share
+              </span>
+<span class="font-title-sm text-title-sm text-on-surface">24% (Marginal Gas Peakers)</span>
+</div>
+<div class="flex items-center justify-between py-1">
+<span class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">payments</span>
+                Applicable Energy Rate
+              </span>
+<span class="font-title-sm text-title-sm text-on-surface">$0.342 / kWh (Peak Tier)</span>
+</div>
+</div>
+</div>
+<div class="mt-space-lg pt-space-md border-t border-surface-variant flex items-center justify-between text-on-surface-variant">
+<span class="font-label-sm text-label-sm">Grid Carbon Intensity</span>
+<span class="font-label-md text-label-md font-semibold text-on-surface">542 g CO₂ / kWh</span>
+</div>
+</div>
+<!-- Card: Recommended Time (GreenSync Optimal) -->
+<div class="bg-surface-container-lowest border-2 border-primary-container rounded-xl p-space-lg flex flex-col justify-between relative shadow-sm">
+<div class="absolute top-0 right-0 left-0 h-1.5 bg-secondary-fixed-dim"></div>
+<div>
+<div class="flex items-center justify-between mb-space-md">
+<div class="flex items-center gap-2">
+<span class="px-2.5 py-1 rounded text-label-sm font-label-sm bg-secondary-container text-on-secondary-fixed border border-secondary-fixed-dim uppercase tracking-wider font-semibold">
+                GreenSync Algorithmic Pick
+              </span>
+<span class="flex items-center gap-1 text-secondary font-label-sm text-label-sm font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary inline-block"></span> 99.4% Confidence
+              </span>
+</div>
+<span class="material-symbols-outlined text-secondary text-[22px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-secondary font-semibold block mb-1">Recommended Dispatch</span>
+<div class="flex items-baseline gap-space-xs mb-space-sm">
+<h2 class="font-headline-lg text-headline-lg text-primary-container">Tonight • 11:15 PM</h2>
+<span class="font-body-sm text-body-sm text-on-surface-variant">EDT (Late Evening)</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-space-lg">
+            Shifts demand to align precisely with anticipated overnight wind energy surplus and off-peak distribution capacity.
+          </p>
+<div class="space-y-3 pt-space-sm border-t border-surface-variant">
+<div class="flex items-center justify-between py-1">
+<span class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-secondary">check_circle</span>
+                Grid Load Pressure
+              </span>
+<span class="font-title-sm text-title-sm text-secondary">Minimal (38% Cap)</span>
+</div>
+<div class="flex items-center justify-between py-1">
+<span class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-secondary">wind_power</span>
+                Renewable Supply Share
+              </span>
+<span class="font-title-sm text-title-sm text-primary-container font-bold">82% (Regional Wind &amp; Hydro)</span>
+</div>
+<div class="flex items-center justify-between py-1">
+<span class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-secondary">savings</span>
+                Applicable Energy Rate
+              </span>
+<span class="font-title-sm text-title-sm text-primary-container">$0.118 / kWh (Super Off-Peak)</span>
+</div>
+</div>
+</div>
+<div class="mt-space-lg pt-space-md border-t border-surface-variant flex items-center justify-between text-on-surface">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Grid Carbon Intensity</span>
+<span class="font-label-md text-label-md font-bold text-secondary">108 g CO₂ / kWh (-80%)</span>
+</div>
+</div>
+</div>
+<!-- Live Impact Simulation (Metrics Strip) -->
+<div class="bg-surface-container-lowest border border-surface-variant rounded-xl p-space-lg">
+<div class="flex flex-wrap items-center justify-between gap-space-sm mb-space-md">
+<div>
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-semibold">Shift Outcome Verification</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Impact Simulation &amp; Reward Ledger</h3>
+</div>
+<span class="text-label-sm font-label-sm text-on-surface-variant">Simulated against regional ERCOT-West benchmark</span>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-space-md">
+<!-- Metric 1 -->
+<div class="p-space-md rounded-lg bg-surface-container-low border border-surface-variant flex flex-col justify-between">
+<div class="flex items-center justify-between text-on-surface-variant mb-2">
+<span class="font-label-md text-label-md">Energy Shifted</span>
+<span class="material-symbols-outlined text-[20px] text-primary-container">sync_alt</span>
+</div>
+<div class="flex items-baseline gap-1">
+<span class="font-display-mobile text-display-mobile text-primary-container font-bold">18.5</span>
+<span class="font-title-sm text-title-sm text-on-surface-variant">kWh</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant mt-1">100% of charging cycle</span>
+</div>
+<!-- Metric 2 -->
+<div class="p-space-md rounded-lg bg-surface-container-low border border-surface-variant flex flex-col justify-between">
+<div class="flex items-center justify-between text-on-surface-variant mb-2">
+<span class="font-label-md text-label-md">Peak Reduction</span>
+<span class="material-symbols-outlined text-[20px] text-secondary">trending_down</span>
+</div>
+<div class="flex items-baseline gap-1">
+<span class="font-display-mobile text-display-mobile text-secondary font-bold">4.2</span>
+<span class="font-title-sm text-title-sm text-on-surface-variant">kW</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant mt-1">Relieves substation #04</span>
+</div>
+<!-- Metric 3 -->
+<div class="p-space-md rounded-lg bg-surface-container-low border border-surface-variant flex flex-col justify-between">
+<div class="flex items-center justify-between text-on-surface-variant mb-2">
+<span class="font-label-md text-label-md">CO₂ Avoided</span>
+<span class="material-symbols-outlined text-[20px] text-secondary">cloud_off</span>
+</div>
+<div class="flex items-baseline gap-1">
+<span class="font-display-mobile text-display-mobile text-on-surface font-bold">9.8</span>
+<span class="font-title-sm text-title-sm text-on-surface-variant">kg</span>
+</div>
+<span class="font-body-sm text-body-sm text-secondary font-semibold mt-1">Equivalent to 24 mi driving</span>
+</div>
+<!-- Metric 4: FlexCoins -->
+<div class="p-space-md rounded-lg bg-secondary-container/40 border border-secondary-fixed-dim flex flex-col justify-between">
+<div class="flex items-center justify-between text-on-secondary-fixed mb-2">
+<span class="font-label-md text-label-md font-semibold">FlexCoins Earned</span>
+<span class="material-symbols-outlined text-[22px] text-secondary" style="font-variation-settings: 'FILL' 1;">toll</span>
+</div>
+<div class="flex items-baseline gap-1">
+<span class="font-display-mobile text-display-mobile text-primary-container font-bold">+75</span>
+<span class="font-title-sm text-title-sm text-primary-container font-bold">FC</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-secondary-fixed-variant font-semibold mt-1">Redeemable for credit</span>
+</div>
+</div>
+</div>
+<!-- 24-Hour Timeline Bar Chart: Grid Cleanliness Index & Shifting Visual -->
+<div class="bg-surface-container-lowest border border-surface-variant rounded-xl p-space-lg">
+<div class="flex flex-wrap items-center justify-between gap-space-md mb-space-md">
+<div>
+<div class="flex items-center gap-2">
+<h3 class="font-title-md text-title-md text-on-surface">24-Hour Clean Energy Horizon</h3>
+<span class="px-2 py-0.5 rounded text-label-sm font-label-sm bg-surface-container text-on-surface-variant font-semibold">Forecasted Telemetry</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Hourly grid renewable penetration index with active demand window relocation.</p>
+</div>
+<!-- Legend -->
+<div class="flex items-center gap-space-md text-label-sm font-label-sm text-on-surface-variant">
+<div class="flex items-center gap-1.5">
+<span class="w-3 h-3 rounded-sm bg-error/70"></span>
+<span>Congested / High Carbon</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-3 h-3 rounded-sm bg-surface-variant"></span>
+<span>Moderate</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-3 h-3 rounded-sm bg-secondary-fixed-dim"></span>
+<span>Clean / Renewable Window</span>
+</div>
+</div>
+</div>
+<!-- SVG Timeline Chart -->
+<div class="w-full overflow-x-auto">
+<div class="min-w-[720px] py-space-sm">
+<!-- Load Relocation Indicator Pill Banner -->
+<div class="relative w-full h-8 mb-2">
+<!-- Requested Load Marker (6:30 PM = ~18.5 hr mark -> ~77%) -->
+<div class="absolute left-[72%] -translate-x-1/2 flex flex-col items-center">
+<span class="px-2 py-0.5 bg-error text-on-error text-label-sm font-label-sm rounded font-semibold whitespace-nowrap shadow-sm">
+                Bypassed: 6:30 PM
+              </span>
+<span class="w-[1px] h-2 bg-error"></span>
+</div>
+<!-- Recommended Load Marker (11:15 PM = ~23.2 hr mark -> ~95%) -->
+<div class="absolute left-[94%] -translate-x-1/2 flex flex-col items-center">
+<span class="px-2 py-0.5 bg-primary-container text-on-primary text-label-sm font-label-sm rounded font-semibold whitespace-nowrap flex items-center gap-1 border border-secondary-fixed">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span> 11:15 PM Active
+              </span>
+<span class="w-[1px] h-2 bg-primary-container"></span>
+</div>
+<!-- Curve arrow visual indicating shift -->
+<svg class="w-full h-8 absolute inset-0 pointer-events-none" preserveaspectratio="none" viewbox="0 0 1000 32">
+<path d="M 720 12 Q 830 -8 940 12" fill="none" stroke="#450C3F" stroke-dasharray="4 4" stroke-width="1.75"></path>
+<polygon fill="#450C3F" points="942,12 935,7 937,13"></polygon>
+</svg>
+</div>
+<!-- 24 Hour Bar Graph -->
+<div class="grid grid-cols-24 gap-1 items-end h-32 pt-4 px-1 border-b border-surface-variant">
+<!-- 00:00 to 05:00 Early AM Wind -->
+<div class="flex flex-col items-center h-full justify-end group cursor-pointer" title="00:00 - 74% Renewable">
+<div class="w-full bg-secondary-container rounded-t" style="height: 74%;"></div>
+</div>
+<div class="flex flex-col items-center h-full justify-end group cursor-pointer" title="01:00 - 78% Renewable">
+<div class="w-full bg-secondary-container rounded-t" style="height: 78%;"></div>
+</div>
+<div class="flex flex-col items-center h-full justify-end group cursor-pointer" title="02:00 - 81% Renewable">
+<div class="w-full bg-secondary-fixed-dim rounded-t" style="height: 81%;"></div>
+</div>
+<div class="flex flex-col items-center h-full justify-end group cursor-pointer" title="03:00 - 85% Renewable">
+<div class="w-full bg-secondary-fixed-dim rounded-t" style="height: 85%;"></div>
+</div>
+<div class="flex flex-col items-center h-full justify-end group cursor-pointer" title="04:00 - 79% Renewable">
+<div class="w-full bg-secondary-container rounded-t" style="height: 79%;"></div>
+</div>
+<div class="flex flex-col items-center h-full justify-end group cursor-pointer" title="05:00 - 64% Renewable">
+<div class="w-full bg-secondary-container rounded-t" style="height: 64%;"></div>
+</div>
+<!-- 06:00 to 09:00 Morning Ramp Peak -->
+<div class="flex flex-col items-center h-full justify-end group cursor-pointer" title="06:00 - 45% Renewable">
+<div class="w-full bg-surface-variant rounded-t" style="height: 45%;"></div>
+</div>
+<div class="flex flex-col items-center h-full justify-end group cursor-pointer" title="07:00 - 35% Renewable (Morning Peak)">
+<div class="w-full bg-error/40 rounded-t" style="height: 35%;"></div>
+</div>
+<div class="flex flex-col items-center h-full justify-end group cursor-pointer" title="08:00 - 32% Renewable (High Fossil)">
+<div class="w-full bg-error/50 rounded-t" style="height: 32%;"></div>
+</div>
+<div class="flex flex-col items-center h-full justify-end group cursor-pointer" title="09:00 - 42% Renewable">
+<div class="w-full bg-surface-variant rounded-t" style="height: 42%;"></div>
+</div>
+<!-- 10:00 to 15:00 Solar Surge -->
+<div class="flex flex-col items-center h-full justify-end group cursor-pointer" title="10:00 - 58% Renewable">
+<div class="w-full bg-secondary-container/70 rounded-t" style="height: 58%;"></div>
+</div>
+<div class="flex flex-col items-center h-full justify-end group cursor-pointer" title="11:00 - 68% Renewable (Solar Peak)">
+<div class="w-full bg-secondary-container rounded-t" style="height: 68%;"></div>
+</div>
+<div class="flex flex-col items-center h-full justify-end group cursor-pointer" title="12:00 - 72% Renewable">
+<div class="w-full bg-secondary-container rounded-t" style="height: 72%;"></div>
+</div>
+<div class="flex flex-col items-center h-full justify-end group cursor-pointer" title="13:00 - 71% Renewable">
+<div class="w-full bg-secondary-container rounded-t" style="height: 71%;"></div>
+</div>
+<div class="flex flex-col items-center h-full justify-end group cursor-pointer" title="14:00 - 65% Renewable">
+<div class="w-full bg-secondary-container rounded-t" style="height: 65%;"></div>
+</div>
+<div class="flex flex-col items-center h-full justify-end group cursor-pointer" title="15:00 - 54% Renewable">
+<div class="w-full bg-surface-variant rounded-t" style="height: 54%;"></div>
+</div>
+<!-- 16:00 to 20:00 Severe Evening Peak (Original Requested @ 18:30) -->
+<div class="flex flex-col items-center h-full justify-end group cursor-pointer" title="16:00 - 39% Renewable">
+<div class="w-full bg-surface-variant rounded-t" style="height: 39%;"></div>
+</div>
+<div class="flex flex-col items-center h-full justify-end group cursor-pointer" title="17:00 - 28% Renewable (High Peak)">
+<div class="w-full bg-error/60 rounded-t" style="height: 28%;"></div>
+</div>
+<!-- 18:00 (Requested Slot) -->
+<div class="flex flex-col items-center h-full justify-end group cursor-pointer relative" title="18:00 - 24% Renewable (Requested Time - Avoided)">
+<div class="absolute -top-1 w-full flex justify-center"><span class="w-1.5 h-1.5 rounded-full bg-error"></span></div>
+<div class="w-full bg-error rounded-t" style="height: 24%;"></div>
+</div>
+<div class="flex flex-col items-center h-full justify-end group cursor-pointer" title="19:00 - 22% Renewable (Worst Strain)">
+<div class="w-full bg-error rounded-t" style="height: 22%;"></div>
+</div>
+<div class="flex flex-col items-center h-full justify-end group cursor-pointer" title="20:00 - 30% Renewable">
+<div class="w-full bg-error/70 rounded-t" style="height: 30%;"></div>
+</div>
+<!-- 21:00 to 23:00 Night Ramp (Recommended Slot @ 23:15) -->
+<div class="flex flex-col items-center h-full justify-end group cursor-pointer" title="21:00 - 48% Renewable">
+<div class="w-full bg-surface-variant rounded-t" style="height: 48%;"></div>
+</div>
+<div class="flex flex-col items-center h-full justify-end group cursor-pointer" title="22:00 - 66% Renewable">
+<div class="w-full bg-secondary-container rounded-t" style="height: 66%;"></div>
+</div>
+<!-- 23:00 (Recommended Slot) -->
+<div class="flex flex-col items-center h-full justify-end group cursor-pointer relative" title="23:00 - 82% Renewable (Recommended Optimal Window)">
+<div class="absolute -top-1 w-full flex justify-center"><span class="w-2 h-2 rounded-full bg-secondary ring-2 ring-surface"></span></div>
+<div class="w-full bg-secondary-fixed-dim rounded-t ring-1 ring-primary-container" style="height: 82%;"></div>
+</div>
+</div>
+<!-- Time Markers -->
+<div class="flex justify-between pt-2 text-label-sm font-label-sm text-on-surface-variant">
+<span>00:00 (Midnight)</span>
+<span>04:00</span>
+<span>08:00</span>
+<span>12:00 (Noon)</span>
+<span>16:00</span>
+<span class="text-error font-semibold">18:30 (Requested)</span>
+<span class="text-primary-container font-bold">23:15 (Recommended)</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Plain-Language Rationale Card ("Why This Time?") -->
+<div class="bg-surface-container-lowest border border-surface-variant rounded-xl p-space-lg">
+<div class="flex items-center gap-space-xs mb-space-md">
+<span class="material-symbols-outlined text-primary-container text-[24px]">psychology</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Why this recommendation makes sense</h3>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-space-md">
+<!-- Reason 1 -->
+<div class="p-space-md rounded-lg bg-surface-container-low border border-surface-variant flex flex-col gap-2">
+<div class="w-9 h-9 rounded bg-secondary-container flex items-center justify-center text-on-secondary-fixed">
+<span class="material-symbols-outlined text-[20px]">air</span>
+</div>
+<span class="font-title-sm text-title-sm text-on-surface">Cleaner energy available</span>
+<p class="font-body-md text-body-md text-on-surface-variant">
+            Local wind generation surges after 10 PM across the regional balancing authority, displacing thermal generators and drastically decreasing generation carbon per kilowatt.
+          </p>
+</div>
+<!-- Reason 2 -->
+<div class="p-space-md rounded-lg bg-surface-container-low border border-surface-variant flex flex-col gap-2">
+<div class="w-9 h-9 rounded bg-secondary-container flex items-center justify-center text-on-secondary-fixed">
+<span class="material-symbols-outlined text-[20px]">compress</span>
+</div>
+<span class="font-title-sm text-title-sm text-on-surface">Grid strain reduced</span>
+<p class="font-body-md text-body-md text-on-surface-variant">
+            Evening municipal HVAC and domestic cooking usage drops by 45% after 9:30 PM, releasing congested capacity on local distribution transformers.
+          </p>
+</div>
+<!-- Reason 3 -->
+<div class="p-space-md rounded-lg bg-surface-container-low border border-surface-variant flex flex-col gap-2">
+<div class="w-9 h-9 rounded bg-secondary-container flex items-center justify-center text-on-secondary-fixed">
+<span class="material-symbols-outlined text-[20px]">battery_saver</span>
+</div>
+<span class="font-title-sm text-title-sm text-on-surface">Equipment safety assured</span>
+<p class="font-body-md text-body-md text-on-surface-variant">
+            EV charging speed is fully maintained at 11.5 kW with zero battery cell thermal degradation. Your scheduled morning departure deadline remains 100% safeguarded.
+          </p>
+</div>
+</div>
+</div>
+<!-- Sticky / Bottom Decision Footer -->
+<div class="bg-surface-container-lowest border border-surface-variant rounded-xl p-space-md flex flex-wrap items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-secondary text-[26px]">schedule_send</span>
+<div>
+<span class="font-title-sm text-title-sm text-on-surface block">Ready to sync load window?</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Confirmation sends an automated start token to Charger Hub Bay #4.</span>
+</div>
+</div>
+<div class="flex flex-wrap items-center gap-space-sm">
+<!-- Secondary Action: Opt out / Run Immediately -->
+<button class="px-4 py-2.5 rounded text-title-sm font-title-sm text-on-surface hover:text-error border border-surface-variant hover:border-error transition-all" onclick="optOutImmediate()">
+          Run Immediately (Opt out)
+        </button>
+<!-- Secondary Action: Adjust Deadline -->
+<button class="px-4 py-2.5 rounded text-title-sm font-title-sm text-on-surface hover:bg-surface-container border border-surface-variant transition-all flex items-center gap-1.5" onclick="openDeadlineModal()">
+<span class="material-symbols-outlined text-[18px]">edit_calendar</span>
+          Adjust Deadline
+        </button>
+<!-- Primary Action: Accept Recommendation -->
+<button class="px-6 py-2.5 rounded text-title-sm font-title-sm bg-primary text-on-primary hover:bg-primary-container focus:ring-2 focus:ring-secondary-fixed transition-all flex items-center gap-2 shadow-sm" onclick="acceptRecommendation()">
+<span>Accept Recommended Schedule</span>
+<span class="px-2 py-0.5 rounded text-label-sm font-label-sm bg-secondary text-on-secondary font-bold">
+            +75 FC
+          </span>
+</button>
+</div>
+</div>
+</div>
+<!-- VIEW STATE: 2. ACCEPTED CONFIRMATION -->
+<div class="hidden flex flex-col gap-space-lg" id="state-accepted">
+<div class="bg-surface-container-lowest border-2 border-secondary-fixed-dim rounded-xl p-space-xl flex flex-col items-center text-center">
+<div class="w-16 h-16 rounded-full bg-secondary-container flex items-center justify-center text-secondary mb-space-md">
+<span class="material-symbols-outlined text-[36px]" style="font-variation-settings: 'FILL' 1;">task_alt</span>
+</div>
+<span class="px-3 py-1 rounded-full text-label-sm font-label-sm bg-secondary-container text-on-secondary-fixed border border-secondary-fixed-dim font-bold mb-2">
+        Schedule Dispatched &amp; Locked
+      </span>
+<h2 class="font-headline-lg text-headline-lg text-primary-container mb-space-xs">Shift Confirmed for Tonight at 11:15 PM</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-xl mb-space-lg">
+        Bay #4 smart charger will sleep until the optimal 11:15 PM wind peak window. Your 62 kWh charge will complete at 04:30 AM, well before your 06:30 AM departure.
+      </p>
+<!-- Token Transaction Receipt Card -->
+<div class="w-full max-w-lg bg-surface-container-low border border-surface-variant rounded-lg p-space-md text-left mb-space-lg">
+<div class="flex items-center justify-between pb-space-xs border-b border-surface-variant mb-space-xs">
+<span class="font-label-sm text-label-sm uppercase text-on-surface-variant">Dispatch Protocol</span>
+<span class="font-label-md text-label-md font-mono text-on-surface">DR-FLEX-2025-0842</span>
+</div>
+<div class="space-y-1.5 font-body-sm text-body-sm text-on-surface">
+<div class="flex justify-between">
+<span class="text-on-surface-variant">Estimated Carbon Avoidance</span>
+<span class="font-semibold text-secondary">9.8 kg CO₂</span>
+</div>
+<div class="flex justify-between">
+<span class="text-on-surface-variant">Projected Cost Savings</span>
+<span class="font-semibold">$4.14 USD</span>
+</div>
+<div class="flex justify-between">
+<span class="text-on-surface-variant">FlexCoins Credited to Ledger</span>
+<span class="font-bold text-primary-container">+75 FC (Pending Completion)</span>
+</div>
+</div>
+</div>
+<div class="flex flex-wrap items-center gap-space-md">
+<button class="px-5 py-2.5 bg-surface border border-surface-variant hover:border-primary-container text-on-surface font-title-sm text-title-sm rounded transition-all" onclick="setScreenState('populated')">
+          Modify Automated Schedule
+        </button>
+<button class="px-5 py-2.5 bg-primary text-on-primary font-title-sm text-title-sm rounded hover:bg-primary-container transition-all" onclick="setScreenState('empty')">
+          Back to Overview
+        </button>
+</div>
+</div>
+</div>
+<!-- VIEW STATE: 3. EMPTY / PENDING IDLE -->
+<div class="hidden flex flex-col gap-space-lg" id="state-empty">
+<div class="bg-surface-container-lowest border border-surface-variant rounded-xl p-space-xl flex flex-col items-center text-center">
+<div class="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant mb-space-md">
+<span class="material-symbols-outlined text-[36px]">energy_program_time_used</span>
+</div>
+<span class="px-3 py-1 rounded-full text-label-sm font-label-sm bg-surface-container text-on-surface-variant font-semibold mb-2">
+        Zero Active Dispatches Pending
+      </span>
+<h2 class="font-headline-lg text-headline-lg text-on-surface mb-space-xs">Grid Operating in Balanced State</h2>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-md mb-space-lg">
+        No flexible loads currently require shifting. Plug in an asset or schedule a high-power process to generate AI-backed clean power schedules.
+      </p>
+<div class="flex flex-wrap items-center gap-space-sm">
+<button class="px-5 py-2.5 bg-primary text-on-primary font-title-sm text-title-sm rounded hover:bg-primary-container transition-all flex items-center gap-2" onclick="simulateNewLoad()">
+<span class="material-symbols-outlined text-[18px]">add_circle</span>
+          Register Fleet EV or HVAC Cycle
+        </button>
+<button class="px-4 py-2.5 bg-surface border border-surface-variant hover:border-primary-container text-on-surface font-title-sm text-title-sm rounded transition-all" onclick="setScreenState('populated')">
+          Review Historic Dispatches
+        </button>
+</div>
+</div>
+<!-- Information Card Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-space-md">
+<div class="p-space-md rounded-xl bg-surface-container-lowest border border-surface-variant">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-secondary font-semibold block mb-1">Flexibility Status</span>
+<h4 class="font-title-md text-title-md text-on-surface mb-1">Automated Triggers</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Connected hardware will auto-poll node ERCOT-West whenever forecasted spot prices exceed $0.28/kWh.</p>
+</div>
+<div class="p-space-md rounded-xl bg-surface-container-lowest border border-surface-variant">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-semibold block mb-1">Monthly Yield</span>
+<h4 class="font-title-md text-title-md text-on-surface mb-1">420 FlexCoins Earned</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">You have participated in 6 clean energy shifts this month with an average offset of 14.2 kg CO₂ each.</p>
+</div>
+<div class="p-space-md rounded-xl bg-surface-container-lowest border border-surface-variant">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-semibold block mb-1">Grid Cleanliness</span>
+<h4 class="font-title-md text-title-md text-on-surface mb-1">68% Renewable Now</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Current grid condition is balanced. Normal operation without penalty is active across all facility meters.</p>
+</div>
+</div>
+</div>
+<!-- Toast Notification Overlay (Microinteraction) -->
+<div class="fixed bottom-6 right-6 transform translate-y-20 opacity-0 pointer-events-none transition-all duration-300 z-50 bg-primary-container text-on-primary px-space-md py-3 rounded-lg shadow-xl border border-secondary flex items-center gap-space-sm" id="toast">
+<span class="material-symbols-outlined text-secondary text-[22px]">check_circle</span>
+<span class="font-body-md text-body-md font-medium" id="toast-message">Action successfully recorded.</span>
+</div>
+<!-- Deadline Adjustment Modal Prototype -->
+<div class="fixed inset-0 bg-inverse-surface/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4" id="deadline-modal">
+<div class="bg-surface-container-lowest border border-surface-variant rounded-xl p-space-lg max-w-md w-full shadow-2xl flex flex-col">
+<div class="flex items-center justify-between pb-space-sm border-b border-surface-variant mb-space-md">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Adjust Target Deadline</h3>
+<button class="text-on-surface-variant hover:text-on-surface" onclick="closeDeadlineModal()">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-space-md">
+        Specify when the asset MUST be fully charged. The GreenSync optimizer will re-evaluate regional renewable curtailment curves.
+      </p>
+<div class="space-y-space-sm mb-space-lg">
+<label class="block">
+<span class="font-label-md text-label-md text-on-surface block mb-1">Required Ready Time</span>
+<input class="w-full h-10 px-3 bg-surface border border-surface-variant rounded font-body-md text-body-md focus:border-primary-container focus:outline-none text-on-surface" type="time" value="06:30"/>
+</label>
+<label class="block">
+<span class="font-label-md text-label-md text-on-surface block mb-1">Minimum Buffer Reservation</span>
+<select class="w-full h-10 px-3 bg-surface border border-surface-variant rounded font-body-md text-body-md focus:border-primary-container focus:outline-none text-on-surface">
+<option>1 Hour (Optimal savings)</option>
+<option selected="">2 Hours (Standard safety)</option>
+<option>3 Hours (Conservative)</option>
+</select>
+</label>
+</div>
+<div class="flex items-center justify-end gap-space-sm">
+<button class="px-4 py-2 border border-surface-variant rounded font-title-sm text-title-sm text-on-surface hover:bg-surface-container" onclick="closeDeadlineModal()">Cancel</button>
+<button class="px-5 py-2 bg-primary text-on-primary rounded font-title-sm text-title-sm hover:bg-primary-container" onclick="saveDeadline()">Update &amp; Re-simulate</button>
+</div>
+</div>
+</div>
+<script>
+    function setScreenState(state) {
+      // Hide all states
+      document.getElementById('state-populated').classList.add('hidden');
+      document.getElementById('state-accepted').classList.add('hidden');
+      document.getElementById('state-empty').classList.add('hidden');
+
+      // Reset tab styling
+      const tabs = ['populated', 'accepted', 'empty'];
+      tabs.forEach(t => {
+        const btn = document.getElementById('tab-' + t);
+        if (btn) {
+          btn.className = "px-space-sm py-1.5 rounded text-label-md font-label-md text-on-surface-variant hover:text-on-surface transition-all flex items-center gap-1.5";
+          const dot = btn.querySelector('span');
+          if (dot) dot.className = "w-2 h-2 rounded-full bg-surface-variant";
+        }
+      });
+
+      // Activate chosen state
+      const targetState = document.getElementById('state-' + state);
+      if (targetState) targetState.classList.remove('hidden');
+
+      const activeTab = document.getElementById('tab-' + state);
+      if (activeTab) {
+        activeTab.className = "px-space-sm py-1.5 rounded text-label-md font-label-md transition-all bg-primary text-on-primary shadow-sm flex items-center gap-1.5";
+        const dot = activeTab.querySelector('span');
+        if (dot) dot.className = "w-2 h-2 rounded-full bg-secondary-fixed";
+      }
+    }
+
+    function showToast(text) {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toast-message');
+      toastMsg.textContent = text;
+      toast.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
+      setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
+      }, 3200);
+    }
+
+    function acceptRecommendation() {
+      showToast("Dispatch confirmed: Schedule locked for 11:15 PM (+75 FC earned)");
+      setTimeout(() => {
+        setScreenState('accepted');
+      }, 700);
+    }
+
+    function optOutImmediate() {
+      showToast("Immediate charge initiated. Standard tariff applied.");
+      setTimeout(() => {
+        setScreenState('empty');
+      }, 700);
+    }
+
+    function openDeadlineModal() {
+      document.getElementById('deadline-modal').classList.remove('hidden');
+    }
+
+    function closeDeadlineModal() {
+      document.getElementById('deadline-modal').classList.add('hidden');
+    }
+
+    function saveDeadline() {
+      closeDeadlineModal();
+      showToast("Deadline revised: schedule re-verified with grid telemetry.");
+    }
+
+    function simulateNewLoad() {
+      showToast("New asset detected. Generating optimal clean window...");
+      setTimeout(() => {
+        setScreenState('populated');
+      }, 600);
+    }
+  </script>
+</div></main></div></body></html>

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 40" fill="none">
+  <rect width="32" height="32" x="4" y="4" rx="8" fill="#450C3F" />
+  <path d="M20 9L13 21H19L17 31L27 19H21L23 9H20Z" fill="#B9D175" />
+  <text x="44" y="26" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="20" font-weight="700" fill="#450C3F" letter-spacing="-0.5px">Green<tspan fill="#6B7280" font-weight="500">Sync</tspan></text>
+</svg>
