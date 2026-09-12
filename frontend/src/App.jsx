@@ -11,7 +11,8 @@ import SignUp from './pages/SignUp';
 import Dashboard from './pages/Dashboard';
 import MyLoadsDevices from './pages/MyLoadsDevices';
 import ScheduleRecommendations from './pages/ScheduleRecommendations';
-import ImpactRewards from './pages/ImpactRewards';
+import Impact from './pages/Impact';
+import Rewards from './pages/Rewards';
 import AdminGridDashboard from './pages/AdminGridDashboard';
 import ProfileSettings from './pages/ProfileSettings';
 
@@ -69,8 +70,9 @@ export default function App() {
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="my-loads-devices" element={<MyLoadsDevices />} />
               <Route path="schedule-recommendations" element={<ScheduleRecommendations />} />
-              <Route path="impact" element={<ImpactRewards />} />
-              <Route path="rewards-flexcoins" element={<ImpactRewards />} />
+              <Route path="impact" element={<Impact />} />
+              <Route path="rewards-flexcoins" element={<Rewards />} />
+              <Route path="rewards" element={<Rewards />} />
               <Route
                 path="admin-grid"
                 element={
