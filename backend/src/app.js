@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const energyRoutes = require('./routes/energyRoutes');
+const scheduleRoutes = require('./routes/scheduleRoutes');
 const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
@@ -11,6 +12,7 @@ app.use(express.json());
 
 // API Resource Routers
 app.use('/api/energy', energyRoutes);
+app.use('/api/schedule', scheduleRoutes);
 
 // Centralized Global Error Handler
 app.use(errorHandler);
