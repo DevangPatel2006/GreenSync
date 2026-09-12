@@ -14,7 +14,6 @@ const STATUS_CODE_MAP = {
 
 /**
  * Global Error Handling Middleware
- * Catches thrown errors and formats them using the response envelope.
  */
 // eslint-disable-next-line no-unused-vars
 const errorHandler = (err, req, res, next) => {
@@ -44,7 +43,7 @@ const errorHandler = (err, req, res, next) => {
     code = STATUS_CODE_MAP[statusCode] || 'SERVER_ERROR';
   }
 
-  return sendErrorResponse(res, code, message, statusCode);
+  return sendErrorResponse(res, message, statusCode, code);
 };
 
 module.exports = errorHandler;

@@ -14,7 +14,7 @@ const ALLOWED_DEVICE_TYPES = [
 const ALLOWED_FLEXIBILITIES = ['low', 'medium', 'high'];
 const ALLOWED_PRIORITIES = ['low', 'normal', 'high'];
 const ALLOWED_CURRENT_STATES = ['idle', 'running', 'completed'];
-const ALLOWED_STATUSES = ['active', 'disabled'];
+const ALLOWED_STATUSES = ['active', 'disabled', 'paused', 'completed', 'inactive'];
 
 /**
  * Generic validation middleware wrapper

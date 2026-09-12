@@ -25,9 +25,11 @@ const auth = (req, res, next) => {
 
     // Attach decoded user to request object
     req.user = {
-      id: payload.sub,
-      sub: payload.sub,
-      role: payload.role,
+      ...payload,
+      id: payload.sub || payload.id || payload._id,
+      _id: payload.sub || payload.id || payload._id,
+      sub: payload.sub || payload.id || payload._id,
+      role: payload.role || 'user',
     };
 
     return next();

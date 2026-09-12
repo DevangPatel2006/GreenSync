@@ -1,23 +1,17 @@
 const path = require('path');
-const dotenv = require('dotenv');
-
-// Load environment variables
-dotenv.config();
-dotenv.config({ path: path.resolve(__dirname, '../.env') });
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 
 const app = require('./app');
 const connectDB = require('./config/db');
 const logger = require('./utils/logger');
 
-const PORT = process.env.PORT || 5000;
-
-// Connect to Database
+// Connect Database
 connectDB();
 
-// Start HTTP Server
+const PORT = process.env.PORT || 5000;
+
 const server = app.listen(PORT, () => {
-  logger.info(`GreenSync backend server running on port ${PORT}`);
-  logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
+  logger.info(`GreenSync backend server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
 });
 
 // Handle unhandled promise rejections

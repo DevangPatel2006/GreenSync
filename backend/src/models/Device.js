@@ -42,7 +42,7 @@ const deviceSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['active', 'disabled'],
+      enum: ['active', 'disabled', 'paused', 'completed', 'inactive'],
       default: 'active',
     },
   },

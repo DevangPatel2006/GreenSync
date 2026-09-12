@@ -1,11 +1,11 @@
 {
   "name": "greensync-backend",
   "version": "1.0.0",
-  "description": "GreenSync backend API service",
+  "description": "GreenSync Backend Service",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
-    "dev": "nodemon src/server.js",
+    "dev": "node src/server.js",
     "test": "node --test"
   },
   "dependencies": {

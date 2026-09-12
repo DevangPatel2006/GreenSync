@@ -24,12 +24,27 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response Interceptor: Centralized error handling
+// Response Interceptor: Centralized response envelope unboxing & error handling
 api.interceptors.response.use(
-  (response) => response.data,
+  (response) => {
+    // If backend uses standard envelope { success, data, message }, unwrap data
+    if (response.data && response.data.success !== undefined && response.data.data !== undefined) {
+      return response.data.data;
+    }
+    return response.data;
+  },
   (error) => {
-    const message = error.response?.data?.message || error.message || 'An error occurred';
-    return Promise.reject(new Error(message));
+    // Expired token (401 on a protected call) -> Clear credentials per Section 28
+    if (error.response?.status === 401) {
+      const pathname = window.location.pathname;
+      const isAuthRoute = pathname.includes('sign-in') || pathname.includes('login') ||
+                          pathname.includes('sign-up') || pathname.includes('register');
+      if (!isAuthRoute) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('cached_user');
+      }
+    }
+    return Promise.reject(error);
   }
 );
 

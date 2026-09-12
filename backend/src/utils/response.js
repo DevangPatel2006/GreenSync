@@ -11,7 +11,7 @@
 /**
  * Format and send a standardized success response.
  * @param {import('express').Response} res
- * @param {object} [data={}]
+ * @param {any} [data={}]
  * @param {string} [message]
  * @param {number} [statusCode=200]
  */
@@ -30,31 +30,47 @@ const success = (res, data = {}, message, statusCode = 200) => {
 
 /**
  * Format and send a standardized error response.
- * @param {import('express').Response} res
- * @param {string|object} [code='SERVER_ERROR']
- * @param {string|number} [message='Internal Server Error']
- * @param {number|string} [statusCode=500]
+ * Polymorphic signature supporting both:
+ * 1. error(res, message, statusCode, code, extra)
+ * 2. error(res, code, message, statusCode)
  */
-const error = (res, code = 'SERVER_ERROR', message = 'Internal Server Error', statusCode = 500) => {
-  let errorCode = code;
-  let errorMessage = message;
-  let status = statusCode;
+const error = (res, arg1 = 'Error occurred', arg2 = 500, arg3 = 'SERVER_ERROR', extra = {}) => {
+  let message = 'Error occurred';
+  let statusCode = 500;
+  let code = 'SERVER_ERROR';
+  let extraObj = {};
 
-  if (typeof code === 'object' && code !== null) {
-    errorCode = code.code || 'SERVER_ERROR';
-    errorMessage = code.message || 'Internal Server Error';
-    status = typeof message === 'number' ? message : 500;
-  } else if (typeof message === 'number') {
-    status = message;
-    errorMessage = code;
-    errorCode = typeof statusCode === 'string' ? statusCode : 'SERVER_ERROR';
+  if (typeof arg1 === 'object' && arg1 !== null) {
+    code = arg1.code || 'SERVER_ERROR';
+    message = arg1.message || 'Error occurred';
+    statusCode = typeof arg2 === 'number' ? arg2 : 500;
+    extraObj = { ...arg1 };
+    delete extraObj.code;
+    delete extraObj.message;
+  } else if (typeof arg1 === 'string' && typeof arg2 === 'string' && typeof arg3 === 'number') {
+    // error(res, code, message, statusCode)
+    code = arg1;
+    message = arg2;
+    statusCode = arg3;
+    extraObj = typeof extra === 'object' && extra !== null ? { ...extra } : {};
+  } else if (typeof arg1 === 'string' && typeof arg2 === 'number') {
+    // error(res, message, statusCode, code, extra)
+    message = arg1;
+    statusCode = arg2;
+    code = typeof arg3 === 'string' ? arg3 : (arg3 && arg3.code) || 'SERVER_ERROR';
+    extraObj = typeof extra === 'object' && extra !== null ? { ...extra } : {};
+  } else if (typeof arg1 === 'string') {
+    message = arg1;
+    code = typeof arg2 === 'string' ? arg2 : 'SERVER_ERROR';
+    statusCode = typeof arg3 === 'number' ? arg3 : 500;
   }
 
-  return res.status(status).json({
+  return res.status(statusCode).json({
     success: false,
     error: {
-      code: errorCode,
-      message: errorMessage,
+      code,
+      message,
+      ...extraObj,
     },
   });
 };
