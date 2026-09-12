@@ -19,6 +19,13 @@ router.post('/recommend', auth, scheduleController.recommend);
 router.post('/:id/accept', auth, scheduleController.accept);
 
 /**
+ * @route   POST /api/schedule/:id/complete
+ * @desc    Complete an accepted schedule and trigger FlexCoin reward
+ * @access  Private (Owner only)
+ */
+router.post('/:id/complete', auth, scheduleController.complete);
+
+/**
  * @route   GET /api/schedule/history
  * @desc    Get user's schedule history
  * @access  Private (Authenticated user)

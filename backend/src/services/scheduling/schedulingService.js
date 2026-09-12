@@ -5,6 +5,7 @@ const schedulingConfig = require('../../config/schedulingConfig');
 const { validateSchedulingRequest, recommendSchedule: runEngineRecommendation } = require('./engine');
 const { estimateCo2AvoidedKg } = require('./co2Model');
 const logger = require('../../utils/logger');
+const rewardsService = require('../rewards/rewardsService');
 
 /**
  * Custom typed error class for scheduling service exceptions.
@@ -153,6 +154,52 @@ async function acceptSchedule(userId, scheduleId) {
 }
 
 /**
+ * Completes an accepted schedule, transitioning its status to 'completed'
+ * and granting calculated FlexCoins via rewardsService.
+ * 
+ * @param {string} userId - Requesting user ID (from JWT auth)
+ * @param {string} scheduleId - Target schedule ID
+ * @returns {Promise<object>} Updated Schedule document with flexCoinsEarned populated
+ * @throws {SchedulingServiceError} On schedule not found (404), ownership violation (403), or invalid status (400)
+ */
+async function completeSchedule(userId, scheduleId) {
+  const schedule = await Schedule.findById(scheduleId);
+  if (!schedule) {
+    throw new SchedulingServiceError(`Schedule with id ${scheduleId} not found`, 'NOT_FOUND', 404);
+  }
+
+  // Ownership verification
+  if (schedule.userId.toString() !== userId.toString()) {
+    throw new SchedulingServiceError('Access denied: Schedule belongs to another user', 'FORBIDDEN', 403);
+  }
+
+  // Transition validation: Only 'accepted' schedules can be completed
+  // (Idempotency: if already completed, delegate to rewardsService which handles idempotency)
+  if (schedule.status !== 'accepted') {
+    if (schedule.status === 'completed') {
+      const existingTx = await rewardsService.grantRewardForSchedule(schedule);
+      schedule.flexCoinsEarned = existingTx.coins;
+      return schedule;
+    }
+    throw new SchedulingServiceError(
+      `Cannot complete schedule with status "${schedule.status}". Only accepted schedules can be completed.`,
+      'VALIDATION_ERROR',
+      400
+    );
+  }
+
+  schedule.status = 'completed';
+  await schedule.save();
+
+  // Call rewardsService.grantRewardForSchedule
+  const rewardTx = await rewardsService.grantRewardForSchedule(schedule);
+  schedule.flexCoinsEarned = rewardTx.coins;
+  await schedule.save();
+
+  return schedule;
+}
+
+/**
  * Retrieves full scheduling history for the authenticated user, newest first.
  * 
  * @param {string} userId - Requesting user ID
@@ -167,6 +214,7 @@ async function getScheduleHistory(userId) {
 module.exports = {
   recommendSchedule,
   acceptSchedule,
+  completeSchedule,
   getScheduleHistory,
   SchedulingServiceError,
 };

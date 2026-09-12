@@ -95,8 +95,40 @@ async function history(req, res) {
   }
 }
 
+/**
+ * Completes an accepted schedule, locking it into execution history and granting FlexCoins.
+ * 
+ * @route   POST /api/schedule/:id/complete
+ * @access  Private (Owner only)
+ * @param {import('express').Request} req - Express request with req.params.id
+ * @param {import('express').Response} res - Express response
+ */
+async function complete(req, res) {
+  const scheduleId = req.params.id;
+
+  if (!scheduleId || typeof scheduleId !== 'string' || scheduleId.trim() === '') {
+    return error(res, 'Schedule ID is required in route parameter', 400, 'VALIDATION_ERROR');
+  }
+
+  try {
+    const userId = req.user.id || req.user._id;
+    const completedSchedule = await schedulingService.completeSchedule(userId, scheduleId.trim());
+
+    return success(res, completedSchedule, 'Schedule completed and FlexCoins granted in Impact Simulation successfully', 200);
+  } catch (err) {
+    if (err.statusCode && err.code) {
+      return error(res, err.message, err.statusCode, err.code);
+    }
+
+    logger.error(`[scheduleController.complete] Unexpected error: ${err.message}`, err);
+    return error(res, 'Internal server error occurred while completing schedule', 500, 'SERVER_ERROR');
+  }
+}
+
 module.exports = {
   recommend,
   accept,
+  complete,
   history,
 };
+
