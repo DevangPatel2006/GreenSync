@@ -5,12 +5,13 @@ import api from '../services/api';
 
 export default function MyLoadsDevices() {
   const location = useLocation();
-  const { devices, loading, error, refetch, addDevice, deleteDevice, toggleDevice } = useDevices();
+  const { devices, loading, error, refetch, addDevice, updateDevice, deleteDevice, toggleDevice } = useDevices();
 
   const [viewState, setViewState] = useState('devices');
   const [filterCategory, setFilterCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [editingDeviceId, setEditingDeviceId] = useState(null);
   const [toast, setToast] = useState(null);
 
   // Form State adhering strictly to API contract:
@@ -52,9 +53,50 @@ export default function MyLoadsDevices() {
     loadExtraStats();
   }, []);
 
+  const handleOpenAddDrawer = () => {
+    setEditingDeviceId(null);
+    setFormData({
+      name: '',
+      type: 'ev_charging',
+      energyRequired: '24.0',
+      earliestStart: '20:00',
+      deadline: '06:30',
+      flexibility: 'high',
+      priority: 'normal',
+    });
+    setFormErrors({});
+    setDrawerOpen(true);
+  };
+
+  const handleEdit = (device) => {
+    const devId = device.id || device._id;
+    setEditingDeviceId(devId);
+    const formatTime = (val, fallback) => {
+      if (!val) return fallback;
+      if (/^\d{1,2}:\d{2}$/.test(String(val).trim())) return String(val).trim();
+      const d = new Date(val);
+      if (isNaN(d.getTime())) return fallback;
+      const hours = String(d.getHours()).padStart(2, '0');
+      const mins = String(d.getMinutes()).padStart(2, '0');
+      return `${hours}:${mins}`;
+    };
+
+    setFormData({
+      name: device.name || '',
+      type: device.type || 'ev_charging',
+      energyRequired: String(device.energyRequired || '24.0'),
+      earliestStart: formatTime(device.earliestStart, '20:00'),
+      deadline: formatTime(device.deadline, '06:30'),
+      flexibility: device.flexibility || 'high',
+      priority: device.priority || 'normal',
+    });
+    setFormErrors({});
+    setDrawerOpen(true);
+  };
+
   useEffect(() => {
     if (location.search.includes('add=1')) {
-      setDrawerOpen(true);
+      handleOpenAddDrawer();
     }
   }, [location]);
 
@@ -113,22 +155,37 @@ export default function MyLoadsDevices() {
         deadlineIso = d.toISOString();
       }
 
-      await addDevice({
-        name: formData.name.trim(),
-        type: formData.type,
-        energyRequired: parseFloat(formData.energyRequired),
-        earliestStart: startIso,
-        deadline: deadlineIso,
-        flexibility: formData.flexibility,
-        priority: formData.priority,
-        power: `${(parseFloat(formData.energyRequired) / 4).toFixed(1)} kW`,
-        shifted: '0.0 kWh shifted',
-        coins: '+0 FC',
-        desc: `Type: ${formData.type.replace('_', ' ')} • Deadline: ${formData.deadline} • Priority: ${formData.priority}`,
-      });
+      if (editingDeviceId) {
+        await updateDevice(editingDeviceId, {
+          name: formData.name.trim(),
+          type: formData.type,
+          energyRequired: parseFloat(formData.energyRequired),
+          earliestStart: startIso,
+          deadline: deadlineIso,
+          flexibility: formData.flexibility,
+          priority: formData.priority,
+          desc: `Type: ${formData.type.replace('_', ' ')} • Deadline: ${formData.deadline} • Priority: ${formData.priority}`,
+        });
+        showToastNotification('Device Updated', `${formData.name} updated successfully.`);
+      } else {
+        await addDevice({
+          name: formData.name.trim(),
+          type: formData.type,
+          energyRequired: parseFloat(formData.energyRequired),
+          earliestStart: startIso,
+          deadline: deadlineIso,
+          flexibility: formData.flexibility,
+          priority: formData.priority,
+          power: `${(parseFloat(formData.energyRequired) / 4).toFixed(1)} kW`,
+          shifted: '0.0 kWh shifted',
+          coins: '+0 FC',
+          desc: `Type: ${formData.type.replace('_', ' ')} • Deadline: ${formData.deadline} • Priority: ${formData.priority}`,
+        });
+        showToastNotification('Device Configured', `${formData.name} added to auto-dispatch mesh.`);
+      }
 
       setDrawerOpen(false);
-      showToastNotification('Device Configured', `${formData.name} added to auto-dispatch mesh.`);
+      setEditingDeviceId(null);
       setFormData({
         name: '',
         type: 'ev_charging',
@@ -267,7 +324,7 @@ export default function MyLoadsDevices() {
 
           <button
             className="bg-primary-container hover:bg-primary text-on-primary font-title-sm text-title-sm px-space-lg py-2.5 rounded-lg flex items-center gap-space-xs shadow-sm transition-colors"
-            onClick={() => setDrawerOpen(true)}
+            onClick={handleOpenAddDrawer}
           >
             <span className="material-symbols-outlined text-[20px]">add</span>
             <span>+ Add Flexible Load</span>
@@ -409,7 +466,7 @@ export default function MyLoadsDevices() {
           </p>
           <button
             className="bg-primary-container text-on-primary font-title-sm text-title-sm px-space-lg py-2.5 rounded-lg flex items-center gap-space-xs"
-            onClick={() => setDrawerOpen(true)}
+            onClick={handleOpenAddDrawer}
           >
             <span className="material-symbols-outlined text-[20px]">add</span>
             <span>+ Add First Device</span>
@@ -485,6 +542,14 @@ export default function MyLoadsDevices() {
                       </label>
 
                       <button
+                        className="w-9 h-9 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-primary-container transition-colors"
+                        onClick={() => handleEdit(device)}
+                        title="Edit Device"
+                      >
+                        <span className="material-symbols-outlined text-[20px]">edit</span>
+                      </button>
+
+                      <button
                         className="w-9 h-9 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-error transition-colors"
                         onClick={() => handleDelete(devId, device.name)}
                         title="Delete Device"
@@ -511,8 +576,12 @@ export default function MyLoadsDevices() {
             <div>
               <div className="flex items-center justify-between pb-space-md border-b border-surface-variant mb-space-lg">
                 <div className="flex items-center gap-space-xs">
-                  <span className="material-symbols-outlined text-secondary text-[24px]">power</span>
-                  <h2 className="font-headline-sm text-headline-sm text-primary-container">Add Flexible Load</h2>
+                  <span className="material-symbols-outlined text-secondary text-[24px]">
+                    {editingDeviceId ? 'edit' : 'power'}
+                  </span>
+                  <h2 className="font-headline-sm text-headline-sm text-primary-container">
+                    {editingDeviceId ? 'Edit Flexible Load' : 'Add Flexible Load'}
+                  </h2>
                 </div>
                 <button
                   className="w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-surface-container"
@@ -698,7 +767,11 @@ export default function MyLoadsDevices() {
                     className="bg-primary-container hover:bg-primary text-on-primary font-title-sm text-title-sm px-space-lg py-2.5 rounded-lg shadow-sm transition-colors flex items-center gap-space-xs"
                   >
                     <span className="material-symbols-outlined text-[18px]">check_circle</span>
-                    <span>{isSubmitting ? 'Saving...' : 'Save Flexible Load'}</span>
+                    <span>
+                      {isSubmitting
+                        ? (editingDeviceId ? 'Updating...' : 'Saving...')
+                        : (editingDeviceId ? 'Update Flexible Load' : 'Save Flexible Load')}
+                    </span>
                   </button>
                 </div>
               </form>

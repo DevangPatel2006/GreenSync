@@ -5,7 +5,6 @@ import useDevices from '../hooks/useDevices';
 export default function Dashboard() {
   const { devices, loading: devicesLoading, toggleDevice } = useDevices();
 
-  const [dashboardState, setDashboardState] = useState('live');
   const [isAccepted, setIsAccepted] = useState(false);
   const [toastMessage, setToastMessage] = useState(null);
   const [loadingTelemetry, setLoadingTelemetry] = useState(true);
@@ -164,62 +163,10 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* State Switcher Header Utility */}
-      <div className="flex flex-wrap items-center justify-between pb-space-lg border-b border-surface-variant gap-space-sm mb-space-lg">
-        <div>
-          <div className="flex items-center gap-space-xs text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider">
-            <span>Platform Telemetry</span>
-            <span>•</span>
-            <span className="text-secondary font-title-sm">Operational View</span>
-          </div>
-          <h1 className="font-headline-md text-headline-md text-primary-container mt-0.5 tracking-tight">
-            Demand Flexibility Dispatch
-          </h1>
-        </div>
-
-        {/* State Simulator Toggle Bar */}
-        <div className="flex items-center gap-1 p-1 bg-surface-container rounded-lg border border-surface-variant">
-          <span className="font-label-sm text-label-sm text-on-surface-variant px-2 hidden sm:inline">Preview State:</span>
-          <button
-            className={`px-3 py-1 text-label-md font-label-md rounded transition-all ${
-              dashboardState === 'live'
-                ? 'bg-surface-container-lowest text-primary-container shadow-sm border border-surface-variant font-semibold'
-                : 'text-on-surface-variant hover:text-on-surface'
-            }`}
-            onClick={() => setDashboardState('live')}
-            type="button"
-          >
-            Live Data
-          </button>
-          <button
-            className={`px-3 py-1 text-label-md font-label-md rounded transition-all ${
-              dashboardState === 'loading'
-                ? 'bg-surface-container-lowest text-primary-container shadow-sm border border-surface-variant font-semibold'
-                : 'text-on-surface-variant hover:text-on-surface'
-            }`}
-            onClick={() => setDashboardState('loading')}
-            type="button"
-          >
-            Loading state
-          </button>
-          <button
-            className={`px-3 py-1 text-label-md font-label-md rounded transition-all ${
-              dashboardState === 'empty'
-                ? 'bg-surface-container-lowest text-primary-container shadow-sm border border-surface-variant font-semibold'
-                : 'text-on-surface-variant hover:text-on-surface'
-            }`}
-            onClick={() => setDashboardState('empty')}
-            type="button"
-          >
-            Empty state
-          </button>
-        </div>
-      </div>
-
       {/* 1. TOP BANNER / GRID CONDITION */}
       <div
         className={`w-full bg-surface-container-lowest rounded-xl border border-surface-variant p-space-md mb-space-lg transition-all ${
-          dashboardState === 'loading' || isLoading ? 'opacity-50' : 'opacity-100'
+          isLoading ? 'opacity-50' : 'opacity-100'
         }`}
       >
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-space-md">
@@ -267,7 +214,7 @@ export default function Dashboard() {
       </div>
 
       {/* LOADING OVERLAY WRAPPER */}
-      {(dashboardState === 'loading' || (isLoading && dashboardState === 'live')) && (
+      {isLoading && (
         <div className="flex flex-col gap-space-lg animate-pulse w-full">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
             <div className="h-28 bg-surface-container-high rounded-xl"></div>
@@ -282,8 +229,8 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* EMPTY STATE WRAPPER (Shown when simulated or when real user has 0 devices) */}
-      {!isLoading && (dashboardState === 'empty' || (dashboardState === 'live' && hasZeroActivity)) && (
+      {/* EMPTY STATE WRAPPER (Shown when real user has 0 devices) */}
+      {!isLoading && hasZeroActivity && (
         <div className="flex flex-col items-center justify-center p-space-xl bg-surface-container-lowest rounded-xl border border-surface-variant text-center w-full my-space-md">
           <div className="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center mb-space-md text-on-surface-variant">
             <span className="material-symbols-outlined text-[32px]">electric_bolt</span>
@@ -305,7 +252,7 @@ export default function Dashboard() {
       )}
 
       {/* POPULATED DASHBOARD VIEW (Shown when user has data and not in loading/empty state) */}
-      {!isLoading && dashboardState !== 'loading' && (dashboardState === 'live' && !hasZeroActivity) && (
+      {!isLoading && !hasZeroActivity && (
         <div className="flex flex-col gap-space-lg w-full">
           {/* 2. STAT CARDS GRID (4 Cards) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">

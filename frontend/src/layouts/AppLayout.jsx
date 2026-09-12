@@ -4,12 +4,20 @@ import useAuth from '../hooks/useAuth';
 
 export default function AppLayout() {
   const { user } = useAuth();
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const toggleMenu = () => {
+    if (window.innerWidth >= 1024) {
+      setSidebarOpen((prev) => !prev);
+    } else {
+      setMobileMenuOpen((prev) => !prev);
+    }
+  };
 
   const navItems = [
     { label: 'Dashboard', path: '/dashboard', icon: 'grid_view' },
     { label: 'My Loads / Devices', path: '/my-loads-devices', icon: 'devices' },
-    { label: 'Add Flexible Load', path: '/my-loads-devices?add=1', icon: 'add_circle' },
     { label: 'Schedule & Recommendations', path: '/schedule-recommendations', icon: 'calendar_clock' },
     { label: 'Impact', path: '/impact', icon: 'energy_savings_leaf' },
     { label: 'Rewards & FlexCoins', path: '/rewards-flexcoins', icon: 'monetization_on' },
@@ -31,51 +39,47 @@ export default function AppLayout() {
       <header className="fixed top-0 left-0 right-0 z-50 bg-surface-container-lowest border-b border-surface-variant">
         <div className="h-16 w-full px-gutter flex items-center justify-between">
           <div className="flex items-center gap-space-sm sm:gap-space-md">
-            {/* Mobile Hamburger Toggle */}
+            {/* Menu On/Off Toggle Button */}
             <button
               type="button"
-              className="lg:hidden w-9 h-9 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="w-10 h-10 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors cursor-pointer"
+              onClick={toggleMenu}
               aria-label="Toggle Navigation Menu"
+              title="Toggle Menu"
             >
               <span className="material-symbols-outlined text-[24px]">
-                {mobileMenuOpen ? 'close' : 'menu'}
+                {sidebarOpen ? 'menu_open' : 'menu'}
               </span>
             </button>
 
-            <Link to="/dashboard" className="flex items-center gap-space-xs">
-              <svg className="h-8 w-auto object-contain" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 40" fill="none">
-                <rect width="32" height="32" x="4" y="4" rx="8" fill="#450C3F" />
-                <path d="M20 9L13 21H19L17 31L27 19H21L23 9H20Z" fill="#B9D175" />
-                <text x="44" y="26" fontFamily="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" fontSize="20" fontWeight="700" fill="#450C3F" letterSpacing="-0.5px">
-                  Green<tspan fill="#6B7280" fontWeight="500">Sync</tspan>
-                </text>
-              </svg>
-              <span className="font-headline-sm text-headline-sm text-primary-container tracking-tight hidden sm:inline">GreenSync</span>
+            <Link to="/dashboard" className="flex items-center gap-2.5 group">
+              <div className="w-10 h-10 rounded-xl bg-[#450C3F] flex items-center justify-center shrink-0 shadow-sm">
+                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M13 2L4 14H11L9 22L20 10H13L15 2H13Z" fill="#B9D175" />
+                </svg>
+              </div>
+              <span className="text-2xl sm:text-[26px] font-extrabold tracking-tight text-[#450C3F]">
+                Green<span className="text-[#6B7280] font-semibold">Sync</span>
+              </span>
             </Link>
           </div>
 
           <div className="flex items-center gap-space-md sm:gap-space-lg">
-            <div className="hidden sm:flex items-center gap-space-xs px-3 py-1 rounded-full bg-secondary-container text-on-secondary-fixed border border-secondary-fixed-dim">
-              <span className="w-2 h-2 rounded-full bg-secondary inline-block animate-pulse"></span>
-              <span className="font-label-md text-label-md">Grid Status: Balanced • 68% Renewable</span>
-            </div>
-
             <div className="flex items-center gap-space-sm">
               <button
-                className="w-9 h-9 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors"
+                className="w-10 h-10 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors"
                 type="button"
                 aria-label="Notifications"
               >
-                <span className="material-symbols-outlined text-[20px]">notifications</span>
+                <span className="material-symbols-outlined text-[22px]">notifications</span>
               </button>
-              <div className="h-5 w-[1px] bg-surface-variant"></div>
-              <Link to="/profile-settings" className="flex items-center gap-space-sm pl-space-xs hover:opacity-90 transition-opacity">
-                <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-on-primary font-bold text-label-sm">
-                  {user?.name ? user.name.slice(0, 2).toUpperCase() : 'U'}
+              <div className="h-6 w-[1px] bg-surface-variant"></div>
+              <Link to="/profile-settings" className="flex items-center gap-2.5 pl-space-xs hover:opacity-90 transition-opacity">
+                <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-on-primary font-bold text-label-md shadow-sm">
+                  {user?.name ? user.name.slice(0, 2).toUpperCase() : 'AU'}
                 </div>
                 <div className="hidden md:flex flex-col text-left">
-                  <span className="font-label-md text-label-md text-on-surface leading-tight">
+                  <span className="font-title-sm text-body-md font-semibold text-on-surface leading-tight">
                     {user?.name || 'Alex Mercer'}
                   </span>
                   <span className="font-label-sm text-label-sm text-on-surface-variant leading-tight capitalize">
@@ -89,7 +93,7 @@ export default function AppLayout() {
       </header>
 
       {/* Left Navigation Sidebar (Desktop) */}
-      <aside className="hidden lg:flex fixed left-0 top-16 bottom-0 w-64 bg-surface-container-lowest border-r border-surface-variant z-40 flex-col justify-between overflow-y-auto">
+      <aside className={`${sidebarOpen ? 'lg:flex' : 'lg:hidden'} hidden fixed left-0 top-16 bottom-0 w-64 bg-surface-container-lowest border-r border-surface-variant z-40 flex-col justify-between overflow-y-auto transition-all`}>
         <div className="p-space-md">
           <div className="px-space-sm py-space-xs mb-space-sm text-label-sm font-label-sm uppercase tracking-wider text-on-surface-variant">
             Navigation
@@ -114,15 +118,7 @@ export default function AppLayout() {
           </nav>
         </div>
 
-        <div className="p-space-md border-t border-surface-variant bg-surface-container-low">
-          <div className="flex items-center justify-between">
-            <div className="flex flex-col">
-              <span className="font-label-sm text-label-sm text-on-surface-variant">Active Flex Capacity</span>
-              <span className="font-title-sm text-title-sm text-primary-container">142.8 kW</span>
-            </div>
-            <span className="material-symbols-outlined text-secondary text-[22px]">bolt</span>
-          </div>
-        </div>
+        
       </aside>
 
       {/* Mobile Drawer (Visible on < 1024px when hamburger toggled) */}
@@ -171,8 +167,8 @@ export default function AppLayout() {
       )}
 
       {/* Main Content Area */}
-      <div className="lg:pl-64 pl-0 pb-16 sm:pb-0">
-        <main className="w-full min-h-[calc(100vh-4rem)] pt-16 px-space-md sm:px-gutter py-space-lg bg-surface">
+      <div className={`${sidebarOpen ? 'lg:pl-64' : 'lg:pl-0'} pl-0 pb-16 sm:pb-0 transition-all`}>
+        <main className="w-full min-h-[calc(100vh-4rem)] pt-24 px-space-md sm:px-gutter pb-space-xl bg-surface">
           <Outlet />
         </main>
       </div>
