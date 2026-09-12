@@ -31,9 +31,9 @@ async function runSmokeTest() {
 
   // Seed user records (User 1: regular, User 2: regular, Admin: admin role)
   await User.create([
-    { _id: user1Id, email: 'user1@greensync.local', role: 'user', flexCoins: 0, status: 'active' },
-    { _id: user2Id, email: 'user2@greensync.local', role: 'user', flexCoins: 0, status: 'active' },
-    { _id: adminId, email: 'admin@greensync.local', role: 'admin', flexCoins: 0, status: 'active' },
+    { _id: user1Id, name: 'Test User 1', passwordHash: 'mockhash123', email: 'user1@greensync.local', role: 'user', flexCoins: 0, status: 'active' },
+    { _id: user2Id, name: 'Test User 2', passwordHash: 'mockhash123', email: 'user2@greensync.local', role: 'user', flexCoins: 0, status: 'active' },
+    { _id: adminId, name: 'Test Admin', passwordHash: 'mockhash123', email: 'admin@greensync.local', role: 'admin', flexCoins: 0, status: 'active' },
   ]);
 
   const server = http.createServer(app);
