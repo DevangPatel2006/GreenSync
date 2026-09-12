@@ -1,35 +1,45 @@
 import React from 'react';
-import { Navigate, Outlet } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import useAuth from '../hooks/useAuth';
 
-export default function ProtectedRoute({ requireAdmin = false, publicOnly = false, children }) {
-  const { isAuthenticated, user, loading } = useAuth();
+export function ProtectedRoute({ children, requireAdmin = false }) {
+  const { user, isAuthenticated, loading } = useAuth();
+  const location = useLocation();
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-surface flex flex-col items-center justify-center p-gutter">
-        <div className="flex flex-col items-center gap-space-md animate-pulse">
-          <div className="w-12 h-12 rounded-xl bg-surface-container-high"></div>
-          <div className="h-4 w-32 bg-surface-container-high rounded"></div>
+      <div className="min-h-screen bg-surface flex items-center justify-center">
+        <div className="flex flex-col items-center gap-space-sm text-on-surface-variant">
+          <span className="material-symbols-outlined text-[32px] text-primary-container animate-spin">
+            progress_activity
+          </span>
+          <span className="font-label-md text-label-md">Loading GreenSync...</span>
         </div>
       </div>
     );
   }
 
-  // Public-only pages (e.g. /sign-in, /sign-up) redirect to /dashboard if logged in
-  if (publicOnly && isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
+  if (!isAuthenticated) {
+    return <Navigate to="/sign-in" state={{ from: location }} replace />;
   }
 
-  // Protected pages redirect to /sign-in if not logged in
-  if (!publicOnly && !isAuthenticated) {
-    return <Navigate to="/sign-in" replace />;
-  }
-
-  // Admin-only route guard
   if (requireAdmin && user?.role !== 'admin') {
     return <Navigate to="/dashboard" replace />;
   }
 
-  return children ? children : <Outlet />;
+  return children;
+}
+
+export function PublicOnlyRoute({ children }) {
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return null;
+  }
+
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return children;
 }

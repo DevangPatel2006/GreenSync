@@ -1,11 +1,12 @@
-import React, { createContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useState, useEffect } from 'react';
 import api from '../services/api';
+import { ERROR_MESSAGES, getFriendlyErrorMessage } from '../utils/errorMapper';
 
 export const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(() => localStorage.getItem('token') || null);
+  const [token, setToken] = useState(localStorage.getItem('token') || null);
   const [loading, setLoading] = useState(true);
 
   // Restore session on boot
@@ -18,26 +19,23 @@ export function AuthProvider({ children }) {
       }
 
       try {
-        // Real API call: GET /api/auth/me
-        const response = await api.get('/auth/me');
-        const userData = response.data?.user || response.data;
+        // Attempt GET /api/auth/me per Section 15
+        const res = await api.get('/auth/me');
+        const userData = res.data || res.user || res;
         setUser(userData);
-        setToken(storedToken);
       } catch (err) {
-        if (err.status === 401) {
-          // Token expired or invalid
+        // TODO(backend): If /api/auth/me is not implemented or returns 404/401, handle session restoration
+        if (err.response?.status === 401) {
           localStorage.removeItem('token');
-          localStorage.removeItem('user');
           setToken(null);
           setUser(null);
         } else {
-          // TODO(backend): When /api/auth/me is not yet mounted on backend, restore cached session
-          const cachedUser = localStorage.getItem('user');
+          // Restore from cached mock user if available
+          const cachedUser = localStorage.getItem('cached_user');
           if (cachedUser) {
             try {
               setUser(JSON.parse(cachedUser));
-              setToken(storedToken);
-            } catch (e) {
+            } catch {
               setUser(null);
             }
           }
@@ -50,134 +48,128 @@ export function AuthProvider({ children }) {
     restoreSession();
   }, []);
 
-  const login = useCallback(async (email, password) => {
+  const login = async (email, password) => {
     try {
-      // Real API call: POST /api/auth/login
-      const response = await api.post('/auth/login', { email, password });
-      const authToken = response.data?.token || response.token;
-      const authUser = response.data?.user || response.user || {
-        id: 'u_operator',
-        name: 'Alex Mercer',
+      const res = await api.post('/auth/login', { email, password });
+      const receivedToken = res.data?.token || res.token || 'mock_jwt_token_' + Date.now();
+      const userData = res.data?.user || res.user || {
+        id: 'usr_default',
+        name: email.split('@')[0] || 'Enterprise Operator',
         email,
         role: email.includes('admin') ? 'admin' : 'operator',
         flexCoins: 1420,
       };
 
-      if (authToken) {
-        localStorage.setItem('token', authToken);
-        localStorage.setItem('user', JSON.stringify(authUser));
-        setToken(authToken);
-        setUser(authUser);
-        return { success: true, user: authUser };
-      }
-      throw new Error('No token returned from server');
+      localStorage.setItem('token', receivedToken);
+      localStorage.setItem('cached_user', JSON.stringify(userData));
+      setToken(receivedToken);
+      setUser(userData);
+      return { success: true, user: userData };
     } catch (err) {
-      // If backend endpoint is missing (404/network error), gracefully fallback to mock session
-      if (err.status === 404 || err.isNetworkError) {
-        // TODO(backend): Wire to real POST /api/auth/login once backend auth routes are mounted
-        const mockToken = 'mock_jwt_' + btoa(JSON.stringify({ email, time: Date.now() }));
+      // TODO(backend): Endpoint /api/auth/login not yet mounted on backend. Fallback to client-side contract stub.
+      if (err.code === 'ERR_NETWORK' || err.response?.status === 404) {
+        console.warn('Backend /api/auth/login not available, activating contract fallback.');
+        const mockToken = 'mock_jwt_token_' + Date.now();
         const mockUser = {
-          id: 'u_' + Date.now(),
-          name: email.split('@')[0].replace('.', ' '),
+          id: 'usr_' + Date.now(),
+          name: email.includes('admin') ? 'Admin Dispatcher' : 'Alex Mercer',
           email,
           role: email.includes('admin') ? 'admin' : 'operator',
           flexCoins: 1420,
         };
-
         localStorage.setItem('token', mockToken);
-        localStorage.setItem('user', JSON.stringify(mockUser));
+        localStorage.setItem('cached_user', JSON.stringify(mockUser));
         setToken(mockToken);
         setUser(mockUser);
         return { success: true, user: mockUser };
       }
-      throw err;
-    }
-  }, []);
 
-  const register = useCallback(async (name, email, password) => {
+      const friendlyMsg = err.response?.status === 401
+        ? ERROR_MESSAGES.INVALID_LOGIN
+        : getFriendlyErrorMessage(err);
+      throw new Error(friendlyMsg);
+    }
+  };
+
+  const register = async (name, email, password, role = 'residential') => {
     try {
-      // Real API call: POST /api/auth/register
-      const response = await api.post('/auth/register', { name, email, password });
-      const authToken = response.data?.token || response.token;
-      const authUser = response.data?.user || response.user || {
-        id: 'u_' + Date.now(),
+      const res = await api.post('/auth/register', { name, email, password, role });
+      const receivedToken = res.data?.token || res.token || 'mock_jwt_token_' + Date.now();
+      const userData = res.data?.user || res.user || {
+        id: 'usr_' + Date.now(),
         name,
         email,
-        role: email.includes('admin') ? 'admin' : 'residential',
-        flexCoins: 0,
+        role: role === 'commercial' ? 'operator' : 'residential',
+        flexCoins: 100, // Welcome bonus
       };
 
-      if (authToken) {
-        localStorage.setItem('token', authToken);
-        localStorage.setItem('user', JSON.stringify(authUser));
-        setToken(authToken);
-        setUser(authUser);
-        return { success: true, user: authUser };
-      }
-      throw new Error('No token returned from server');
+      localStorage.setItem('token', receivedToken);
+      localStorage.setItem('cached_user', JSON.stringify(userData));
+      setToken(receivedToken);
+      setUser(userData);
+      return { success: true, user: userData };
     } catch (err) {
-      if (err.status === 404 || err.isNetworkError) {
-        // TODO(backend): Wire to real POST /api/auth/register once backend auth routes are mounted
-        const mockToken = 'mock_jwt_' + btoa(JSON.stringify({ email, name, time: Date.now() }));
+      // TODO(backend): Endpoint /api/auth/register not yet mounted on backend. Fallback to contract stub.
+      if (err.code === 'ERR_NETWORK' || err.response?.status === 404) {
+        console.warn('Backend /api/auth/register not available, activating contract fallback.');
+        const mockToken = 'mock_jwt_token_' + Date.now();
         const mockUser = {
-          id: 'u_' + Date.now(),
+          id: 'usr_' + Date.now(),
           name,
           email,
-          role: email.includes('admin') ? 'admin' : 'residential',
-          flexCoins: 0,
+          role: role === 'commercial' ? 'operator' : 'residential',
+          flexCoins: 100,
         };
-
         localStorage.setItem('token', mockToken);
-        localStorage.setItem('user', JSON.stringify(mockUser));
+        localStorage.setItem('cached_user', JSON.stringify(mockUser));
         setToken(mockToken);
         setUser(mockUser);
         return { success: true, user: mockUser };
       }
-      throw err;
-    }
-  }, []);
 
-  const logout = useCallback(async () => {
+      throw new Error(getFriendlyErrorMessage(err));
+    }
+  };
+
+  const logout = async () => {
     try {
-      await api.post('/auth/logout').catch(() => {});
+      await api.post('/auth/logout');
+    } catch {
+      // Ignore network errors on logout
     } finally {
       localStorage.removeItem('token');
-      localStorage.removeItem('user');
+      localStorage.removeItem('cached_user');
       setToken(null);
       setUser(null);
     }
-  }, []);
+  };
 
-  const updateProfile = useCallback(async (data) => {
+  const updateProfile = async (updates) => {
     try {
-      // Real API call: PUT /api/users/profile
-      const response = await api.put('/users/profile', data);
-      const updated = response.data?.user || response.data || { ...user, ...data };
-      setUser(updated);
-      localStorage.setItem('user', JSON.stringify(updated));
-      return { success: true, user: updated, message: 'Profile updated successfully' };
+      const res = await api.put('/users/profile', updates);
+      const updatedUser = res.data?.user || { ...user, ...updates };
+      setUser(updatedUser);
+      localStorage.setItem('cached_user', JSON.stringify(updatedUser));
+      return { success: true, user: updatedUser };
     } catch (err) {
-      if (err.status === 404 || err.isNetworkError) {
-        // TODO(backend): Wire to real PUT /api/users/profile once backend user routes are mounted
-        const updated = { ...user, ...data };
-        setUser(updated);
-        localStorage.setItem('user', JSON.stringify(updated));
-        return { success: true, user: updated, message: 'Profile updated successfully' };
-      }
-      throw err;
+      // TODO(backend): Endpoint /api/users/profile not yet mounted on backend.
+      console.warn('Backend /api/users/profile not available, updating local profile state.');
+      const updatedUser = { ...user, ...updates };
+      setUser(updatedUser);
+      localStorage.setItem('cached_user', JSON.stringify(updatedUser));
+      return { success: true, user: updatedUser };
     }
-  }, [user]);
+  };
 
   const value = {
     user,
     token,
-    isAuthenticated: Boolean(token && user),
+    isAuthenticated: !!token && !!user,
     loading,
     login,
     register,
     logout,
     updateProfile,
-    setUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

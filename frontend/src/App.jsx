@@ -1,8 +1,9 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import ErrorBoundary from './components/ErrorBoundary';
 import { AuthProvider } from './context/AuthContext';
-import ProtectedRoute from './components/ProtectedRoute';
+import ErrorBoundary from './components/ErrorBoundary';
+import { ProtectedRoute, PublicOnlyRoute } from './components/ProtectedRoute';
+
 import AppLayout from './layouts/AppLayout';
 import LandingPage from './pages/LandingPage';
 import SignIn from './pages/SignIn';
@@ -23,41 +24,41 @@ export default function App() {
             {/* Public Marketing Landing Page (The Main Page) */}
             <Route path="/" element={<LandingPage />} />
 
-            {/* Public-Only Authentication Pages (redirects to /dashboard if logged in) */}
+            {/* Public Authentication Pages (Redirect authenticated users to /dashboard) */}
             <Route
               path="/sign-in"
               element={
-                <ProtectedRoute publicOnly>
+                <PublicOnlyRoute>
                   <SignIn />
-                </ProtectedRoute>
+                </PublicOnlyRoute>
               }
             />
             <Route
               path="/login"
               element={
-                <ProtectedRoute publicOnly>
+                <PublicOnlyRoute>
                   <SignIn />
-                </ProtectedRoute>
+                </PublicOnlyRoute>
               }
             />
             <Route
               path="/sign-up"
               element={
-                <ProtectedRoute publicOnly>
+                <PublicOnlyRoute>
                   <SignUp />
-                </ProtectedRoute>
+                </PublicOnlyRoute>
               }
             />
             <Route
               path="/register"
               element={
-                <ProtectedRoute publicOnly>
+                <PublicOnlyRoute>
                   <SignUp />
-                </ProtectedRoute>
+                </PublicOnlyRoute>
               }
             />
 
-            {/* In-App Authenticated Console Routes */}
+            {/* In-App Authenticated Console Routes (Guarded by ProtectedRoute) */}
             <Route
               element={
                 <ProtectedRoute>
@@ -73,7 +74,7 @@ export default function App() {
               <Route
                 path="admin-grid"
                 element={
-                  <ProtectedRoute requireAdmin>
+                  <ProtectedRoute requireAdmin={true}>
                     <AdminGridDashboard />
                   </ProtectedRoute>
                 }

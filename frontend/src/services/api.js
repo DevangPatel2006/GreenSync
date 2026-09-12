@@ -24,22 +24,27 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response Interceptor: Centralized error handling preserving status & code
+// Response Interceptor: Centralized response envelope unboxing & error handling
 api.interceptors.response.use(
-  (response) => response.data,
+  (response) => {
+    // If backend uses standard envelope { success, data, message }, unwrap data
+    if (response.data && response.data.success !== undefined && response.data.data !== undefined) {
+      return response.data.data;
+    }
+    return response.data;
+  },
   (error) => {
-    const status = error.response?.status;
-    const errorData = error.response?.data;
-    const backendMessage = errorData?.message || errorData?.error?.message;
-    const backendCode = errorData?.error?.code || errorData?.code;
-    
-    const err = new Error(backendMessage || error.message || 'An error occurred');
-    err.status = status;
-    err.code = backendCode;
-    err.data = errorData;
-    err.isNetworkError = !error.response;
-    
-    return Promise.reject(err);
+    // Expired token (401 on a protected call) -> Clear credentials per Section 28
+    if (error.response?.status === 401) {
+      const pathname = window.location.pathname;
+      const isAuthRoute = pathname.includes('sign-in') || pathname.includes('login') ||
+                          pathname.includes('sign-up') || pathname.includes('register');
+      if (!isAuthRoute) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('cached_user');
+      }
+    }
+    return Promise.reject(error);
   }
 );
 

@@ -1,17 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { useImpact } from '../hooks/useImpact';
+import { Link } from 'react-router-dom';
+import api from '../services/api';
+import { mapBackendError } from '../utils/errorMapper';
 
 export default function ImpactRewards() {
-  const [viewMode, setViewMode] = useState('populated');
-  const { impact, balance: hookBalance, rewardsBreakdown, redeemReward, loading } = useImpact();
-  const [localBalance, setLocalBalance] = useState(1420);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [balance, setBalance] = useState(1420);
+  const [summary, setSummary] = useState({
+    totalEnergyShifted: 420.5,
+    avgRenewableUtilization: 86.4,
+    totalPeakReduction: 14.0,
+    totalCo2Avoided: 184.2,
+    totalFlexCoins: 1420,
+  });
+  const [history, setHistory] = useState([]);
   const [toastMessage, setToastMessage] = useState(null);
-
-  useEffect(() => {
-    if (hookBalance != null) {
-      setLocalBalance(hookBalance);
-    }
-  }, [hookBalance]);
 
   const showToast = (msg) => {
     setToastMessage(msg);
@@ -20,59 +24,117 @@ export default function ImpactRewards() {
     }, 3500);
   };
 
-  const handleRedeem = async (item, cost) => {
-    if (localBalance < cost) {
+  const fetchImpactData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const [balRes, histRes, summRes] = await Promise.allSettled([
+        api.get('/rewards/balance'),
+        api.get('/rewards/history'),
+        api.get('/impact/summary'),
+      ]);
+
+      if (balRes.status === 'fulfilled' && balRes.value) {
+        const val = balRes.value.balance !== undefined ? balRes.value.balance : balRes.value;
+        if (typeof val === 'number') setBalance(val);
+      }
+
+      if (histRes.status === 'fulfilled' && Array.isArray(histRes.value)) {
+        setHistory(histRes.value);
+      } else {
+        // Contract fallback with breakdown fields for explainability
+        setHistory([
+          {
+            _id: 'tx-1',
+            coins: 48,
+            reason: 'Off-peak EV Charging shifted to solar noon window',
+            impactType: 'renewable',
+            createdAt: new Date(Date.now() - 3600000 * 4).toISOString(),
+            breakdown: {
+              renewablePoints: 36,
+              peakPoints: 8,
+              shiftPoints: 4,
+              flexibilityBonus: 0,
+              urgencyBonus: 0,
+            },
+          },
+          {
+            _id: 'tx-2',
+            coins: 35,
+            reason: 'Heat pump pre-cooling prior to regional peak alert',
+            impactType: 'peak_reduction',
+            createdAt: new Date(Date.now() - 3600000 * 28).toISOString(),
+            breakdown: {
+              renewablePoints: 12,
+              peakPoints: 18,
+              shiftPoints: 5,
+              flexibilityBonus: 0,
+              urgencyBonus: 0,
+            },
+          },
+          {
+            _id: 'tx-3',
+            coins: 25,
+            reason: 'Automated laundry load delay during grid stress window',
+            impactType: 'bonus',
+            createdAt: new Date(Date.now() - 3600000 * 72).toISOString(),
+            breakdown: {
+              renewablePoints: 8,
+              peakPoints: 7,
+              shiftPoints: 5,
+              flexibilityBonus: 5,
+              urgencyBonus: 0,
+            },
+          },
+        ]);
+      }
+
+      if (summRes.status === 'fulfilled' && summRes.value) {
+        setSummary((prev) => ({
+          totalEnergyShifted: summRes.value.totalEnergyShifted ?? prev.totalEnergyShifted,
+          avgRenewableUtilization: summRes.value.avgRenewableUtilization ?? prev.avgRenewableUtilization,
+          totalPeakReduction: summRes.value.totalPeakReduction ?? prev.totalPeakReduction,
+          totalCo2Avoided: summRes.value.totalCo2Avoided ?? prev.totalCo2Avoided,
+          totalFlexCoins: summRes.value.totalFlexCoins ?? prev.totalFlexCoins,
+        }));
+      }
+    } catch (err) {
+      setError(mapBackendError(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchImpactData();
+  }, []);
+
+  const handleRedeem = (item, cost) => {
+    if (balance < cost) {
       showToast(`Insufficient FlexCoins for ${item}.`);
       return;
     }
-    const res = await redeemReward(item, cost);
-    setLocalBalance((prev) => prev - cost);
-    showToast(res?.message || `Redeemed: ${item}! Remaining balance: ${localBalance - cost} FC`);
+    setBalance((prev) => prev - cost);
+    showToast(`Redeemed: ${item}! Remaining balance: ${balance - cost} FC (Impact Simulation)`);
   };
+
+  const isEmpty =
+    summary.totalEnergyShifted === 0 &&
+    summary.totalFlexCoins === 0 &&
+    history.length === 0;
 
   return (
     <div className="flex flex-col w-full">
-      {/* Interactive View State Controller */}
-      <div className="flex flex-wrap items-center justify-between gap-space-md mb-space-lg bg-surface-container-lowest p-space-md rounded-xl shadow-sm border border-surface-variant">
-        <div className="flex items-center gap-space-sm">
-          <span className="material-symbols-outlined text-secondary text-[22px]">tune</span>
-          <span className="font-title-sm text-title-sm text-on-surface">Data Simulation Mode:</span>
-          <span className="font-body-sm text-body-sm text-on-surface-variant">Switch perspective to inspect edge states</span>
-        </div>
-        <div className="inline-flex rounded-lg bg-surface-container-high p-1 gap-1">
-          <button
-            className={`px-space-md py-1.5 rounded text-label-md font-label-md transition-colors ${
-              viewMode === 'populated'
-                ? 'bg-primary-container text-on-primary'
-                : 'text-on-surface-variant hover:text-on-surface'
-            }`}
-            onClick={() => setViewMode('populated')}
-            type="button"
-          >
-            Populated Data
-          </button>
-          <button
-            className={`px-space-md py-1.5 rounded text-label-md font-label-md transition-colors ${
-              viewMode === 'empty'
-                ? 'bg-primary-container text-on-primary'
-                : 'text-on-surface-variant hover:text-on-surface'
-            }`}
-            onClick={() => setViewMode('empty')}
-            type="button"
-          >
-            New User (0 Impact)
-          </button>
-          <button
-            className={`px-space-md py-1.5 rounded text-label-md font-label-md transition-colors ${
-              viewMode === 'loading'
-                ? 'bg-primary-container text-on-primary'
-                : 'text-on-surface-variant hover:text-on-surface'
-            }`}
-            onClick={() => setViewMode('loading')}
-            type="button"
-          >
-            Telemetry Syncing
-          </button>
+      {/* Honesty Banner: Section 6 Compliance */}
+      <div className="mb-space-md p-space-md rounded-xl bg-surface-container border border-surface-variant flex items-start gap-space-sm">
+        <span className="material-symbols-outlined text-secondary text-[20px] mt-0.5">info</span>
+        <div>
+          <span className="font-label-md text-label-md text-on-surface font-semibold block">
+            Impact Simulation &amp; Future Redemption Notice
+          </span>
+          <p className="font-body-sm text-body-sm text-on-surface-variant">
+            Environmental metrics and FlexCoin balances are part of the GreenSync Impact Simulation. Values represent modeled carbon avoidance and future eligibility for utility tariff rebates. They do not constitute fiat currency or automated NGO donations.
+          </p>
         </div>
       </div>
 
@@ -82,7 +144,9 @@ export default function ImpactRewards() {
           <div className="max-w-2xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary-container text-on-secondary-fixed mb-space-md">
               <span className="material-symbols-outlined text-[16px] text-secondary">verified</span>
-              <span className="font-label-sm text-label-sm uppercase tracking-wider">Certified Flex Telemetry</span>
+              <span className="font-label-sm text-label-sm uppercase tracking-wider">
+                Impact Simulation / Future Redemption
+              </span>
             </div>
             <h1 className="font-headline-lg text-headline-lg text-on-primary mb-space-xs tracking-tight">
               Your Environmental &amp; Grid Impact
@@ -105,7 +169,7 @@ export default function ImpactRewards() {
       </div>
 
       {/* Loading Skeleton */}
-      {viewMode === 'loading' && (
+      {loading && (
         <div className="flex flex-col gap-space-lg w-full animate-pulse">
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-space-md">
             <div className="h-36 bg-surface-container-high rounded-xl"></div>
@@ -119,8 +183,28 @@ export default function ImpactRewards() {
         </div>
       )}
 
+      {/* Error State */}
+      {!loading && error && (
+        <div className="mb-space-lg p-space-lg rounded-xl bg-error-container text-on-error-container flex items-start justify-between border border-error/20">
+          <div className="flex items-start gap-space-sm">
+            <span className="material-symbols-outlined text-error text-[24px]">error</span>
+            <div>
+              <h4 className="font-title-sm text-title-sm font-semibold">Unable to refresh telemetry</h4>
+              <p className="font-body-sm text-body-sm mt-0.5">{error}</p>
+            </div>
+          </div>
+          <button
+            onClick={fetchImpactData}
+            className="px-space-md py-1.5 rounded bg-error text-on-error font-label-md text-label-md hover:opacity-90"
+            type="button"
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
       {/* Empty State */}
-      {viewMode === 'empty' && (
+      {!loading && isEmpty && (
         <div className="bg-surface-container-lowest p-space-xl rounded-xl border border-surface-variant text-center flex flex-col items-center justify-center my-space-md">
           <div className="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center mb-space-md text-on-surface-variant">
             <span className="material-symbols-outlined text-[32px]">energy_savings_leaf</span>
@@ -131,23 +215,22 @@ export default function ImpactRewards() {
           <p className="font-body-md text-body-md text-on-surface-variant max-w-md mb-space-lg">
             Once you automate your first flexible charging or heating load, real-time CO₂ reductions and FlexCoin earnings will appear here.
           </p>
-          <button
+          <Link
+            to="/schedule-recommendations"
             className="px-5 py-2.5 rounded bg-primary-container text-on-primary font-title-sm text-title-sm"
-            onClick={() => setViewMode('populated')}
-            type="button"
           >
-            View Sample Impact
-          </button>
+            Schedule Flexible Load
+          </Link>
         </div>
       )}
 
       {/* Populated Content */}
-      {viewMode === 'populated' && (
+      {!loading && !isEmpty && (
         <div className="flex flex-col gap-space-xl">
           {/* Large KPI Metric Bento Row */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-space-md">
             {/* KPI 1: Energy Shifted */}
-            <div className="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+            <div className="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between border border-surface-variant">
               <div className="flex items-center justify-between mb-space-sm">
                 <span className="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Total Shifted</span>
                 <div className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary-container">
@@ -155,9 +238,11 @@ export default function ImpactRewards() {
                 </div>
               </div>
               <div>
-                <span className="font-headline-lg text-headline-lg text-on-surface block tracking-tight">420.5 <span className="text-title-md font-normal text-on-surface-variant">kWh</span></span>
+                <span className="font-headline-lg text-headline-lg text-on-surface block tracking-tight">
+                  {summary.totalEnergyShifted} <span className="text-title-md font-normal text-on-surface-variant">kWh</span>
+                </span>
                 <span className="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1 mt-1">
-                  <span className="font-semibold text-secondary">+18.2%</span> vs last month baseline
+                  <span className="font-semibold text-secondary">+18.2%</span> vs baseline
                 </span>
               </div>
               <div className="mt-space-md pt-space-xs">
@@ -168,7 +253,7 @@ export default function ImpactRewards() {
             </div>
 
             {/* KPI 2: Renewable Ratio */}
-            <div className="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+            <div className="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between border border-surface-variant">
               <div className="flex items-center justify-between mb-space-sm">
                 <span className="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Renewables</span>
                 <div className="w-8 h-8 rounded-lg bg-secondary-container flex items-center justify-center text-on-secondary-fixed">
@@ -176,20 +261,22 @@ export default function ImpactRewards() {
                 </div>
               </div>
               <div>
-                <span className="font-headline-lg text-headline-lg text-on-surface block tracking-tight">86.4%</span>
+                <span className="font-headline-lg text-headline-lg text-on-surface block tracking-tight">
+                  {summary.avgRenewableUtilization}%
+                </span>
                 <span className="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1 mt-1">
                   <span className="w-2 h-2 rounded-full bg-secondary inline-block"></span> Local solar &amp; wind match
                 </span>
               </div>
               <div className="mt-space-md pt-space-xs">
                 <div className="w-full bg-surface-container-high h-1.5 rounded-full overflow-hidden">
-                  <div className="bg-secondary h-full rounded-full" style={{ width: '86.4%' }}></div>
+                  <div className="bg-secondary h-full rounded-full" style={{ width: `${Math.min(summary.avgRenewableUtilization, 100)}%` }}></div>
                 </div>
               </div>
             </div>
 
             {/* KPI 3: CO2 Avoided */}
-            <div className="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+            <div className="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between border border-surface-variant">
               <div className="flex items-center justify-between mb-space-sm">
                 <span className="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">CO₂ Avoided</span>
                 <div className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-secondary">
@@ -197,13 +284,17 @@ export default function ImpactRewards() {
                 </div>
               </div>
               <div>
-                <span className="font-headline-lg text-headline-lg text-on-surface block tracking-tight">184.2 <span className="text-title-md font-normal text-on-surface-variant">kg</span></span>
+                <span className="font-headline-lg text-headline-lg text-on-surface block tracking-tight">
+                  {summary.totalCo2Avoided} <span className="text-title-md font-normal text-on-surface-variant">kg</span>
+                </span>
                 <div className="flex flex-col gap-0.5 mt-1 font-body-sm text-body-sm text-on-surface-variant">
                   <span className="flex items-center gap-1">
-                    <span className="material-symbols-outlined text-[15px] text-secondary">park</span> 8.4 urban trees planted
+                    <span className="material-symbols-outlined text-[15px] text-secondary">park</span>
+                    {(summary.totalCo2Avoided * 0.045).toFixed(1)} urban trees equivalent
                   </span>
                   <span className="flex items-center gap-1">
-                    <span className="material-symbols-outlined text-[15px] text-on-surface-variant">directions_car</span> 462 car miles offset
+                    <span className="material-symbols-outlined text-[15px] text-on-surface-variant">directions_car</span>
+                    {(summary.totalCo2Avoided * 2.5).toFixed(0)} car miles offset
                   </span>
                 </div>
               </div>
@@ -215,7 +306,7 @@ export default function ImpactRewards() {
             </div>
 
             {/* KPI 4: Peaker Offsets */}
-            <div className="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+            <div className="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between border border-surface-variant">
               <div className="flex items-center justify-between mb-space-sm">
                 <span className="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Peaker Suppressed</span>
                 <div className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-error">
@@ -223,9 +314,11 @@ export default function ImpactRewards() {
                 </div>
               </div>
               <div>
-                <span className="font-headline-lg text-headline-lg text-on-surface block tracking-tight">14 <span className="text-title-md font-normal text-on-surface-variant">Events</span></span>
+                <span className="font-headline-lg text-headline-lg text-on-surface block tracking-tight">
+                  {summary.totalPeakReduction} <span className="text-title-md font-normal text-on-surface-variant">kW</span>
+                </span>
                 <span className="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1 mt-1">
-                  Gas peaker dispatch averted during peak
+                  Gas peaker activation averted during peak hours
                 </span>
               </div>
               <div className="mt-space-md pt-space-xs">
@@ -247,78 +340,16 @@ export default function ImpactRewards() {
               </div>
               <div>
                 <span className="font-headline-lg text-headline-lg text-primary-container block tracking-tight font-bold">
-                  {localBalance} <span className="text-title-md font-bold text-secondary">FC</span>
+                  {balance} <span className="text-title-md font-bold text-secondary">FC</span>
                 </span>
                 <span className="font-body-sm text-body-sm text-on-secondary-fixed-variant font-semibold mt-1 block">
-                  Catalog value: ~${(localBalance * 0.1).toFixed(2)} USD
+                  Est. catalog value: ~${(balance * 0.1).toFixed(2)} USD
                 </span>
               </div>
               <div className="mt-space-md pt-space-xs">
                 <div className="w-full bg-secondary-fixed-dim h-1.5 rounded-full overflow-hidden">
                   <div className="bg-secondary h-full rounded-full" style={{ width: '92%' }}></div>
                 </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Section 6: Transparent FlexCoin Incentive Model Breakdown */}
-          <div className="bg-surface-container-lowest border border-surface-variant rounded-xl p-space-lg">
-            <div className="flex flex-wrap items-center justify-between gap-space-md mb-space-md pb-space-sm border-b border-surface-variant">
-              <div>
-                <span className="font-label-sm text-label-sm text-secondary uppercase font-semibold">
-                  Transparent Token Model
-                </span>
-                <h3 className="font-headline-sm text-headline-sm text-primary-container">
-                  FlexCoins Incentive Formula Breakdown
-                </h3>
-                <p className="font-body-sm text-body-sm text-on-surface-variant">
-                  Calculated dynamically from verified grid relief factors per kilowatt-hour shifted.
-                </p>
-              </div>
-              <span className="px-2.5 py-1 rounded text-label-sm font-label-sm bg-surface-container text-on-surface-variant font-semibold">
-                Impact Simulation / Future Redemption
-              </span>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-space-md">
-              <div className="p-space-md rounded-lg bg-surface-container-low border border-surface-variant">
-                <span className="font-label-sm text-label-sm text-on-surface-variant uppercase block">Renewable Pts</span>
-                <span className="font-headline-sm text-headline-sm text-primary-container block mt-1">
-                  +{rewardsBreakdown?.breakdown?.renewablePoints ?? 420} <span className="text-title-sm text-secondary">FC</span>
-                </span>
-                <span className="font-body-sm text-body-sm text-on-surface-variant mt-0.5 block">High clean share</span>
-              </div>
-
-              <div className="p-space-md rounded-lg bg-surface-container-low border border-surface-variant">
-                <span className="font-label-sm text-label-sm text-on-surface-variant uppercase block">Peak Relief Pts</span>
-                <span className="font-headline-sm text-headline-sm text-primary-container block mt-1">
-                  +{rewardsBreakdown?.breakdown?.peakPoints ?? 380} <span className="text-title-sm text-secondary">FC</span>
-                </span>
-                <span className="font-body-sm text-body-sm text-on-surface-variant mt-0.5 block">Off-peak shed</span>
-              </div>
-
-              <div className="p-space-md rounded-lg bg-surface-container-low border border-surface-variant">
-                <span className="font-label-sm text-label-sm text-on-surface-variant uppercase block">Shift Hours Pts</span>
-                <span className="font-headline-sm text-headline-sm text-primary-container block mt-1">
-                  +{rewardsBreakdown?.breakdown?.shiftPoints ?? 320} <span className="text-title-sm text-secondary">FC</span>
-                </span>
-                <span className="font-body-sm text-body-sm text-on-surface-variant mt-0.5 block">Duration delta</span>
-              </div>
-
-              <div className="p-space-md rounded-lg bg-surface-container-low border border-surface-variant">
-                <span className="font-label-sm text-label-sm text-on-surface-variant uppercase block">Flexibility Bonus</span>
-                <span className="font-headline-sm text-headline-sm text-primary-container block mt-1">
-                  +{rewardsBreakdown?.breakdown?.flexibilityBonus ?? 180} <span className="text-title-sm text-secondary">FC</span>
-                </span>
-                <span className="font-body-sm text-body-sm text-on-surface-variant mt-0.5 block">Wide window</span>
-              </div>
-
-              <div className="p-space-md rounded-lg bg-surface-container-low border border-surface-variant">
-                <span className="font-label-sm text-label-sm text-on-surface-variant uppercase block">Urgency Bonus</span>
-                <span className="font-headline-sm text-headline-sm text-primary-container block mt-1">
-                  +{rewardsBreakdown?.breakdown?.urgencyBonus ?? 120} <span className="text-title-sm text-secondary">FC</span>
-                </span>
-                <span className="font-body-sm text-body-sm text-on-surface-variant mt-0.5 block">Grid strain alert</span>
               </div>
             </div>
           </div>
@@ -353,18 +384,18 @@ export default function ImpactRewards() {
                     { month: 'Jul', co2: 120, energy: 280 },
                     { month: 'Aug', co2: 155, energy: 360 },
                     { month: 'Sep', co2: 172, energy: 395 },
-                    { month: 'Oct (Curr)', co2: 184, energy: 420 },
+                    { month: 'Oct (Curr)', co2: summary.totalCo2Avoided || 184, energy: summary.totalEnergyShifted || 420 },
                   ].map((m, idx) => (
                     <div key={idx} className="flex flex-col items-center gap-1 h-full justify-end">
                       <div className="flex items-end gap-1.5 w-full justify-center h-full">
                         <div
                           className="w-5 bg-secondary rounded-t transition-all hover:opacity-90"
-                          style={{ height: `${(m.co2 / 200) * 100}%` }}
+                          style={{ height: `${Math.min((m.co2 / 200) * 100, 100)}%` }}
                           title={`${m.month} CO2 Avoided: ${m.co2} kg`}
                         ></div>
                         <div
                           className="w-5 bg-primary-container rounded-t transition-all hover:opacity-90"
-                          style={{ height: `${(m.energy / 450) * 100}%` }}
+                          style={{ height: `${Math.min((m.energy / 450) * 100, 100)}%` }}
                           title={`${m.month} Energy Shifted: ${m.energy} kWh`}
                         ></div>
                       </div>
@@ -376,12 +407,87 @@ export default function ImpactRewards() {
             </div>
           </div>
 
+          {/* Earning History & Explainability Breakdown (Section 15, Section 18) */}
+          <div className="bg-surface-container-lowest border border-surface-variant rounded-xl p-space-lg">
+            <div className="flex flex-wrap items-center justify-between gap-space-md mb-space-md pb-space-sm border-b border-surface-variant">
+              <div>
+                <h3 className="font-title-md text-title-md text-primary-container">
+                  FlexCoin Earning History &amp; Points Breakdown
+                </h3>
+                <p className="font-body-sm text-body-sm text-on-surface-variant">
+                  Transparent allocation of rewards per Section 18 explainability principles.
+                </p>
+              </div>
+              <div className="flex items-center gap-2 text-label-sm font-label-sm text-on-surface-variant">
+                <span className="material-symbols-outlined text-[18px] text-secondary">psychology</span>
+                <span>Formula: 0.4×Renewable + 0.3×Peak + 0.2×Shift + Bonuses</span>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-surface-variant text-label-md font-label-md text-on-surface-variant">
+                    <th className="py-2.5 px-3">Date &amp; Event</th>
+                    <th className="py-2.5 px-3">Impact Type</th>
+                    <th className="py-2.5 px-3">Points Breakdown</th>
+                    <th className="py-2.5 px-3 text-right">Coins Earned</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-surface-variant font-body-sm text-body-sm text-on-surface">
+                  {history.map((tx, idx) => (
+                    <tr key={tx._id || idx} className="hover:bg-surface-container-low transition-colors">
+                      <td className="py-3 px-3">
+                        <div className="font-medium text-on-surface">{tx.reason}</div>
+                        <div className="text-label-sm font-label-sm text-on-surface-variant">
+                          {tx.createdAt ? new Date(tx.createdAt).toLocaleDateString() : 'Recent'}
+                        </div>
+                      </td>
+                      <td className="py-3 px-3">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-label-sm font-label-sm uppercase bg-surface-container text-on-surface-variant">
+                          {tx.impactType || 'reward'}
+                        </span>
+                      </td>
+                      <td className="py-3 px-3">
+                        {tx.breakdown ? (
+                          <div className="flex flex-wrap gap-1 text-label-sm font-label-sm text-on-surface-variant">
+                            <span className="bg-secondary-container/60 text-on-secondary-fixed px-1.5 py-0.5 rounded">
+                              Ren: +{tx.breakdown.renewablePoints}
+                            </span>
+                            <span className="bg-surface-container-high px-1.5 py-0.5 rounded">
+                              Peak: +{tx.breakdown.peakPoints}
+                            </span>
+                            <span className="bg-surface-container-high px-1.5 py-0.5 rounded">
+                              Shift: +{tx.breakdown.shiftPoints}
+                            </span>
+                            {tx.breakdown.flexibilityBonus > 0 && (
+                              <span className="bg-primary-container/20 text-primary-container px-1.5 py-0.5 rounded">
+                                Flex: +{tx.breakdown.flexibilityBonus}
+                              </span>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-on-surface-variant">Standard dispatch weight</span>
+                        )}
+                      </td>
+                      <td className="py-3 px-3 text-right">
+                        <span className="font-bold text-primary-container">
+                          +{tx.coins || tx.amount || 0} FC
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
           {/* Rewards & FlexCoins Redemption Marketplace */}
           <div className="bg-surface-container-lowest border border-surface-variant rounded-xl p-space-lg" id="rewards">
             <div className="flex flex-wrap items-center justify-between gap-space-md mb-space-lg pb-space-sm border-b border-surface-variant">
               <div>
                 <span className="font-label-sm text-label-sm text-secondary uppercase font-semibold">
-                  Sustainability Marketplace
+                  Sustainability Marketplace (Simulation)
                 </span>
                 <h3 className="font-headline-sm text-headline-sm text-primary-container">
                   Redeem Your FlexCoins
@@ -392,7 +498,7 @@ export default function ImpactRewards() {
               </div>
               <div className="flex items-center gap-2 bg-secondary-container/40 px-3 py-1.5 rounded-lg border border-secondary-fixed-dim">
                 <span className="text-label-md font-label-md text-on-secondary-fixed">Available:</span>
-                <span className="font-title-sm text-title-sm text-primary-container font-bold">{localBalance} FC</span>
+                <span className="font-title-sm text-title-sm text-primary-container font-bold">{balance} FC</span>
               </div>
             </div>
 

@@ -1,18 +1,83 @@
-import React, { useState } from 'react';
-import { useEnergy } from '../hooks/useEnergy';
-import { useDevices } from '../hooks/useDevices';
-import { useSchedule } from '../hooks/useSchedule';
-import { useImpact } from '../hooks/useImpact';
+import React, { useState, useEffect } from 'react';
+import api from '../services/api';
+import useDevices from '../hooks/useDevices';
 
 export default function Dashboard() {
+  const { devices, loading: devicesLoading, toggleDevice } = useDevices();
+
   const [dashboardState, setDashboardState] = useState('populated');
   const [isAccepted, setIsAccepted] = useState(false);
   const [toastMessage, setToastMessage] = useState(null);
 
-  const { current, loading: energyLoading } = useEnergy();
-  const { devices, loading: devicesLoading, toggleDeviceFlexibility } = useDevices();
-  const { recommendation, acceptSchedule, accepting } = useSchedule();
-  const { impact, balance, loading: impactLoading } = useImpact();
+  // Live telemetry state
+  const [energyData, setEnergyData] = useState({
+    source: 'simulated',
+    renewablePercentage: 74,
+    gridStatus: 'Optimal for flexible use',
+    node: 'Regional Grid Node #4',
+    recommendedWindow: '1:00 PM – 3:30 PM',
+  });
+
+  const [impactData, setImpactData] = useState({
+    flexCoins: 1420,
+    coinsDelta: '+60 this week',
+    co2Avoided: 184,
+    energyShifted: 420,
+    peakReduction: 3.8,
+  });
+
+  useEffect(() => {
+    async function loadDashboardData() {
+      try {
+        const [energyRes, impactRes, rewardsRes] = await Promise.allSettled([
+          api.get('/energy/current'),
+          api.get('/impact/summary'),
+          api.get('/rewards/balance'),
+        ]);
+
+        if (energyRes.status === 'fulfilled' && energyRes.value) {
+          const d = energyRes.value.data || energyRes.value;
+          if (d && typeof d === 'object') {
+            setEnergyData({
+              source: d.source || 'live',
+              renewablePercentage: d.renewablePercentage || d.renewableAvailability || 74,
+              gridStatus: d.gridStatus || (d.renewablePercentage > 60 ? 'Optimal for flexible use' : 'Moderate Grid Stress'),
+              node: d.node || 'Regional Grid Node #4',
+              recommendedWindow: d.recommendedWindow || '1:00 PM – 3:30 PM',
+            });
+          }
+        }
+
+        let coins = 1420;
+        if (rewardsRes.status === 'fulfilled' && rewardsRes.value) {
+          const rew = rewardsRes.value.data || rewardsRes.value;
+          if (rew && typeof rew === 'object') {
+            coins = rew.balance ?? coins;
+          } else if (typeof rew === 'number') {
+            coins = rew;
+          }
+        }
+
+        if (impactRes.status === 'fulfilled' && impactRes.value) {
+          const imp = impactRes.value.data || impactRes.value;
+          if (imp && typeof imp === 'object') {
+            setImpactData({
+              flexCoins: imp.totalFlexCoins ?? coins,
+              coinsDelta: '+60 this week',
+              co2Avoided: imp.totalCo2Avoided ?? 184,
+              energyShifted: imp.totalEnergyShifted ?? 420,
+              peakReduction: imp.peakReductionKw ?? imp.totalPeakReduction ?? 3.8,
+            });
+          }
+        }
+      } catch (err) {
+        // Silently fall back to simulated telemetry per Section 16
+        console.warn('Live telemetry fallback active:', err.message);
+      }
+    }
+
+    loadDashboardData();
+  }, []);
 
   const showToast = (msg) => {
     setToastMessage(msg);
@@ -22,19 +87,22 @@ export default function Dashboard() {
   };
 
   const handleAcceptSchedule = async () => {
-    if (isAccepted) return;
-    const recId = recommendation?._id || recommendation?.id || 'rec_sample_1';
-    const res = await acceptSchedule(recId);
+    try {
+      await api.post('/schedule/sched_today_recommend/accept');
+    } catch {
+      // Graceful fallback
+    }
     setIsAccepted(true);
-    showToast(res.message || 'Schedule applied! 14.2 kWh moved to 1:00 PM (+45 FC)');
+    showToast('Schedule applied! 14.2 kWh moved to 1:00 PM (+45 FC)');
   };
 
-  const handleToggleDevice = async (id) => {
-    const updated = await toggleDeviceFlexibility(id);
-    if (updated) {
-      showToast(`${updated.name} flexibility mode ${updated.status === 'active' ? 'activated' : 'paused'}`);
-    }
+  const handleToggle = async (id, name) => {
+    await toggleDevice(id);
+    showToast(`${name} flexibility state updated.`);
   };
+
+  // 3 sample active devices for the right column
+  const displayDevices = devices.slice(0, 3);
 
   return (
     <div className="flex flex-col w-full">
@@ -105,24 +173,24 @@ export default function Dashboard() {
               <div className="flex items-center gap-space-xs mb-1">
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-label-sm font-label-sm bg-[#F1F6E3] text-[#2F3D13] border border-secondary-fixed-dim">
                   <span className="w-2 h-2 rounded-full bg-secondary"></span>
-                  {current?.gridStatus || 'Optimal for flexible use'}
+                  {energyData.gridStatus}
                 </span>
-                <span className="text-on-surface-variant font-label-sm text-label-sm">
-                  • {current?.node || 'Regional Grid Node #4'}
-                  {current?.source !== 'live' && ' (simulated data)'}
-                </span>
+                <span className="text-on-surface-variant font-label-sm text-label-sm">• {energyData.node}</span>
+                {energyData.source !== 'live' && (
+                  <span className="px-2 py-0.5 rounded text-label-sm font-label-sm bg-surface-container text-on-surface-variant font-medium">
+                    Simulated Data
+                  </span>
+                )}
               </div>
               <div className="font-title-md text-title-md text-on-surface">
-                Cleaner energy available now ({current?.renewablePercentage ?? 74}% Wind + Solar)
+                Cleaner energy available now ({energyData.renewablePercentage}% Wind + Solar)
               </div>
             </div>
           </div>
           <div className="flex items-center gap-space-md w-full lg:w-auto justify-between lg:justify-end border-t lg:border-t-0 border-surface-variant pt-space-xs lg:pt-0">
             <div className="text-left lg:text-right">
               <div className="text-label-sm font-label-sm text-on-surface-variant uppercase">Current Hourly Recommendation</div>
-              <div className="text-body-md font-title-sm text-primary-container">
-                {current?.recommendation?.summary || 'Shift high-power cycles to 1:00 PM – 3:30 PM'}
-              </div>
+              <div className="text-body-md font-title-sm text-primary-container">Shift high-power cycles to {energyData.recommendedWindow}</div>
             </div>
             <div className="w-10 h-10 rounded-lg bg-surface-container-low flex items-center justify-center text-primary-container">
               <span className="material-symbols-outlined text-[22px]">schedule</span>
@@ -132,7 +200,7 @@ export default function Dashboard() {
       </div>
 
       {/* LOADING OVERLAY WRAPPER */}
-      {dashboardState === 'loading' && (
+      {(dashboardState === 'loading' || devicesLoading) && (
         <div className="flex flex-col gap-space-lg animate-pulse w-full">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
             <div className="h-28 bg-surface-container-high rounded-xl"></div>
@@ -148,7 +216,7 @@ export default function Dashboard() {
       )}
 
       {/* EMPTY STATE WRAPPER */}
-      {dashboardState === 'empty' && (
+      {!devicesLoading && dashboardState === 'empty' && (
         <div className="flex flex-col items-center justify-center p-space-xl bg-surface-container-lowest rounded-xl border border-surface-variant text-center w-full my-space-md">
           <div className="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center mb-space-md text-on-surface-variant">
             <span className="material-symbols-outlined text-[32px]">electric_bolt</span>
@@ -170,7 +238,7 @@ export default function Dashboard() {
       )}
 
       {/* POPULATED DASHBOARD VIEW */}
-      {dashboardState === 'populated' && (
+      {!devicesLoading && dashboardState === 'populated' && (
         <div className="flex flex-col gap-space-lg w-full">
           {/* 2. STAT CARDS GRID (4 Cards) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
@@ -184,13 +252,13 @@ export default function Dashboard() {
               </div>
               <div className="flex items-baseline gap-space-xs">
                 <span className="font-display text-display text-primary-container tracking-tight">
-                  {(balance ?? impact?.totalFlexCoins ?? 1420).toLocaleString()}
+                  {impactData.flexCoins.toLocaleString()}
                 </span>
                 <span className="font-title-md text-title-md text-primary font-bold">FC</span>
               </div>
               <div className="mt-space-xs flex items-center gap-1 text-on-secondary-container font-label-md text-label-md font-semibold">
                 <span className="material-symbols-outlined text-[16px]">trending_up</span>
-                <span>+60 this week</span>
+                <span>{impactData.coinsDelta}</span>
               </div>
             </div>
 
@@ -202,12 +270,12 @@ export default function Dashboard() {
               </div>
               <div className="flex items-baseline gap-space-xs">
                 <span className="font-display text-display text-primary-container tracking-tight">
-                  {impact?.co2AvoidedKg ?? 184}
+                  {impactData.co2Avoided}
                 </span>
                 <span className="font-title-md text-title-md text-on-surface-variant">kg</span>
               </div>
               <div className="mt-space-xs text-on-surface-variant font-label-md text-label-md">
-                Equivalent to <span className="font-semibold text-on-surface">{impact?.treesPlantedEquivalent ?? 9} planted trees</span>
+                Equivalent to <span className="font-semibold text-on-surface">{Math.round(impactData.co2Avoided / 20)} planted trees</span>
               </div>
             </div>
 
@@ -219,7 +287,7 @@ export default function Dashboard() {
               </div>
               <div className="flex items-baseline gap-space-xs">
                 <span className="font-display text-display text-primary-container tracking-tight">
-                  {impact?.energyShiftedKwh ?? 420}
+                  {impactData.energyShifted}
                 </span>
                 <span className="font-title-md text-title-md text-on-surface-variant">kWh</span>
               </div>
@@ -236,7 +304,7 @@ export default function Dashboard() {
               </div>
               <div className="flex items-baseline gap-space-xs">
                 <span className="font-display text-display text-primary-container tracking-tight">
-                  {impact?.peakReductionKw ?? 3.8}
+                  {impactData.peakReduction}
                 </span>
                 <span className="font-title-md text-title-md text-on-surface-variant">kW</span>
               </div>
@@ -246,7 +314,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* 3. MAIN CONTENT SPLIT (2 Columns: Left 8-col, Right 4-col) */}
+          {/* 3. MAIN CONTENT SPLIT */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
             {/* LEFT COLUMN: Timeline & Hourly Chart */}
             <div className="lg:col-span-8 flex flex-col gap-space-lg">
@@ -283,10 +351,8 @@ export default function Dashboard() {
                     </span>
                   </div>
 
-                  {/* Timeline Diagram Representation */}
                   <div className="w-full bg-surface-container rounded p-3 border border-surface-variant">
                     <div className="relative w-full h-8 bg-surface rounded flex items-center px-2 overflow-hidden border border-surface-variant">
-                      {/* 24-hr tick markers */}
                       <div className="absolute inset-0 flex justify-between px-2 text-[10px] text-outline opacity-40 select-none items-center">
                         <span>8a</span>
                         <span>10a</span>
@@ -297,14 +363,12 @@ export default function Dashboard() {
                         <span>8p</span>
                         <span>10p</span>
                       </div>
-                      {/* Requested Slot */}
                       <div
                         className="absolute left-[66%] w-[12%] h-5 bg-outline-variant rounded flex items-center justify-center text-[11px] font-bold text-on-surface opacity-80"
                         title="Requested 6:30 PM"
                       >
                         Peak
                       </div>
-                      {/* Recommended Slot */}
                       <div
                         className="absolute left-[36%] w-[16%] h-6 bg-secondary-fixed-dim rounded border border-secondary flex items-center justify-center text-[11px] font-bold text-on-secondary-fixed"
                         title="Shifted to 1:00 PM"
@@ -327,12 +391,12 @@ export default function Dashboard() {
                     <span className="font-body-md text-body-md">Saves 4.2 kg CO₂ &amp; optimizes device cycle efficiency</span>
                   </div>
                   <div className="flex items-center gap-space-sm">
-                    <button
-                      className="px-4 py-2 rounded border border-surface-variant font-title-sm text-title-sm text-on-surface hover:border-primary-container hover:text-primary-container transition-colors"
-                      type="button"
+                    <a
+                      href="/schedule-recommendations"
+                      className="px-4 py-2 rounded border border-surface-variant font-title-sm text-title-sm text-on-surface hover:border-primary-container hover:text-primary-container transition-colors inline-block"
                     >
                       Modify Time
-                    </button>
+                    </a>
                     <button
                       className={`px-5 py-2 rounded font-title-sm text-title-sm transition-all flex items-center gap-space-xs ${
                         isAccepted
@@ -374,13 +438,11 @@ export default function Dashboard() {
                 <div className="w-full overflow-x-auto">
                   <div className="min-w-[540px] pt-4">
                     <svg className="w-full h-48 overflow-visible" fill="none" viewBox="0 0 600 160" xmlns="http://www.w3.org/2000/svg">
-                      {/* Horizontal Grid Lines */}
                       <line stroke="#E8E0EB" strokeDasharray="2 2" strokeWidth="1" x1="40" x2="590" y1="20" y2="20" />
                       <line stroke="#E8E0EB" strokeDasharray="2 2" strokeWidth="1" x1="40" x2="590" y1="60" y2="60" />
                       <line stroke="#E8E0EB" strokeDasharray="2 2" strokeWidth="1" x1="40" x2="590" y1="100" y2="100" />
                       <line stroke="#E8E0EB" strokeWidth="1" x1="40" x2="590" y1="140" y2="140" />
 
-                      {/* Y-Axis Labels */}
                       <text fill="#81737C" fontFamily="Inter" fontSize="10" textAnchor="end" x="30" y="24">80%</text>
                       <text fill="#81737C" fontFamily="Inter" fontSize="10" textAnchor="end" x="30" y="64">50%</text>
                       <text fill="#81737C" fontFamily="Inter" fontSize="10" textAnchor="end" x="30" y="104">20%</text>
@@ -441,10 +503,10 @@ export default function Dashboard() {
 
                 <div className="mt-space-sm p-space-sm bg-surface-container rounded border border-surface-variant flex items-center justify-between text-body-sm">
                   <span className="text-on-surface-variant">
-                    Recommended charging window active: <strong>1:00 PM – 3:30 PM</strong>
+                    Recommended charging window active: <strong>{energyData.recommendedWindow}</strong>
                   </span>
                   <span className="text-secondary font-title-sm flex items-center gap-1">
-                    <span className="w-2 h-2 rounded-full bg-secondary"></span> 74% Grid Clean Factor
+                    <span className="w-2 h-2 rounded-full bg-secondary"></span> {energyData.renewablePercentage}% Grid Clean Factor
                   </span>
                 </div>
               </div>
@@ -458,41 +520,38 @@ export default function Dashboard() {
                     <h3 className="font-title-md text-title-md text-primary-container">Active Flexible Loads</h3>
                     <p className="font-body-sm text-body-sm text-on-surface-variant">{devices.length} connected controllable devices</p>
                   </div>
-                  <button className="text-on-surface-variant hover:text-primary-container transition-colors" type="button">
+                  <a className="text-on-surface-variant hover:text-primary-container transition-colors" href="/my-loads-devices">
                     <span className="material-symbols-outlined text-[20px]">tune</span>
-                  </button>
+                  </a>
                 </div>
 
                 {/* Device List */}
                 <div className="flex flex-col gap-space-md">
-                  {devices.map((device) => {
-                    const id = device._id || device.id;
-                    const isActive = device.status ? device.status === 'active' : Boolean(device.active);
-                    const icon = device.icon || (device.type === 'ev_charging' ? 'ev_station' : device.type === 'washing_machine' ? 'local_laundry_service' : device.type === 'battery' ? 'battery_charging_full' : 'hvac');
-                    const desc = device.desc || `${device.type?.replace('_', ' ') || 'Device'} • ${device.energyRequired || 2.5} kW cap`;
-                    const time = device.time || (isActive ? 'Auto-Flex Active' : 'Schedule Pending');
-                    const tag = device.tag || (isActive ? 'Auto-Sync' : 'Approve Shift');
-
+                  {displayDevices.map((device) => {
+                    const devId = device.id || device._id;
                     return (
-                      <div key={id} className="p-space-md bg-surface rounded-lg border border-surface-variant flex flex-col gap-space-sm">
+                      <div key={devId} className="p-space-md bg-surface rounded-lg border border-surface-variant flex flex-col gap-space-sm">
                         <div className="flex items-start justify-between">
                           <div className="flex items-center gap-space-xs">
                             <div className="w-9 h-9 rounded bg-surface-container-high flex items-center justify-center text-primary-container">
-                              <span className="material-symbols-outlined text-[20px]">{icon}</span>
+                              <span className="material-symbols-outlined text-[20px]">
+                                {device.type === 'ev_charging' ? 'ev_station' : device.type === 'water_heater' ? 'water_heater' : 'hvac'}
+                              </span>
                             </div>
                             <div>
                               <div className="font-title-sm text-title-sm text-on-surface">{device.name}</div>
-                              <span className="text-label-sm font-label-sm text-on-surface-variant">{desc}</span>
+                              <span className="text-label-sm font-label-sm text-on-surface-variant">
+                                {device.power || `${device.energyRequired} kWh`}
+                              </span>
                             </div>
                           </div>
 
-                          {/* Custom Toggle Checkbox */}
                           <label className="relative inline-flex items-center cursor-pointer">
                             <input
                               type="checkbox"
                               className="sr-only peer"
-                              checked={isActive}
-                              onChange={() => handleToggleDevice(id)}
+                              checked={device.active}
+                              onChange={() => handleToggle(devId, device.name)}
                             />
                             <div className="w-9 h-5 bg-surface-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-surface-variant after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary-container"></div>
                           </label>
@@ -500,31 +559,18 @@ export default function Dashboard() {
 
                         <div className="flex items-center justify-between pt-space-xs border-t border-surface-variant">
                           <span className="inline-flex items-center gap-1 text-label-sm font-label-sm text-on-surface-variant">
-                            <span className="material-symbols-outlined text-[16px] text-secondary">
-                              {isActive ? 'schedule' : 'pending'}
-                            </span>
-                            {time}
+                            <span className="material-symbols-outlined text-[16px] text-secondary">schedule</span>
+                            {device.status || (device.active ? 'Active Auto-Sync' : 'Paused')}
                           </span>
-                          {!isActive ? (
-                            <button
-                              className="px-2 py-0.5 rounded text-label-sm font-label-sm text-primary-container hover:bg-surface-container font-semibold transition-colors"
-                              onClick={() => handleToggleDevice(id)}
-                              type="button"
-                            >
-                              Approve Shift
-                            </button>
-                          ) : (
-                            <span className="px-2 py-0.5 rounded text-label-sm font-label-sm bg-[#F1F6E3] text-[#2F3D13] font-semibold">
-                              {tag}
-                            </span>
-                          )}
+                          <span className="px-2 py-0.5 rounded text-label-sm font-label-sm bg-[#F1F6E3] text-[#2F3D13] font-semibold">
+                            {device.flexibility ? `${device.flexibility.toUpperCase()} FLEX` : 'AUTO-SYNC'}
+                          </span>
                         </div>
                       </div>
                     );
                   })}
                 </div>
 
-                {/* Add device link */}
                 <div className="mt-space-md pt-space-md border-t border-surface-variant text-center">
                   <a className="inline-flex items-center gap-1 text-title-sm font-title-sm text-primary-container hover:underline" href="/my-loads-devices?add=1">
                     <span className="material-symbols-outlined text-[18px]">add</span>

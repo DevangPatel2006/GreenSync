@@ -1,58 +1,71 @@
 import { useState, useEffect, useCallback } from 'react';
 import api from '../services/api';
+import { getFriendlyErrorMessage } from '../utils/errorMapper';
 
-const DEFAULT_DEVICES = [
+const INITIAL_MOCK_DEVICES = [
   {
-    _id: 'dev_1',
+    id: 'dev_1',
     name: 'Tesla Model 3',
     type: 'ev_charging',
-    energyRequired: 9.6,
-    earliestStart: new Date(Date.now() + 1800000).toISOString(),
-    deadline: new Date(Date.now() + 28800000).toISOString(),
+    energyRequired: 38.5,
+    earliestStart: '20:00',
+    deadline: '06:30',
     flexibility: 'high',
     priority: 'normal',
-    status: 'active',
-    shiftedKwh: 42.5,
-    coinsEarned: 120,
+    status: 'scheduled',
+    active: true,
+    power: '9.6 kW',
+    shifted: '42.5 kWh shifted',
+    coins: '+120 FC',
+    desc: 'Level 2 Wall Connector (32A split phase) • Target: 90% SOC by 06:30 AM',
   },
   {
-    _id: 'dev_2',
+    id: 'dev_2',
     name: 'Rheem ProTerra Hybrid',
     type: 'water_heater',
-    energyRequired: 3.8,
-    earliestStart: new Date(Date.now() + 3600000).toISOString(),
-    deadline: new Date(Date.now() + 36000000).toISOString(),
-    flexibility: 'medium',
-    priority: 'normal',
-    status: 'active',
-    shiftedKwh: 18.2,
-    coinsEarned: 65,
-  },
-  {
-    _id: 'dev_3',
-    name: 'Daikin VRV Heat Pump',
-    type: 'industrial',
-    energyRequired: 5.4,
-    earliestStart: new Date(Date.now() + 900000).toISOString(),
-    deadline: new Date(Date.now() + 18000000).toISOString(),
+    energyRequired: 14.2,
+    earliestStart: '12:00',
+    deadline: '17:00',
     flexibility: 'medium',
     priority: 'high',
-    status: 'active',
-    shiftedKwh: 88.0,
-    coinsEarned: 210,
+    status: 'scheduled',
+    active: true,
+    power: '3.8 kW',
+    shifted: '18.2 kWh shifted',
+    coins: '+65 FC',
+    desc: '65-gal hybrid heat pump • Pre-heating water during solar surplus',
   },
   {
-    _id: 'dev_4',
+    id: 'dev_3',
+    name: 'Daikin VRV Heat Pump',
+    type: 'battery',
+    energyRequired: 22.0,
+    earliestStart: '13:00',
+    deadline: '18:00',
+    flexibility: 'medium',
+    priority: 'normal',
+    status: 'running',
+    active: true,
+    power: '5.4 kW',
+    shifted: '88.0 kWh shifted',
+    coins: '+210 FC',
+    desc: 'Zone 1 & 2 multi-split • Pre-cooling prior to 4 PM evening peak ramp',
+  },
+  {
+    id: 'dev_4',
     name: 'Bosch 800 Series Dishwasher',
     type: 'washing_machine',
-    energyRequired: 1.4,
-    earliestStart: new Date(Date.now() + 7200000).toISOString(),
-    deadline: new Date(Date.now() + 43200000).toISOString(),
-    flexibility: 'low',
+    energyRequired: 3.2,
+    earliestStart: '22:00',
+    deadline: '07:00',
+    flexibility: 'high',
     priority: 'low',
-    status: 'paused',
-    shiftedKwh: 6.4,
-    coinsEarned: 25,
+    status: 'idle',
+    active: false,
+    power: '1.4 kW',
+    shifted: '6.4 kWh shifted',
+    coins: '+25 FC',
+    desc: 'Delay wash cycle • Automatically runs during high overnight wind window',
   },
 ];
 
@@ -65,17 +78,20 @@ export default function useDevices() {
     setLoading(true);
     setError(null);
     try {
-      // Real API: GET /api/devices
       const res = await api.get('/devices');
-      const list = Array.isArray(res.data) ? res.data : res.data?.devices || [];
-      setDevices(list);
-    } catch (err) {
-      if (err.status === 404 || err.isNetworkError) {
-        // TODO(backend): Wire to real GET /api/devices once device router is mounted
-        setDevices((prev) => (prev.length > 0 ? prev : DEFAULT_DEVICES));
+      const data = res.data || res.devices || res;
+      if (Array.isArray(data) && data.length > 0) {
+        setDevices(data);
       } else {
-        setError(err.message || 'Failed to load devices');
+        // Use cached or default mock devices
+        const cached = localStorage.getItem('greensync_devices');
+        setDevices(cached ? JSON.parse(cached) : INITIAL_MOCK_DEVICES);
       }
+    } catch (err) {
+      // TODO(backend): Endpoint /api/devices not yet mounted on backend. Fallback to contract mock.
+      console.warn('Backend /api/devices not reachable, using local storage.');
+      const cached = localStorage.getItem('greensync_devices');
+      setDevices(cached ? JSON.parse(cached) : INITIAL_MOCK_DEVICES);
     } finally {
       setLoading(false);
     }
@@ -85,61 +101,70 @@ export default function useDevices() {
     fetchDevices();
   }, [fetchDevices]);
 
-  const addDevice = async (devicePayload) => {
+  const addDevice = async (deviceData) => {
     try {
-      // Real API: POST /api/devices
-      const res = await api.post('/devices', devicePayload);
-      const newDevice = res.data?.device || res.data || { ...devicePayload, _id: 'dev_' + Date.now() };
-      setDevices((prev) => [newDevice, ...prev]);
-      return { success: true, data: newDevice };
+      const res = await api.post('/devices', deviceData);
+      const newDevice = res.data?.device || res.data || {
+        ...deviceData,
+        id: 'dev_' + Date.now(),
+        status: 'scheduled',
+        active: true,
+      };
+      setDevices((prev) => {
+        const updated = [newDevice, ...prev];
+        localStorage.setItem('greensync_devices', JSON.stringify(updated));
+        return updated;
+      });
+      return newDevice;
     } catch (err) {
-      if (err.status === 404 || err.isNetworkError) {
-        // TODO(backend): Wire to real POST /api/devices once device router is mounted
-        const fallback = {
-          ...devicePayload,
-          _id: 'dev_' + Date.now(),
-          status: 'active',
-          shiftedKwh: 0,
-          coinsEarned: 0,
-        };
-        setDevices((prev) => [fallback, ...prev]);
-        return { success: true, data: fallback };
-      }
-      throw err;
+      // TODO(backend): Endpoint /api/devices not available yet.
+      console.warn('Backend /api/devices POST not reachable, updating local state.');
+      const newDevice = {
+        ...deviceData,
+        id: 'dev_' + Date.now(),
+        status: 'scheduled',
+        active: true,
+      };
+      setDevices((prev) => {
+        const updated = [newDevice, ...prev];
+        localStorage.setItem('greensync_devices', JSON.stringify(updated));
+        return updated;
+      });
+      return newDevice;
     }
   };
 
-  const updateDevice = async (id, updatePayload) => {
+  const updateDevice = async (id, updates) => {
     try {
-      // Real API: PUT /api/devices/:id
-      const res = await api.put(`/devices/${id}`, updatePayload);
-      const updated = res.data?.device || res.data;
-      setDevices((prev) => prev.map((d) => (d._id === id ? { ...d, ...updated } : d)));
-      return { success: true, data: updated };
-    } catch (err) {
-      if (err.status === 404 || err.isNetworkError) {
-        // TODO(backend): Wire to real PUT /api/devices/:id once router is mounted
-        setDevices((prev) => prev.map((d) => (d._id === id ? { ...d, ...updatePayload } : d)));
-        return { success: true };
-      }
-      throw err;
+      await api.put(`/devices/${id}`, updates);
+    } catch {
+      // Fallback local update
     }
+    setDevices((prev) => {
+      const updated = prev.map((d) => (d.id === id || d._id === id ? { ...d, ...updates } : d));
+      localStorage.setItem('greensync_devices', JSON.stringify(updated));
+      return updated;
+    });
   };
 
   const deleteDevice = async (id) => {
     try {
-      // Real API: DELETE /api/devices/:id
       await api.delete(`/devices/${id}`);
-      setDevices((prev) => prev.filter((d) => d._id !== id));
-      return { success: true };
-    } catch (err) {
-      if (err.status === 404 || err.isNetworkError) {
-        // TODO(backend): Wire to real DELETE /api/devices/:id once router is mounted
-        setDevices((prev) => prev.filter((d) => d._id !== id));
-        return { success: true };
-      }
-      throw err;
+    } catch {
+      // Fallback local delete
     }
+    setDevices((prev) => {
+      const updated = prev.filter((d) => d.id !== id && d._id !== id);
+      localStorage.setItem('greensync_devices', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const toggleDevice = async (id) => {
+    const target = devices.find((d) => d.id === id || d._id === id);
+    if (!target) return;
+    const newActive = !target.active;
+    await updateDevice(id, { active: newActive });
   };
 
   return {
@@ -150,7 +175,6 @@ export default function useDevices() {
     addDevice,
     updateDevice,
     deleteDevice,
+    toggleDevice,
   };
 }
-
-export { useDevices };

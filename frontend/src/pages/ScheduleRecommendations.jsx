@@ -1,12 +1,40 @@
-import React, { useState } from 'react';
-import { useSchedule } from '../hooks/useSchedule';
+import React, { useState, useEffect } from 'react';
+import api from '../services/api';
+import useDevices from '../hooks/useDevices';
+import { ERROR_MESSAGES } from '../utils/errorMapper';
 
 export default function ScheduleRecommendations() {
+  const { devices, loading: devicesLoading } = useDevices();
+  const [selectedDeviceId, setSelectedDeviceId] = useState('');
+
   const [screenState, setScreenState] = useState('populated');
   const [isAccepted, setIsAccepted] = useState(false);
   const [toastMessage, setToastMessage] = useState(null);
+  const [loadingRecommendation, setLoadingRecommendation] = useState(false);
+  const [noFeasibleSlot, setNoFeasibleSlot] = useState(false);
 
-  const { recommendation, acceptSchedule, accepting, infeasibleMessage, loading } = useSchedule();
+  // Recommendation Model
+  const [recommendation, setRecommendation] = useState({
+    id: 'sched_rec_01',
+    requestedTime: 'Today • 6:30 PM',
+    recommendedTime: 'Tonight • 11:15 PM',
+    requestedRate: '$0.342 / kWh (Peak Tier)',
+    recommendedRate: '$0.118 / kWh (Super Off-Peak)',
+    requestedCarbon: '542 g CO₂ / kWh',
+    recommendedCarbon: '108 g CO₂ / kWh (-80%)',
+    energyShifted: '18.5 kWh',
+    peakReduction: '4.2 kW',
+    co2Avoided: '9.8 kg',
+    flexCoins: 75,
+    reason: 'Local wind generation surges after 10 PM across the regional balancing authority, displacing thermal peaker generators and drastically reducing carbon intensity.',
+    confidence: '99.4%',
+  });
+
+  useEffect(() => {
+    if (devices && devices.length > 0 && !selectedDeviceId) {
+      setSelectedDeviceId(devices[0].id || devices[0]._id);
+    }
+  }, [devices, selectedDeviceId]);
 
   const showToast = (msg) => {
     setToastMessage(msg);
@@ -15,13 +43,57 @@ export default function ScheduleRecommendations() {
     }, 3500);
   };
 
+  const fetchRecommendation = async (devId) => {
+    if (!devId) return;
+    setLoadingRecommendation(true);
+    setNoFeasibleSlot(false);
+    try {
+      const res = await api.post('/schedule/recommend', { deviceId: devId });
+      const rec = res.data?.schedule || res.data || res;
+      if (rec.noFeasibleSlot || rec.status === 'NO_FEASIBLE_SLOT') {
+        setNoFeasibleSlot(true);
+      } else {
+        setRecommendation((prev) => ({
+          ...prev,
+          id: rec._id || rec.id || prev.id,
+          recommendedTime: rec.scheduledWindowStart
+            ? `Tonight • ${new Date(rec.scheduledWindowStart).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+            : prev.recommendedTime,
+          energyShifted: rec.energyShiftedKwh ? `${rec.energyShiftedKwh} kWh` : prev.energyShifted,
+          flexCoins: rec.projectedFlexCoins || prev.flexCoins,
+          reason: rec.reason || rec.explanation || prev.reason,
+        }));
+      }
+    } catch (err) {
+      if (err.response?.data?.code === 'NO_FEASIBLE_SLOT') {
+        setNoFeasibleSlot(true);
+      } else {
+        // Fallback gracefully per Section 28
+        console.warn('Schedule recommendation fallback active:', err.message);
+      }
+    } finally {
+      setLoadingRecommendation(false);
+    }
+  };
+
+  const handleDeviceChange = (e) => {
+    const devId = e.target.value;
+    setSelectedDeviceId(devId);
+    fetchRecommendation(devId);
+  };
+
   const handleAccept = async () => {
-    const recId = recommendation?._id || recommendation?.id || 'rec_sample_1';
-    const res = await acceptSchedule(recId);
+    try {
+      await api.post(`/schedule/${recommendation.id}/accept`);
+    } catch {
+      // Graceful fallback
+    }
     setIsAccepted(true);
     setScreenState('accepted');
-    showToast(res?.message || 'Schedule locked! Asset scheduled for 11:15 PM (+75 FlexCoins)');
+    showToast(`Schedule locked! Asset scheduled for ${recommendation.recommendedTime} (+${recommendation.flexCoins} FlexCoins)`);
   };
+
+  const selectedDevice = devices.find((d) => (d.id || d._id) === selectedDeviceId) || devices[0];
 
   return (
     <div className="flex flex-col w-full">
@@ -49,7 +121,10 @@ export default function ScheduleRecommendations() {
                 ? 'bg-primary text-on-primary shadow-sm'
                 : 'text-on-surface-variant hover:text-on-surface'
             }`}
-            onClick={() => setScreenState('populated')}
+            onClick={() => {
+              setScreenState('populated');
+              setNoFeasibleSlot(false);
+            }}
           >
             <span className={`w-2 h-2 rounded-full ${screenState === 'populated' ? 'bg-secondary-fixed' : 'bg-surface-variant'}`}></span>
             Active Recommendation
@@ -79,16 +154,14 @@ export default function ScheduleRecommendations() {
         </div>
       </div>
 
-      {/* SECTION 28 INFEASIBLE WINDOW NOTIFICATION */}
-      {infeasibleMessage && (
-        <div className="bg-surface-container-lowest border border-secondary-fixed-dim rounded-xl p-space-md mb-space-lg flex items-start gap-space-md">
-          <div className="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center shrink-0 text-primary-container">
-            <span className="material-symbols-outlined text-[22px]">info</span>
-          </div>
-          <div>
-            <span className="font-title-sm text-title-sm text-primary-container">Dispatch Optimization Notice</span>
-            <p className="font-body-md text-body-md text-on-surface-variant mt-0.5">
-              {infeasibleMessage}
+      {/* NO FEASIBLE SLOT NOTICE (Section 28 Best Effort / Notice) */}
+      {noFeasibleSlot && (
+        <div className="mb-space-lg p-space-md rounded-xl bg-surface-container border border-secondary-fixed flex items-start gap-space-sm">
+          <span className="material-symbols-outlined text-secondary text-[24px] mt-0.5">info</span>
+          <div className="flex flex-col">
+            <span className="font-title-sm text-title-sm text-primary-container">Optimal Window Advisory</span>
+            <p className="font-body-md text-body-md text-on-surface-variant mt-1">
+              {ERROR_MESSAGES.NO_FEASIBLE_SCHEDULE}
             </p>
           </div>
         </div>
@@ -123,15 +196,15 @@ export default function ScheduleRecommendations() {
             <span className="material-symbols-outlined text-[36px]">check_circle</span>
           </div>
           <h2 className="font-headline-lg text-headline-lg text-primary-container mb-space-xs">
-            Schedule Locked for {recommendation?.recommendedSlot?.startTime || '11:15 PM'}
+            Schedule Locked for {recommendation.recommendedTime}
           </h2>
           <p className="font-body-lg text-body-lg text-on-surface-variant max-w-xl mb-space-lg">
-            {recommendation?.deviceName || 'Commercial Fleet Depot Bay #4 Charger'} will activate at {recommendation?.recommendedSlot?.startTime || '11:15 PM'} tonight to leverage 82% regional wind and hydro power.
+            {selectedDevice?.name || 'Your flexible load'} will activate at {recommendation.recommendedTime} to leverage peak regional wind and hydro power.
           </p>
           <div className="flex items-center gap-space-md p-space-md bg-secondary-container/30 rounded-xl border border-secondary-fixed-dim mb-space-lg">
             <span className="material-symbols-outlined text-secondary text-[24px]">toll</span>
             <span className="font-title-md text-title-md text-primary-container font-bold">
-              +{recommendation?.flexCoins ?? 75} FlexCoins Credited Upon Cycle Completion
+              +{recommendation.flexCoins} FlexCoins Credited Upon Cycle Completion
             </span>
           </div>
           <button
@@ -147,7 +220,7 @@ export default function ScheduleRecommendations() {
       {/* VIEW STATE: POPULATED */}
       {screenState === 'populated' && (
         <div className="flex flex-col gap-space-xl">
-          {/* Top Level Load Summary Bar */}
+          {/* Top Level Load Selector & Summary Bar */}
           <div className="bg-surface-container-lowest border border-surface-variant rounded-xl p-space-md flex flex-wrap items-center justify-between gap-space-md">
             <div className="flex items-center gap-space-md">
               <div className="w-12 h-12 rounded-lg bg-surface-container-low flex items-center justify-center border border-surface-variant text-primary-container">
@@ -155,15 +228,27 @@ export default function ScheduleRecommendations() {
               </div>
               <div>
                 <div className="flex items-center gap-space-xs">
-                  <span className="font-title-md text-title-md text-on-surface">
-                    {recommendation?.deviceName || 'Commercial Fleet Depot • Bay #4 Charger'}
-                  </span>
+                  {devices.length > 0 ? (
+                    <select
+                      className="font-title-md text-title-md text-on-surface bg-transparent border-b border-surface-variant focus:outline-none focus:border-primary-container cursor-pointer pr-4"
+                      value={selectedDeviceId}
+                      onChange={handleDeviceChange}
+                    >
+                      {devices.map((d) => (
+                        <option key={d.id || d._id} value={d.id || d._id}>
+                          {d.name} ({d.power || `${d.energyRequired} kWh`})
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <span className="font-title-md text-title-md text-on-surface">Commercial Fleet Depot • Bay #4 Charger</span>
+                  )}
                   <span className="px-2 py-0.5 rounded-full text-label-sm font-label-sm bg-surface-container text-on-surface-variant">
                     High Flexibility
                   </span>
                 </div>
                 <p className="font-body-sm text-body-sm text-on-surface-variant">
-                  {recommendation?.targetDelivery || 'Target delivery: 62.0 kWh by 06:30 AM tomorrow • Current buffer: +5.25 hrs'}
+                  Target delivery: {selectedDevice?.energyRequired || '62.0'} kWh by {selectedDevice?.deadline || '06:30 AM'} • Current buffer: +5.25 hrs
                 </p>
               </div>
             </div>
@@ -174,13 +259,13 @@ export default function ScheduleRecommendations() {
                 <span className="font-title-sm text-title-sm text-primary-container">Moderate • 4 hr 45 min flexible span</span>
               </div>
               <div className="h-8 w-[1px] bg-surface-variant hidden sm:block"></div>
-              <button
+              <a
+                href="/my-loads-devices"
                 className="px-3 py-1.5 border border-surface-variant hover:border-primary-container text-on-surface font-label-md text-label-md rounded flex items-center gap-1 transition-colors"
-                onClick={() => showToast('Load constraint parameters opened.')}
               >
                 <span className="material-symbols-outlined text-[16px]">tune</span>
                 Load Constraints
-              </button>
+              </a>
             </div>
           </div>
 
@@ -203,9 +288,7 @@ export default function ScheduleRecommendations() {
                   Requested Start
                 </span>
                 <div className="flex items-baseline gap-space-xs mb-space-sm">
-                  <h2 className="font-headline-lg text-headline-lg text-on-surface">
-                    {recommendation?.requestedStart || 'Today • 6:30 PM'}
-                  </h2>
+                  <h2 className="font-headline-lg text-headline-lg text-on-surface">{recommendation.requestedTime}</h2>
                   <span className="font-body-sm text-body-sm text-on-surface-variant">EDT</span>
                 </div>
                 <p className="font-body-md text-body-md text-on-surface-variant mb-space-lg">
@@ -232,14 +315,14 @@ export default function ScheduleRecommendations() {
                       <span className="material-symbols-outlined text-[18px] text-on-surface-variant">payments</span>
                       Applicable Energy Rate
                     </span>
-                    <span className="font-title-sm text-title-sm text-on-surface">$0.342 / kWh (Peak Tier)</span>
+                    <span className="font-title-sm text-title-sm text-on-surface">{recommendation.requestedRate}</span>
                   </div>
                 </div>
               </div>
 
               <div className="mt-space-lg pt-space-md border-t border-surface-variant flex items-center justify-between text-on-surface-variant">
                 <span className="font-label-sm text-label-sm">Grid Carbon Intensity</span>
-                <span className="font-label-md text-label-md font-semibold text-on-surface">542 g CO₂ / kWh</span>
+                <span className="font-label-md text-label-md font-semibold text-on-surface">{recommendation.requestedCarbon}</span>
               </div>
             </div>
 
@@ -253,8 +336,7 @@ export default function ScheduleRecommendations() {
                       GreenSync Algorithmic Pick
                     </span>
                     <span className="flex items-center gap-1 text-secondary font-label-sm text-label-sm font-semibold">
-                      <span className="w-1.5 h-1.5 rounded-full bg-secondary inline-block"></span>
-                      {recommendation?.confidenceScore ? `${(recommendation.confidenceScore * 100).toFixed(1)}% Confidence` : '99.4% Confidence'}
+                      <span className="w-1.5 h-1.5 rounded-full bg-secondary inline-block"></span> {recommendation.confidence} Confidence
                     </span>
                   </div>
                   <span className="material-symbols-outlined text-secondary text-[22px]">verified</span>
@@ -264,13 +346,11 @@ export default function ScheduleRecommendations() {
                   Recommended Dispatch
                 </span>
                 <div className="flex items-baseline gap-space-xs mb-space-sm">
-                  <h2 className="font-headline-lg text-headline-lg text-primary-container">
-                    {recommendation?.recommendedSlot?.startTime ? `Tonight • ${recommendation.recommendedSlot.startTime}` : 'Tonight • 11:15 PM'}
-                  </h2>
+                  <h2 className="font-headline-lg text-headline-lg text-primary-container">{recommendation.recommendedTime}</h2>
                   <span className="font-body-sm text-body-sm text-on-surface-variant">EDT (Late Evening)</span>
                 </div>
                 <p className="font-body-md text-body-md text-on-surface-variant mb-space-lg">
-                  Shifts demand to align precisely with anticipated overnight wind energy surplus and off-peak distribution capacity.
+                  {recommendation.reason}
                 </p>
 
                 <div className="space-y-3 pt-space-sm border-t border-surface-variant">
@@ -293,19 +373,19 @@ export default function ScheduleRecommendations() {
                       <span className="material-symbols-outlined text-[18px] text-secondary">savings</span>
                       Applicable Energy Rate
                     </span>
-                    <span className="font-title-sm text-title-sm text-primary-container">$0.118 / kWh (Super Off-Peak)</span>
+                    <span className="font-title-sm text-title-sm text-primary-container">{recommendation.recommendedRate}</span>
                   </div>
                 </div>
               </div>
 
               <div className="mt-space-lg pt-space-md border-t border-surface-variant flex items-center justify-between text-on-surface">
                 <span className="font-label-sm text-label-sm text-on-surface-variant">Grid Carbon Intensity</span>
-                <span className="font-label-md text-label-md font-bold text-secondary">108 g CO₂ / kWh (-80%)</span>
+                <span className="font-label-md text-label-md font-bold text-secondary">{recommendation.recommendedCarbon}</span>
               </div>
             </div>
           </div>
 
-          {/* Live Impact Simulation (Metrics Strip) */}
+          {/* Live Impact Simulation */}
           <div className="bg-surface-container-lowest border border-surface-variant rounded-xl p-space-lg">
             <div className="flex flex-wrap items-center justify-between gap-space-sm mb-space-md">
               <div>
@@ -325,7 +405,7 @@ export default function ScheduleRecommendations() {
                 </div>
                 <div className="flex items-baseline gap-1">
                   <span className="font-display-mobile text-display-mobile text-primary-container font-bold">
-                    {recommendation?.energyShiftedKWh ?? 18.5}
+                    {recommendation.energyShifted.split(' ')[0]}
                   </span>
                   <span className="font-title-sm text-title-sm text-on-surface-variant">kWh</span>
                 </div>
@@ -339,7 +419,7 @@ export default function ScheduleRecommendations() {
                 </div>
                 <div className="flex items-baseline gap-1">
                   <span className="font-display-mobile text-display-mobile text-secondary font-bold">
-                    {recommendation?.peakReductionKW ?? 4.2}
+                    {recommendation.peakReduction.split(' ')[0]}
                   </span>
                   <span className="font-title-sm text-title-sm text-on-surface-variant">kW</span>
                 </div>
@@ -353,7 +433,7 @@ export default function ScheduleRecommendations() {
                 </div>
                 <div className="flex items-baseline gap-1">
                   <span className="font-display-mobile text-display-mobile text-on-surface font-bold">
-                    {recommendation?.co2AvoidedKg ?? 9.8}
+                    {recommendation.co2Avoided.split(' ')[0]}
                   </span>
                   <span className="font-title-sm text-title-sm text-on-surface-variant">kg</span>
                 </div>
@@ -367,121 +447,13 @@ export default function ScheduleRecommendations() {
                 </div>
                 <div className="flex items-baseline gap-1">
                   <span className="font-display-mobile text-display-mobile text-primary-container font-bold">
-                    +{recommendation?.flexCoins ?? 75}
+                    +{recommendation.flexCoins}
                   </span>
                   <span className="font-title-sm text-title-sm text-primary-container font-bold">FC</span>
                 </div>
                 <span className="font-body-sm text-body-sm text-on-secondary-fixed-variant font-semibold mt-1">
                   Redeemable for credit
                 </span>
-              </div>
-            </div>
-          </div>
-
-          {/* 24-Hour Timeline Bar Chart */}
-          <div className="bg-surface-container-lowest border border-surface-variant rounded-xl p-space-lg">
-            <div className="flex flex-wrap items-center justify-between gap-space-md mb-space-md">
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="font-title-md text-title-md text-on-surface">24-Hour Clean Energy Horizon</h3>
-                  <span className="px-2 py-0.5 rounded text-label-sm font-label-sm bg-surface-container text-on-surface-variant font-semibold">
-                    Forecasted Telemetry
-                  </span>
-                </div>
-                <p className="font-body-sm text-body-sm text-on-surface-variant">
-                  Hourly grid renewable penetration index with active demand window relocation.
-                </p>
-              </div>
-
-              {/* Legend */}
-              <div className="flex items-center gap-space-md text-label-sm font-label-sm text-on-surface-variant">
-                <div className="flex items-center gap-1.5">
-                  <span className="w-3 h-3 rounded-sm bg-error/70"></span>
-                  <span>Congested / High Carbon</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="w-3 h-3 rounded-sm bg-surface-variant"></span>
-                  <span>Moderate</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="w-3 h-3 rounded-sm bg-secondary-fixed-dim"></span>
-                  <span>Clean / Renewable Window</span>
-                </div>
-              </div>
-            </div>
-
-            {/* SVG Timeline Chart */}
-            <div className="w-full overflow-x-auto">
-              <div className="min-w-[720px] py-space-sm">
-                <div className="relative w-full h-8 mb-2">
-                  <div className="absolute left-[72%] -translate-x-1/2 flex flex-col items-center">
-                    <span className="px-2 py-0.5 bg-error text-on-error text-label-sm font-label-sm rounded font-semibold whitespace-nowrap shadow-sm">
-                      Bypassed: 6:30 PM
-                    </span>
-                    <span className="w-[1px] h-2 bg-error"></span>
-                  </div>
-
-                  <div className="absolute left-[94%] -translate-x-1/2 flex flex-col items-center">
-                    <span className="px-2 py-0.5 bg-primary-container text-on-primary text-label-sm font-label-sm rounded font-semibold whitespace-nowrap flex items-center gap-1 border border-secondary-fixed">
-                      <span className="w-1.5 h-1.5 rounded-full bg-secondary"></span> 11:15 PM Active
-                    </span>
-                    <span className="w-[1px] h-2 bg-primary-container"></span>
-                  </div>
-
-                  <svg className="w-full h-8 absolute inset-0 pointer-events-none" preserveAspectRatio="none" viewBox="0 0 1000 32">
-                    <path d="M 720 12 Q 830 -8 940 12" fill="none" stroke="#450C3F" strokeDasharray="4 4" strokeWidth="1.75" />
-                    <polygon fill="#450C3F" points="942,12 935,7 937,13" />
-                  </svg>
-                </div>
-
-                {/* 24 Hour Bar Graph */}
-                <div className="grid grid-cols-24 gap-1 items-end h-32 pt-4 px-1 border-b border-surface-variant">
-                  {[74, 78, 81, 85, 79, 64, 45, 35, 32, 42, 58, 68, 72, 71, 65, 54, 39, 28, 24, 22, 30, 48, 66, 82].map(
-                    (val, idx) => {
-                      const isRequested = idx === 18;
-                      const isRecommended = idx === 23;
-                      let barColor = 'bg-secondary-container';
-                      if (val < 40) barColor = 'bg-error/60';
-                      else if (val < 60) barColor = 'bg-surface-variant';
-                      else if (val >= 80) barColor = 'bg-secondary-fixed-dim';
-
-                      return (
-                        <div
-                          key={idx}
-                          className="flex flex-col items-center h-full justify-end group cursor-pointer relative"
-                          title={`${idx}:00 - ${val}% Renewable`}
-                        >
-                          {isRequested && (
-                            <div className="absolute -top-1 w-full flex justify-center">
-                              <span className="w-1.5 h-1.5 rounded-full bg-error"></span>
-                            </div>
-                          )}
-                          {isRecommended && (
-                            <div className="absolute -top-1 w-full flex justify-center">
-                              <span className="w-2 h-2 rounded-full bg-secondary ring-2 ring-surface"></span>
-                            </div>
-                          )}
-                          <div
-                            className={`w-full rounded-t ${barColor} ${
-                              isRecommended ? 'ring-1 ring-primary-container' : ''
-                            }`}
-                            style={{ height: `${val}%` }}
-                          ></div>
-                        </div>
-                      );
-                    }
-                  )}
-                </div>
-
-                <div className="flex justify-between pt-2 text-label-sm font-label-sm text-on-surface-variant">
-                  <span>00:00 (Midnight)</span>
-                  <span>04:00</span>
-                  <span>08:00</span>
-                  <span>12:00 (Noon)</span>
-                  <span>16:00</span>
-                  <span className="text-error font-semibold">18:30 (Requested)</span>
-                  <span className="text-primary-container font-bold">23:15 (Recommended)</span>
-                </div>
               </div>
             </div>
           </div>
@@ -499,7 +471,7 @@ export default function ScheduleRecommendations() {
                 </div>
                 <span className="font-title-sm text-title-sm text-on-surface">Cleaner energy available</span>
                 <p className="font-body-md text-body-md text-on-surface-variant">
-                  Local wind generation surges after 10 PM across the regional balancing authority, displacing thermal generators and drastically decreasing generation carbon per kilowatt.
+                  {recommendation.reason}
                 </p>
               </div>
 
@@ -539,11 +511,12 @@ export default function ScheduleRecommendations() {
                 </button>
                 <button
                   type="button"
+                  disabled={loadingRecommendation}
                   className="px-6 py-2 rounded bg-primary-container text-on-primary font-title-sm text-title-sm hover:opacity-95 transition-opacity flex items-center gap-space-xs"
                   onClick={handleAccept}
                 >
                   <span className="material-symbols-outlined text-[18px]">done</span>
-                  <span>Accept Recommendation (+75 FlexCoins)</span>
+                  <span>Accept Recommendation (+{recommendation.flexCoins} FlexCoins)</span>
                 </button>
               </div>
             </div>

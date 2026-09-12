@@ -4,25 +4,28 @@ import useDevices from '../hooks/useDevices';
 
 export default function MyLoadsDevices() {
   const location = useLocation();
-  const { devices, loading, error, refetch, addDevice, updateDevice, deleteDevice } = useDevices();
+  const { devices, loading, error, refetch, addDevice, deleteDevice, toggleDevice } = useDevices();
 
+  const [viewState, setViewState] = useState('devices');
   const [filterCategory, setFilterCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [toast, setToast] = useState(null);
-  const [formErrors, setFormErrors] = useState({});
-  const [submitting, setSubmitting] = useState(false);
 
-  // Exact contract fields: name, type, energyRequired, earliestStart, deadline, flexibility, priority
+  // Form State adhering strictly to API contract:
+  // name, type, energyRequired, earliestStart, deadline, flexibility, priority
   const [formData, setFormData] = useState({
     name: '',
     type: 'ev_charging',
-    energyRequired: '7.2',
-    earliestStart: new Date(Date.now() + 300000).toISOString().slice(0, 16),
-    deadline: new Date(Date.now() + 28800000).toISOString().slice(0, 16),
-    flexibility: 'medium',
+    energyRequired: '24.0',
+    earliestStart: '20:00',
+    deadline: '06:30',
+    flexibility: 'high',
     priority: 'normal',
   });
+
+  const [formErrors, setFormErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (location.search.includes('add=1')) {
@@ -37,43 +40,20 @@ export default function MyLoadsDevices() {
     }, 3500);
   };
 
-  const handleToggle = async (device) => {
-    const id = device._id || device.id;
-    const newStatus = device.status === 'active' ? 'paused' : 'active';
-    try {
-      await updateDevice(id, { status: newStatus });
-      showToastNotification('Load Updated', `${device.name} status updated to ${newStatus}.`);
-    } catch (err) {
-      showToastNotification('Error', 'Failed to update device status.');
-    }
-  };
-
-  const handleDelete = async (device) => {
-    const id = device._id || device.id;
-    try {
-      await deleteDevice(id);
-      showToastNotification('Device Removed', `${device.name} disconnected from dispatch mesh.`);
-    } catch (err) {
-      showToastNotification('Error', 'Failed to remove device.');
-    }
-  };
-
   const validateForm = () => {
     const errors = {};
     if (!formData.name.trim()) {
       errors.name = 'Device name is required.';
     }
-    const energyNum = parseFloat(formData.energyRequired);
-    if (isNaN(energyNum) || energyNum <= 0) {
+    const energy = parseFloat(formData.energyRequired);
+    if (isNaN(energy) || energy <= 0) {
       errors.energyRequired = 'Energy required must be greater than 0 kWh.';
     }
     if (!formData.earliestStart) {
-      errors.earliestStart = 'Earliest start timestamp is required.';
+      errors.earliestStart = 'Earliest start time is required.';
     }
     if (!formData.deadline) {
-      errors.deadline = 'Deadline timestamp is required.';
-    } else if (formData.earliestStart && new Date(formData.deadline) <= new Date(formData.earliestStart)) {
-      errors.deadline = 'Deadline must be after the earliest start time.';
+      errors.deadline = 'Completion deadline is required.';
     }
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -83,37 +63,49 @@ export default function MyLoadsDevices() {
     e.preventDefault();
     if (!validateForm()) return;
 
-    setSubmitting(true);
+    setIsSubmitting(true);
     try {
-      const payload = {
+      await addDevice({
         name: formData.name.trim(),
         type: formData.type,
         energyRequired: parseFloat(formData.energyRequired),
-        earliestStart: new Date(formData.earliestStart).toISOString(),
-        deadline: new Date(formData.deadline).toISOString(),
+        earliestStart: formData.earliestStart,
+        deadline: formData.deadline,
         flexibility: formData.flexibility,
         priority: formData.priority,
-        status: 'active',
-      };
+        power: `${(parseFloat(formData.energyRequired) / 4).toFixed(1)} kW`,
+        shifted: '0.0 kWh shifted',
+        coins: '+0 FC',
+        desc: `Type: ${formData.type.replace('_', ' ')} • Deadline: ${formData.deadline} • Priority: ${formData.priority}`,
+      });
 
-      await addDevice(payload);
       setDrawerOpen(false);
       showToastNotification('Device Configured', `${formData.name} added to auto-dispatch mesh.`);
       setFormData({
         name: '',
         type: 'ev_charging',
-        energyRequired: '7.2',
-        earliestStart: new Date(Date.now() + 300000).toISOString().slice(0, 16),
-        deadline: new Date(Date.now() + 28800000).toISOString().slice(0, 16),
-        flexibility: 'medium',
+        energyRequired: '24.0',
+        earliestStart: '20:00',
+        deadline: '06:30',
+        flexibility: 'high',
         priority: 'normal',
       });
       setFormErrors({});
-    } catch (err) {
-      showToastNotification('Configuration Failed', err.message || 'Could not save device.');
+    } catch {
+      showToastNotification('Configuration Error', 'Could not save flexible device. Try again.');
     } finally {
-      setSubmitting(false);
+      setIsSubmitting(false);
     }
+  };
+
+  const handleToggle = async (id, name) => {
+    await toggleDevice(id);
+    showToastNotification('Load Updated', `${name} flexibility state updated.`);
+  };
+
+  const handleDelete = async (id, name) => {
+    await deleteDevice(id);
+    showToastNotification('Device Removed', `${name} disconnected from dispatch mesh.`);
   };
 
   const getTypeLabel = (type) => {
@@ -122,15 +114,14 @@ export default function MyLoadsDevices() {
         return 'EV Charger';
       case 'water_heater':
         return 'Water Heater';
-      case 'industrial':
-      case 'hvac':
-        return 'Heat Pump / HVAC';
       case 'washing_machine':
         return 'Washing Machine';
       case 'battery':
-        return 'Battery Storage';
+        return 'Battery / Heat Pump';
+      case 'industrial':
+        return 'Industrial Load';
       default:
-        return 'Smart Appliance';
+        return 'Flexible Load';
     }
   };
 
@@ -140,33 +131,41 @@ export default function MyLoadsDevices() {
         return 'electric_car';
       case 'water_heater':
         return 'water_heater';
-      case 'industrial':
-      case 'hvac':
-        return 'hvac';
       case 'washing_machine':
         return 'local_laundry_service';
       case 'battery':
         return 'battery_charging_full';
+      case 'industrial':
+        return 'precision_manufacturing';
       default:
         return 'power';
     }
   };
 
+  // Filter devices
   const filteredDevices = devices.filter((device) => {
-    const matchCat = filterCategory === 'all' || device.type === filterCategory;
+    const matchCat =
+      filterCategory === 'all' ||
+      device.type === filterCategory ||
+      (filterCategory === 'ev' && device.type === 'ev_charging') ||
+      (filterCategory === 'water' && device.type === 'water_heater') ||
+      (filterCategory === 'hvac' && (device.type === 'battery' || device.category === 'hvac')) ||
+      (filterCategory === 'appliances' && (device.type === 'washing_machine' || device.category === 'appliances'));
+
+    const query = searchQuery.toLowerCase().trim();
     const matchSearch =
-      !searchQuery ||
-      device.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      getTypeLabel(device.type).toLowerCase().includes(searchQuery.toLowerCase());
+      !query ||
+      device.name.toLowerCase().includes(query) ||
+      getTypeLabel(device.type).toLowerCase().includes(query);
+
     return matchCat && matchSearch;
   });
 
-  const activeCount = devices.filter((d) => d.status === 'active').length;
-  const totalPower = devices.reduce((sum, d) => sum + (d.energyRequired || 0), 0).toFixed(1);
+  const activeCount = devices.filter((d) => d.active).length;
 
   return (
     <div className="flex flex-col w-full">
-      {/* Top Title & Controls */}
+      {/* Top Title & View State Controls */}
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-space-md mb-space-lg">
         <div className="flex flex-col gap-space-xs">
           <div className="flex items-center gap-space-sm text-secondary">
@@ -185,10 +184,42 @@ export default function MyLoadsDevices() {
         </div>
 
         <div className="flex items-center gap-space-sm self-start lg:self-auto">
+          <div className="bg-surface-container-high p-1 rounded-lg flex items-center gap-1 shadow-sm">
+            <button
+              className={`px-space-sm py-1 rounded text-label-md font-label-md transition-colors ${
+                viewState === 'devices'
+                  ? 'bg-surface-container-lowest text-primary-container shadow-sm'
+                  : 'text-on-surface-variant hover:text-on-surface'
+              }`}
+              onClick={() => setViewState('devices')}
+            >
+              All Devices ({devices.length})
+            </button>
+            <button
+              className={`px-space-sm py-1 rounded text-label-md font-label-md transition-colors ${
+                viewState === 'empty'
+                  ? 'bg-surface-container-lowest text-primary-container shadow-sm'
+                  : 'text-on-surface-variant hover:text-on-surface'
+              }`}
+              onClick={() => setViewState('empty')}
+            >
+              Empty State
+            </button>
+            <button
+              className={`px-space-sm py-1 rounded text-label-md font-label-md transition-colors ${
+                viewState === 'skeleton'
+                  ? 'bg-surface-container-lowest text-primary-container shadow-sm'
+                  : 'text-on-surface-variant hover:text-on-surface'
+              }`}
+              onClick={() => setViewState('skeleton')}
+            >
+              Loading Skeleton
+            </button>
+          </div>
+
           <button
             className="bg-primary-container hover:bg-primary text-on-primary font-title-sm text-title-sm px-space-lg py-2.5 rounded-lg flex items-center gap-space-xs shadow-sm transition-colors"
             onClick={() => setDrawerOpen(true)}
-            type="button"
           >
             <span className="material-symbols-outlined text-[20px]">add</span>
             <span>+ Add Flexible Load</span>
@@ -198,10 +229,12 @@ export default function MyLoadsDevices() {
 
       {/* 4 KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-space-md mb-space-lg">
-        <div className="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex items-center justify-between">
+        <div className="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex items-center justify-between border border-surface-variant">
           <div className="flex flex-col">
             <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">Active Load Capacity</span>
-            <span className="font-headline-md text-headline-md text-on-surface mt-1">{totalPower} kW</span>
+            <span className="font-headline-md text-headline-md text-on-surface mt-1">
+              {(devices.reduce((acc, d) => acc + (parseFloat(d.energyRequired) || 10), 0) / 3).toFixed(1)} kW
+            </span>
             <span className="font-label-sm text-label-sm text-secondary flex items-center gap-1 mt-0.5">
               <span className="material-symbols-outlined text-[14px]">bolt</span> {activeCount} of {devices.length} devices online
             </span>
@@ -211,7 +244,7 @@ export default function MyLoadsDevices() {
           </div>
         </div>
 
-        <div className="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex items-center justify-between">
+        <div className="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex items-center justify-between border border-surface-variant">
           <div className="flex flex-col">
             <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">FlexCoins Earned</span>
             <span className="font-headline-md text-headline-md text-on-surface mt-1">530 FC</span>
@@ -224,7 +257,7 @@ export default function MyLoadsDevices() {
           </div>
         </div>
 
-        <div className="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex items-center justify-between">
+        <div className="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex items-center justify-between border border-surface-variant">
           <div className="flex flex-col">
             <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">Automated Shifts</span>
             <span className="font-headline-md text-headline-md text-on-surface mt-1">92.4%</span>
@@ -235,7 +268,7 @@ export default function MyLoadsDevices() {
           </div>
         </div>
 
-        <div className="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex items-center justify-between">
+        <div className="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex items-center justify-between border border-surface-variant">
           <div className="flex flex-col">
             <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">Grid Renewable Index</span>
             <span className="font-headline-md text-headline-md text-secondary mt-1">74%</span>
@@ -248,14 +281,14 @@ export default function MyLoadsDevices() {
       </div>
 
       {/* FILTER PILLS & SEARCH BAR */}
-      <div className="bg-surface-container-lowest p-space-md rounded-xl shadow-sm mb-space-lg flex flex-col md:flex-row items-stretch md:items-center justify-between gap-space-md">
+      <div className="bg-surface-container-lowest p-space-md rounded-xl shadow-sm mb-space-lg flex flex-col md:flex-row items-stretch md:items-center justify-between gap-space-md border border-surface-variant">
         <div className="flex flex-wrap items-center gap-space-xs">
           {[
             { id: 'all', label: `All devices (${devices.length})` },
-            { id: 'ev_charging', label: 'EV Chargers' },
-            { id: 'water_heater', label: 'Water Heaters' },
-            { id: 'industrial', label: 'Heat Pumps' },
-            { id: 'washing_machine', label: 'Appliances' },
+            { id: 'ev', label: 'EV Chargers' },
+            { id: 'water', label: 'Water Heaters' },
+            { id: 'hvac', label: 'Heat Pumps' },
+            { id: 'appliances', label: 'Appliances' },
           ].map((pill) => (
             <button
               key={pill.id}
@@ -265,7 +298,6 @@ export default function MyLoadsDevices() {
                   : 'bg-surface-container text-on-surface-variant hover:text-on-surface'
               }`}
               onClick={() => setFilterCategory(pill.id)}
-              type="button"
             >
               {pill.label}
             </button>
@@ -277,7 +309,7 @@ export default function MyLoadsDevices() {
             search
           </span>
           <input
-            className="w-full h-10 pl-10 pr-space-md rounded-lg bg-surface text-on-surface font-body-sm text-body-sm placeholder:text-on-surface-variant/60 shadow-inner focus:outline-none focus:ring-2 focus:ring-secondary-fixed-dim"
+            className="w-full h-10 pl-10 pr-space-md rounded-lg bg-surface text-on-surface font-body-sm text-body-sm placeholder:text-on-surface-variant/60 shadow-inner focus:outline-none focus:ring-2 focus:ring-secondary-fixed-dim border border-surface-variant"
             placeholder="Search load by name, type..."
             type="text"
             value={searchQuery}
@@ -288,32 +320,31 @@ export default function MyLoadsDevices() {
 
       {/* ERROR STATE */}
       {error && (
-        <div className="bg-surface-container-lowest rounded-xl p-space-lg border border-error mb-space-lg flex items-center justify-between">
-          <div className="flex items-center gap-space-sm text-error">
-            <span className="material-symbols-outlined text-[24px]">error</span>
+        <div className="p-space-lg bg-error-container text-on-error-container rounded-xl flex items-center justify-between mb-space-md">
+          <div className="flex items-center gap-space-sm">
+            <span className="material-symbols-outlined text-error">error</span>
             <span className="font-body-md text-body-md">{error}</span>
           </div>
           <button
             onClick={refetch}
-            className="px-space-md py-1.5 rounded bg-primary-container text-on-primary font-title-sm text-title-sm hover:opacity-95"
-            type="button"
+            className="px-space-md py-1.5 rounded bg-surface-container-lowest text-on-surface font-title-sm text-title-sm hover:bg-surface-container transition-colors"
           >
             Retry
           </button>
         </div>
       )}
 
-      {/* LOADING STATE SKELETON */}
-      {loading && (
+      {/* SKELETON LOADING STATE */}
+      {(loading || viewState === 'skeleton') && (
         <div className="flex flex-col gap-space-md animate-pulse">
-          <div className="h-28 bg-surface-container-high rounded-xl"></div>
-          <div className="h-28 bg-surface-container-high rounded-xl"></div>
-          <div className="h-28 bg-surface-container-high rounded-xl"></div>
+          <div className="h-32 bg-surface-container-high rounded-xl"></div>
+          <div className="h-32 bg-surface-container-high rounded-xl"></div>
+          <div className="h-32 bg-surface-container-high rounded-xl"></div>
         </div>
       )}
 
       {/* EMPTY STATE */}
-      {!loading && devices.length === 0 && (
+      {!loading && (viewState === 'empty' || devices.length === 0) && (
         <div className="bg-surface-container-lowest rounded-xl p-space-xl text-center border border-surface-variant flex flex-col items-center justify-center my-space-md">
           <div className="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center mb-space-md text-on-surface-variant">
             <span className="material-symbols-outlined text-[32px]">devices_other</span>
@@ -327,66 +358,64 @@ export default function MyLoadsDevices() {
           <button
             className="bg-primary-container text-on-primary font-title-sm text-title-sm px-space-lg py-2.5 rounded-lg flex items-center gap-space-xs"
             onClick={() => setDrawerOpen(true)}
-            type="button"
           >
             <span className="material-symbols-outlined text-[20px]">add</span>
-            <span>+ Add Flexible Load</span>
+            <span>+ Add First Device</span>
           </button>
         </div>
       )}
 
-      {/* SUCCESS POPULATED DEVICE LIST */}
-      {!loading && devices.length > 0 && (
+      {/* POPULATED DEVICE LIST */}
+      {!loading && viewState === 'devices' && devices.length > 0 && (
         <div className="flex flex-col gap-space-md">
           {filteredDevices.length === 0 ? (
-            <div className="p-space-lg bg-surface-container-lowest rounded-xl text-center text-on-surface-variant">
+            <div className="p-space-lg bg-surface-container-lowest rounded-xl text-center text-on-surface-variant border border-surface-variant">
               No matching loads found for "{searchQuery}".
             </div>
           ) : (
             filteredDevices.map((device) => {
-              const id = device._id || device.id;
-              const isActive = device.status === 'active';
+              const devId = device.id || device._id;
+              const typeIcon = getTypeIcon(device.type);
+              const typeLabel = getTypeLabel(device.type);
               return (
                 <div
-                  key={id}
-                  className="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm hover:shadow-md transition-shadow"
+                  key={devId}
+                  className="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm hover:shadow-md transition-shadow border border-surface-variant"
                 >
                   <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
                     <div className="flex items-start gap-space-md">
                       <div className="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center text-primary-container shrink-0">
-                        <span className="material-symbols-outlined text-[28px]">{getTypeIcon(device.type)}</span>
+                        <span className="material-symbols-outlined text-[28px]">{typeIcon}</span>
                       </div>
 
                       <div className="flex flex-col">
                         <div className="flex flex-wrap items-center gap-space-xs">
                           <span className="font-title-md text-title-md text-on-surface">{device.name}</span>
                           <span className="px-2.5 py-0.5 rounded-full text-label-sm font-label-sm bg-surface-container text-on-surface-variant">
-                            {getTypeLabel(device.type)}
+                            {typeLabel}
                           </span>
                           <span className="px-2.5 py-0.5 rounded-full text-label-sm font-label-sm bg-secondary-container text-on-secondary-fixed font-title-sm flex items-center gap-1">
                             <span className="w-1.5 h-1.5 rounded-full bg-secondary inline-block animate-ping"></span>
-                            {isActive ? 'Dispatch Active' : 'Dispatch Paused'}
+                            {device.status || (device.active ? 'Active Auto-Sync' : 'Idle')}
                           </span>
                         </div>
-
                         <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">
-                          Required: {device.energyRequired} kWh • Flexibility: {device.flexibility} • Priority: {device.priority}
+                          {device.desc || `Energy: ${device.energyRequired} kWh • Window: ${device.earliestStart || 'N/A'} - ${device.deadline || 'N/A'} • Priority: ${device.priority}`}
                         </p>
-
                         <div className="flex flex-wrap items-center gap-space-md mt-space-sm text-label-sm font-label-sm text-on-surface-variant">
                           <span className="flex items-center gap-1">
                             <span className="material-symbols-outlined text-[16px] text-secondary">bolt</span>
-                            Rated: <strong>{device.energyRequired} kWh</strong>
+                            Req: <strong>{device.energyRequired} kWh</strong>
                           </span>
                           <span>•</span>
                           <span className="flex items-center gap-1">
                             <span className="material-symbols-outlined text-[16px] text-secondary">schedule</span>
-                            Ready by: {device.deadline ? new Date(device.deadline).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '06:30 AM'}
+                            Deadline: <strong>{device.deadline || 'Flexible'}</strong>
                           </span>
                           <span>•</span>
                           <span className="flex items-center gap-1 font-semibold text-primary-container">
                             <span className="material-symbols-outlined text-[16px]">toll</span>
-                            +{device.coinsEarned || 45} FC
+                            Flex: <strong className="uppercase">{device.flexibility || 'HIGH'}</strong>
                           </span>
                         </div>
                       </div>
@@ -397,17 +426,16 @@ export default function MyLoadsDevices() {
                         <input
                           type="checkbox"
                           className="sr-only peer"
-                          checked={isActive}
-                          onChange={() => handleToggle(device)}
+                          checked={device.active}
+                          onChange={() => handleToggle(devId, device.name)}
                         />
                         <div className="w-11 h-6 bg-surface-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-surface-variant after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container"></div>
                       </label>
 
                       <button
                         className="w-9 h-9 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-error transition-colors"
-                        onClick={() => handleDelete(device)}
+                        onClick={() => handleDelete(devId, device.name)}
                         title="Delete Device"
-                        type="button"
                       >
                         <span className="material-symbols-outlined text-[20px]">delete</span>
                       </button>
@@ -420,7 +448,7 @@ export default function MyLoadsDevices() {
         </div>
       )}
 
-      {/* SLIDE-OVER DRAWER (ADD FLEXIBLE LOAD - EXACT CONTRACT FIELDS) */}
+      {/* SLIDE-OVER DRAWER (ADD FLEXIBLE LOAD - CONTRACT COMPLIANT) */}
       {drawerOpen && (
         <div className="fixed inset-0 z-50 flex justify-end">
           <div
@@ -437,149 +465,156 @@ export default function MyLoadsDevices() {
                 <button
                   className="w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-surface-container"
                   onClick={() => setDrawerOpen(false)}
-                  type="button"
                 >
                   <span className="material-symbols-outlined">close</span>
                 </button>
               </div>
 
-              <form onSubmit={handleFormSubmit} className="flex flex-col gap-space-md">
-                {/* 1. Name */}
+              <form id="addDeviceForm" onSubmit={handleFormSubmit} className="flex flex-col gap-space-md">
+                {/* Field 1: name */}
                 <div>
-                  <label className="block text-label-md font-label-md text-on-surface mb-1">
+                  <label className="block text-label-md font-label-md text-on-surface mb-1" htmlFor="load-name">
                     Device Name <span className="text-error">*</span>
                   </label>
                   <input
+                    id="load-name"
                     type="text"
-                    placeholder="e.g. Tesla Model 3 Fleet"
+                    required
+                    placeholder="e.g. Commercial Fleet Charger #4"
                     className="w-full h-10 px-space-sm rounded-lg border border-surface-variant bg-surface text-on-surface focus:outline-none focus:ring-2 focus:ring-primary-container"
                     value={formData.name}
-                    onChange={(e) => {
-                      setFormData({ ...formData, name: e.target.value });
-                      if (formErrors.name) setFormErrors({ ...formErrors, name: null });
-                    }}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   />
                   {formErrors.name && (
-                    <span className="text-label-sm font-label-sm text-error block mt-1">{formErrors.name}</span>
+                    <span className="text-label-sm font-label-sm text-error mt-1 block">{formErrors.name}</span>
                   )}
                 </div>
 
-                {/* 2. Type */}
+                {/* Field 2: type (ev_charging | washing_machine | water_heater | battery | industrial | other) */}
                 <div>
-                  <label className="block text-label-md font-label-md text-on-surface mb-1">
-                    Device Type <span className="text-error">*</span>
+                  <label className="block text-label-md font-label-md text-on-surface mb-1" htmlFor="load-type">
+                    Appliance Type <span className="text-error">*</span>
                   </label>
                   <select
+                    id="load-type"
                     className="w-full h-10 px-space-sm rounded-lg border border-surface-variant bg-surface text-on-surface focus:outline-none focus:ring-2 focus:ring-primary-container"
                     value={formData.type}
                     onChange={(e) => setFormData({ ...formData, type: e.target.value })}
                   >
                     <option value="ev_charging">EV Charging (ev_charging)</option>
-                    <option value="washing_machine">Washing Machine (washing_machine)</option>
-                    <option value="water_heater">Water Heater (water_heater)</option>
-                    <option value="battery">Battery Storage (battery)</option>
-                    <option value="industrial">Industrial / HVAC (industrial)</option>
-                    <option value="other">Other Controllable Load (other)</option>
+                    <option value="washing_machine">Washing Machine / Dryer (washing_machine)</option>
+                    <option value="water_heater">Smart Water Heater (water_heater)</option>
+                    <option value="battery">Battery Storage / Heat Pump (battery)</option>
+                    <option value="industrial">Industrial Machinery (industrial)</option>
+                    <option value="other">Other Controllable Asset (other)</option>
                   </select>
                 </div>
 
-                {/* 3. Energy Required */}
+                {/* Field 3: energyRequired (kWh) */}
                 <div>
-                  <label className="block text-label-md font-label-md text-on-surface mb-1">
+                  <label className="block text-label-md font-label-md text-on-surface mb-1" htmlFor="load-energy">
                     Energy Required (kWh) <span className="text-error">*</span>
                   </label>
                   <input
+                    id="load-energy"
                     type="number"
                     step="0.1"
                     min="0.1"
-                    placeholder="e.g. 7.2"
+                    required
                     className="w-full h-10 px-space-sm rounded-lg border border-surface-variant bg-surface text-on-surface focus:outline-none focus:ring-2 focus:ring-primary-container"
                     value={formData.energyRequired}
-                    onChange={(e) => {
-                      setFormData({ ...formData, energyRequired: e.target.value });
-                      if (formErrors.energyRequired) setFormErrors({ ...formErrors, energyRequired: null });
-                    }}
+                    onChange={(e) => setFormData({ ...formData, energyRequired: e.target.value })}
                   />
                   {formErrors.energyRequired && (
-                    <span className="text-label-sm font-label-sm text-error block mt-1">{formErrors.energyRequired}</span>
+                    <span className="text-label-sm font-label-sm text-error mt-1 block">{formErrors.energyRequired}</span>
                   )}
                 </div>
 
-                {/* 4. Earliest Start & 5. Deadline */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-space-md">
+                {/* Fields 4 & 5: earliestStart and deadline */}
+                <div className="grid grid-cols-2 gap-space-md">
                   <div>
-                    <label className="block text-label-md font-label-md text-on-surface mb-1">
+                    <label className="block text-label-md font-label-md text-on-surface mb-1" htmlFor="load-start">
                       Earliest Start <span className="text-error">*</span>
                     </label>
                     <input
-                      type="datetime-local"
+                      id="load-start"
+                      type="time"
+                      required
                       className="w-full h-10 px-space-sm rounded-lg border border-surface-variant bg-surface text-on-surface focus:outline-none focus:ring-2 focus:ring-primary-container"
                       value={formData.earliestStart}
-                      onChange={(e) => {
-                        setFormData({ ...formData, earliestStart: e.target.value });
-                        if (formErrors.earliestStart) setFormErrors({ ...formErrors, earliestStart: null });
-                      }}
+                      onChange={(e) => setFormData({ ...formData, earliestStart: e.target.value })}
                     />
                     {formErrors.earliestStart && (
-                      <span className="text-label-sm font-label-sm text-error block mt-1">{formErrors.earliestStart}</span>
+                      <span className="text-label-sm font-label-sm text-error mt-1 block">{formErrors.earliestStart}</span>
                     )}
                   </div>
                   <div>
-                    <label className="block text-label-md font-label-md text-on-surface mb-1">
-                      Deadline <span className="text-error">*</span>
+                    <label className="block text-label-md font-label-md text-on-surface mb-1" htmlFor="load-deadline">
+                      Completion Deadline <span className="text-error">*</span>
                     </label>
                     <input
-                      type="datetime-local"
+                      id="load-deadline"
+                      type="time"
+                      required
                       className="w-full h-10 px-space-sm rounded-lg border border-surface-variant bg-surface text-on-surface focus:outline-none focus:ring-2 focus:ring-primary-container"
                       value={formData.deadline}
-                      onChange={(e) => {
-                        setFormData({ ...formData, deadline: e.target.value });
-                        if (formErrors.deadline) setFormErrors({ ...formErrors, deadline: null });
-                      }}
+                      onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
                     />
                     {formErrors.deadline && (
-                      <span className="text-label-sm font-label-sm text-error block mt-1">{formErrors.deadline}</span>
+                      <span className="text-label-sm font-label-sm text-error mt-1 block">{formErrors.deadline}</span>
                     )}
                   </div>
                 </div>
 
-                {/* 6. Flexibility (low | medium | high) */}
+                {/* Field 6: flexibility (low | medium | high) */}
                 <div>
-                  <label className="block text-label-md font-label-md text-on-surface mb-1">Flexibility</label>
+                  <label className="block text-label-md font-label-md text-on-surface mb-1">
+                    Flexibility Window <span className="text-error">*</span>
+                  </label>
                   <div className="grid grid-cols-3 gap-space-xs text-center">
-                    {['low', 'medium', 'high'].map((flex) => (
+                    {[
+                      { id: 'low', label: 'Low (±1h)' },
+                      { id: 'medium', label: 'Medium (±3h)' },
+                      { id: 'high', label: 'High (±6h)' },
+                    ].map((f) => (
                       <button
                         type="button"
-                        key={flex}
-                        onClick={() => setFormData({ ...formData, flexibility: flex })}
-                        className={`py-2 px-1 rounded-lg text-label-sm font-label-sm border transition-colors capitalize ${
-                          formData.flexibility === flex
+                        key={f.id}
+                        onClick={() => setFormData({ ...formData, flexibility: f.id })}
+                        className={`py-2 px-1 rounded-lg text-label-sm font-label-sm border transition-colors ${
+                          formData.flexibility === f.id
                             ? 'bg-secondary-container text-on-secondary-fixed border-secondary-fixed-dim font-bold'
                             : 'border-surface-variant text-on-surface-variant hover:bg-surface-container'
                         }`}
                       >
-                        {flex}
+                        {f.label}
                       </button>
                     ))}
                   </div>
                 </div>
 
-                {/* 7. Priority (low | normal | high) */}
+                {/* Field 7: priority (low | normal | high) */}
                 <div>
-                  <label className="block text-label-md font-label-md text-on-surface mb-1">Priority</label>
+                  <label className="block text-label-md font-label-md text-on-surface mb-1">
+                    Priority Level <span className="text-error">*</span>
+                  </label>
                   <div className="grid grid-cols-3 gap-space-xs text-center">
-                    {['low', 'normal', 'high'].map((prio) => (
+                    {[
+                      { id: 'low', label: 'Low' },
+                      { id: 'normal', label: 'Normal' },
+                      { id: 'high', label: 'High' },
+                    ].map((p) => (
                       <button
                         type="button"
-                        key={prio}
-                        onClick={() => setFormData({ ...formData, priority: prio })}
-                        className={`py-2 px-1 rounded-lg text-label-sm font-label-sm border transition-colors capitalize ${
-                          formData.priority === prio
+                        key={p.id}
+                        onClick={() => setFormData({ ...formData, priority: p.id })}
+                        className={`py-2 px-1 rounded-lg text-label-sm font-label-sm border transition-colors ${
+                          formData.priority === p.id
                             ? 'bg-primary-container text-on-primary font-bold'
                             : 'border-surface-variant text-on-surface-variant hover:bg-surface-container'
                         }`}
                       >
-                        {prio}
+                        {p.label}
                       </button>
                     ))}
                   </div>
@@ -589,10 +624,10 @@ export default function MyLoadsDevices() {
                   <span className="material-symbols-outlined text-secondary text-[22px] shrink-0">insights</span>
                   <div className="flex flex-col">
                     <span className="font-title-sm text-title-sm text-on-secondary-fixed">
-                      Estimated Annual Carbon Offset
+                      Certified Demand Response
                     </span>
                     <span className="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
-                      Registering this flexible asset helps prevent approximately <strong>380 kg CO₂e</strong> grid emissions each year through curtailment avoidance.
+                      Registering this load ensures dispatch algorithms automatically avoid regional peaker events.
                     </span>
                   </div>
                 </div>
@@ -607,15 +642,11 @@ export default function MyLoadsDevices() {
                   </button>
                   <button
                     type="submit"
-                    disabled={submitting}
+                    disabled={isSubmitting}
                     className="bg-primary-container hover:bg-primary text-on-primary font-title-sm text-title-sm px-space-lg py-2.5 rounded-lg shadow-sm transition-colors flex items-center gap-space-xs"
                   >
-                    {submitting ? (
-                      <span className="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
-                    ) : (
-                      <span className="material-symbols-outlined text-[18px]">check_circle</span>
-                    )}
-                    <span>Save Flexible Load</span>
+                    <span className="material-symbols-outlined text-[18px]">check_circle</span>
+                    <span>{isSubmitting ? 'Saving...' : 'Save Flexible Load'}</span>
                   </button>
                 </div>
               </form>
