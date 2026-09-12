@@ -218,7 +218,56 @@ class SimulatedEnergyProvider extends EnergyDataProvider {
   }
 
   /**
+   * Applies realistic short-term fluctuation (jitter) on top of the base calibrated curve.
+   * This jitter simulates natural short-term grid fluctuation (such as passing cloud cover
+   * affecting solar irradiance, or minor domestic/commercial demand shifts) on top of the
+   * calibrated baseline curve, ensuring values change realistically on every request/refresh
+   * without altering the macro diurnal solar and demand profile.
+   * 
+   * @param {{
+   *   timestamp: Date,
+   *   renewableAvailability: number,
+   *   gridDemand: number,
+   *   price: number,
+   *   source: 'simulated'
+   * }} reading - Base calibrated reading
+   * @returns {{
+   *   timestamp: Date,
+   *   renewableAvailability: number,
+   *   gridDemand: number,
+   *   price: number,
+   *   source: 'simulated'
+   * }} Reading with real-time fluctuation applied
+   */
+  applyRealtimeJitter(reading) {
+    // This jitter simulates natural short-term grid fluctuation on top of the calibrated baseline pattern.
+    // renewableAvailability: ±2-4% variation (cloud cover, micro-irradiance changes)
+    const renSign = Math.random() < 0.5 ? -1 : 1;
+    const renDelta = renSign * (2 + Math.random() * 2);
+
+    // gridDemand: ±3-5% variation (minor aggregate residential & commercial load shifts)
+    const demandSign = Math.random() < 0.5 ? -1 : 1;
+    const demandDelta = demandSign * (3 + Math.random() * 2);
+
+    // Keep all values clamped within [0, 100] after jitter is applied
+    const renewableAvailability = Math.max(0, Math.min(100, Math.round((reading.renewableAvailability + renDelta) * 100) / 100));
+    const gridDemand = Math.max(0, Math.min(100, Math.round((reading.gridDemand + demandDelta) * 100) / 100));
+
+    // Recalculate dynamic synthetic price matching the jittered conditions
+    const price = this.calculatePrice(renewableAvailability, gridDemand);
+
+    return {
+      timestamp: reading.timestamp,
+      renewableAvailability,
+      gridDemand,
+      price,
+      source: 'simulated',
+    };
+  }
+
+  /**
    * Retrieves current real-time energy conditions.
+   * Applies real-time jitter on top of the calibrated curve so values reflect natural live variation.
    * 
    * @returns {Promise<{
    *   timestamp: Date,
@@ -229,11 +278,13 @@ class SimulatedEnergyProvider extends EnergyDataProvider {
    * }>} Point-in-time condition reading
    */
   async getCurrentConditions() {
-    return this.evaluateAt(new Date());
+    const base = this.evaluateAt(new Date());
+    return this.applyRealtimeJitter(base);
   }
 
   /**
    * Retrieves forward-looking hourly energy forecasts for a given horizon starting from now.
+   * Applies real-time jitter on top of the calibrated curve so hourly forecasts reflect natural live variation.
    * 
    * @param {number} [hours] - Forecast horizon in hours (defaults to config.defaultForecastHours)
    * @returns {Promise<Array<{
@@ -251,7 +302,8 @@ class SimulatedEnergyProvider extends EnergyDataProvider {
 
     for (let step = 0; step < horizonHours; step += 1) {
       const stepDate = new Date(now.getTime() + step * 60 * 60 * 1000);
-      forecast.push(this.evaluateAt(stepDate));
+      const base = this.evaluateAt(stepDate);
+      forecast.push(this.applyRealtimeJitter(base));
     }
 
     return forecast;
