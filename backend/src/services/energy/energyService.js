@@ -65,6 +65,33 @@ async function _persistEnergyData(records) {
  * }>} Current grid conditions
  */
 async function getCurrentConditions() {
+  // Check MongoDB cache for fresh live conditions before hitting network/quota
+  if (!energyConfig.demoMode && EnergyData && EnergyData.db && EnergyData.db.readyState === 1) {
+    try {
+      const ttlMinutes = energyConfig.liveDataCacheTtlMinutes || 15;
+      const cutoff = new Date(Date.now() - ttlMinutes * 60 * 1000);
+      const cached = await EnergyData.findOne({
+        source: 'live',
+        createdAt: { $gte: cutoff },
+      })
+        .sort({ createdAt: -1 })
+        .lean();
+
+      if (cached) {
+        logger.debug(`[EnergyService] Serving cached live energy conditions from ${cached.createdAt}`);
+        return {
+          timestamp: cached.timestamp,
+          renewableAvailability: cached.renewableAvailability,
+          gridDemand: cached.gridDemand,
+          price: cached.price !== null && cached.price !== undefined ? cached.price : undefined,
+          source: cached.source,
+        };
+      }
+    } catch (err) {
+      logger.debug(`[EnergyService] Live cache check failed: ${err.message}`);
+    }
+  }
+
   const provider = getEnergyProvider();
   const conditions = await provider.getCurrentConditions();
 
