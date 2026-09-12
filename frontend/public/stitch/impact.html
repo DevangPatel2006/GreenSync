@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@600;700&amp;family=Inter:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: 'class', theme: { extend: { 'colors': { 'inverse-primary': '#fbaee9', 'surface-variant': '#e8e0eb', 'inverse-on-surface': '#f7eef9', 'secondary-fixed-dim': '#b8d074', 'on-primary-fixed-variant': '#6c3063', 'primary-fixed-dim': '#fbaee9', 'secondary': '#526615', 'surface-tint': '#88487c', 'primary': '#260023', 'surface-bright': '#fff7ff', 'tertiary': '#0a1300', 'on-tertiary': '#ffffff', 'tertiary-fixed-dim': '#b9ce91', 'tertiary-fixed': '#d5ebaa', 'tertiary-container': '#1b2a00', 'inverse-surface': '#332f37', 'outline': '#81737c', 'surface-dim': '#e0d7e3', 'outline-variant': '#d3c2cc', 'error': '#ba1a1a', 'on-error-container': '#93000a', 'on-secondary-fixed-variant': '#3b4d00', 'background': '#fff7ff', 'surface': '#fff7ff', 'primary-fixed': '#ffd7f2', 'error-container': '#ffdad6', 'on-secondary-container': '#586c1b', 'on-surface-variant': '#50434b', 'on-secondary': '#ffffff', 'on-primary-container': '#bc75ad', 'on-tertiary-container': '#80945c', 'on-error': '#ffffff', 'secondary-container': '#d4ed8d', 'surface-container': '#f4ebf7', 'surface-container-high': '#eee5f1', 'on-tertiary-fixed-variant': '#3b4c1c', 'on-tertiary-fixed': '#131f00', 'surface-container-lowest': '#ffffff', 'on-primary': '#ffffff', 'on-primary-fixed': '#390134', 'on-surface': '#1e1a22', 'on-secondary-fixed': '#161f00', 'secondary-fixed': '#d4ed8d', 'primary-container': '#450c3f', 'surface-container-low': '#faf1fc', 'surface-container-highest': '#e8e0eb', 'on-background': '#1e1a22' }, 'borderRadius': { 'DEFAULT': '0.125rem', 'lg': '0.25rem', 'xl': '0.5rem', 'full': '0.75rem' }, 'spacing': { 'gutter': '1.5rem', 'margin-mobile': '1rem', 'space-xl': '2.5rem', 'space-md': '1rem', 'margin': '2rem', 'space-xs': '0.25rem', 'space-sm': '0.5rem', 'space-lg': '1.5rem', 'gutter-mobile': '1rem' }, 'fontFamily': { 'title-sm': ['Inter'], 'headline-lg': ['Hanken Grotesk'], 'headline-md': ['Hanken Grotesk'], 'title-md': ['Inter'], 'body-md': ['Inter'], 'headline-sm': ['Hanken Grotesk'], 'body-sm': ['Inter'], 'display': ['Hanken Grotesk'], 'label-sm': ['Inter'], 'label-md': ['Inter'], 'headline-lg-mobile': ['Hanken Grotesk'], 'display-mobile': ['Hanken Grotesk'], 'body-lg': ['Inter'] }, 'fontSize': { 'title-sm': ['14px', {'lineHeight': '20px', 'fontWeight': '600'}], 'headline-lg': ['32px', {'lineHeight': '40px', 'letterSpacing': '-0.015em', 'fontWeight': '700'}], 'headline-md': ['24px', {'lineHeight': '32px', 'letterSpacing': '-0.01em', 'fontWeight': '600'}], 'title-md': ['16px', {'lineHeight': '24px', 'fontWeight': '600'}], 'body-md': ['15px', {'lineHeight': '22px', 'fontWeight': '400'}], 'headline-sm': ['20px', {'lineHeight': '28px', 'fontWeight': '600'}], 'body-sm': ['13px', {'lineHeight': '18px', 'fontWeight': '400'}], 'display': ['48px', {'lineHeight': '56px', 'letterSpacing': '-0.02em', 'fontWeight': '700'}], 'label-sm': ['11px', {'lineHeight': '14px', 'letterSpacing': '0.04em', 'fontWeight': '600'}], 'label-md': ['13px', {'lineHeight': '16px', 'letterSpacing': '0.01em', 'fontWeight': '600'}], 'headline-lg-mobile': ['26px', {'lineHeight': '34px', 'letterSpacing': '-0.01em', 'fontWeight': '600'}], 'display-mobile': ['36px', {'lineHeight': '44px', 'letterSpacing': '-0.02em', 'fontWeight': '700'}], 'body-lg': ['18px', {'lineHeight': '28px', 'fontWeight': '400'}] } } } };</script></head><body class="bg-surface font-body-md text-on-surface antialiased"><header class="fixed top-0 left-0 right-0 z-50 bg-surface-container-lowest border-b border-surface-variant"><div class="h-16 w-full px-gutter flex items-center justify-between"><div class="flex items-center gap-space-md"><img alt="GreenSync Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1Xa-uYDZDJUPOxjIXg4SDipWcIcXQdawOBTMdaQReTF4qA347DOTIXphndYcLWLv2PHlKUlkZY7whLZ4oaCXq4Yzfs9QQlZLzyn74Zqj9uJ2QJtD9oh4DjBp2zR3a4D7VfIi_kGtK71fS4Jd9RX36ZAAa_YUIuTBchtwUijpwCPhcov6GmmrT9d9xi_TOU9BpDzekYrvj72lqeqaqXmB94dDornjj1-_hU1MpRNDPKybmC0eXQBSdjLrP0"/><span class="font-headline-sm text-headline-sm text-primary-container tracking-tight">GreenSync</span></div><div class="flex items-center gap-space-lg"><div class="hidden sm:flex items-center gap-space-xs px-3 py-1 rounded-full bg-secondary-container text-on-secondary-fixed border border-secondary-fixed-dim"><span class="w-2 h-2 rounded-full bg-secondary inline-block animate-pulse"></span><span class="font-label-md text-label-md">Grid Status: Balanced • 68% Renewable</span></div><div class="flex items-center gap-space-sm"><button class="w-9 h-9 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" type="button"><span class="material-symbols-outlined text-[20px]">notifications</span></button><div class="h-5 w-[1px] bg-surface-variant"></div><div class="flex items-center gap-space-sm pl-space-xs"><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div><div class="hidden md:flex flex-col text-left"><span class="font-label-md text-label-md text-on-surface leading-tight">Alex Mercer</span><span class="font-label-sm text-label-sm text-on-surface-variant leading-tight">Enterprise Facility</span></div></div></div></div></div></header><aside class="fixed left-0 top-16 bottom-0 w-64 bg-surface-container-lowest border-r border-surface-variant z-40 flex flex-col justify-between overflow-y-auto"><div class="p-space-md"><div class="px-space-sm py-space-xs mb-space-sm text-label-sm font-label-sm uppercase tracking-wider text-on-surface-variant">Navigation</div><nav class="flex flex-col gap-1" data-active-classes="bg-primary-container text-on-primary font-title-sm"><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors font-body-md text-body-md" data-path="dashboard" href="#"><span class="material-symbols-outlined text-[20px]">grid_view</span><span>Dashboard</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors font-body-md text-body-md" data-path="my-loads-devices" href="#"><span class="material-symbols-outlined text-[20px]">devices</span><span>My Loads / Devices</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors font-body-md text-body-md" data-path="add-flexible-load" href="#"><span class="material-symbols-outlined text-[20px]">add_circle</span><span>Add Flexible Load</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors font-body-md text-body-md" data-path="schedule-recommendations" href="#"><span class="material-symbols-outlined text-[20px]">calendar_clock</span><span>Schedule &amp; Recommendations</span></a><a aria-current="page" class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg transition-colors bg-primary-container text-on-primary font-title-sm" data-path="impact" href="#"><span class="material-symbols-outlined text-[20px]">energy_savings_leaf</span><span>Impact</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors font-body-md text-body-md" data-path="rewards-flexcoins" href="#"><span class="material-symbols-outlined text-[20px]">monetization_on</span><span>Rewards &amp; FlexCoins</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors font-body-md text-body-md" data-path="admin-grid" href="#"><span class="material-symbols-outlined text-[20px]">tune</span><span>Admin Grid</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors font-body-md text-body-md" data-path="profile-settings" href="#"><span class="material-symbols-outlined text-[20px]">settings</span><span>Profile &amp; Settings</span></a></nav></div><div class="p-space-md border-t border-surface-variant bg-surface-container-low"><div class="flex items-center justify-between"><div class="flex flex-col"><span class="font-label-sm text-label-sm text-on-surface-variant">Active Flex Capacity</span><span class="font-title-sm text-title-sm text-primary-container">142.8 kW</span></div><span class="material-symbols-outlined text-secondary text-[22px]">bolt</span></div></div></aside><div class="pl-64"><main class="w-full min-h-[calc(100vh-4rem)] pt-16 px-gutter py-space-lg bg-surface"><div class="flex flex-col w-full">
+<!-- Interactive View State Controller -->
+<div class="flex flex-wrap items-center justify-between gap-space-md mb-space-lg bg-surface-container-lowest p-space-md rounded-xl shadow-sm">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-secondary text-[22px]">tune</span>
+<span class="font-title-sm text-title-sm text-on-surface">Data Simulation Mode:</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Switch perspective to inspect edge states</span>
+</div>
+<div class="inline-flex rounded-lg bg-surface-container-high p-1 gap-1">
+<button class="state-btn px-space-md py-1.5 rounded text-label-md font-label-md transition-colors bg-primary-container text-on-primary" id="btn-state-populated" onclick="setViewMode('populated')" type="button">
+        Populated Data
+      </button>
+<button class="state-btn px-space-md py-1.5 rounded text-label-md font-label-md transition-colors text-on-surface-variant hover:text-on-surface" id="btn-state-empty" onclick="setViewMode('empty')" type="button">
+        New User (0 Impact)
+      </button>
+<button class="state-btn px-space-md py-1.5 rounded text-label-md font-label-md transition-colors text-on-surface-variant hover:text-on-surface" id="btn-state-loading" onclick="setViewMode('loading')" type="button">
+        Telemetry Syncing
+      </button>
+</div>
+</div>
+<!-- Hero Impact Header -->
+<div class="relative overflow-hidden bg-primary-container text-on-primary rounded-xl p-space-xl mb-space-xl shadow-md">
+<div class="relative z-10 flex flex-col md:flex-row items-start md:items-end justify-between gap-space-lg">
+<div class="max-w-2xl">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary-container text-on-secondary-fixed mb-space-md">
+<span class="material-symbols-outlined text-[16px] text-secondary">verified</span>
+<span class="font-label-sm text-label-sm uppercase tracking-wider">Certified Flex Telemetry</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-on-primary mb-space-xs tracking-tight">Your Environmental &amp; Grid Impact</h1>
+<p class="font-body-lg text-body-lg text-primary-fixed max-w-xl">
+          Every shifted kilowatt hour keeps fossil peaker plants offline. Your scheduled flex operations actively relieve grid stress and suppress regional peaker activation.
+        </p>
+</div>
+<div class="flex items-center gap-space-md bg-primary/40 backdrop-blur px-space-lg py-space-md rounded-lg shadow-sm">
+<div class="w-12 h-12 rounded-lg bg-secondary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary text-[26px]">eco</span>
+</div>
+<div>
+<span class="block font-label-sm text-label-sm text-primary-fixed uppercase tracking-wider">Grid Co-Op Rank</span>
+<span class="font-headline-sm text-headline-sm text-on-primary">Top 4% Regional</span>
+</div>
+</div>
+</div>
+<div class="absolute -right-12 -bottom-24 w-80 h-80 rounded-full bg-secondary opacity-15 pointer-events-none blur-2xl"></div>
+</div>
+<!-- Loading State Skeleton Box (Toggled via JS) -->
+<div class="hidden flex-col gap-space-lg w-full animate-pulse" id="state-loading-view">
+<div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-space-md">
+<div class="h-36 bg-surface-container-high rounded-xl"></div>
+<div class="h-36 bg-surface-container-high rounded-xl"></div>
+<div class="h-36 bg-surface-container-high rounded-xl"></div>
+<div class="h-36 bg-surface-container-high rounded-xl"></div>
+<div class="h-36 bg-surface-container-high rounded-xl"></div>
+</div>
+<div class="h-80 bg-surface-container-high rounded-xl"></div>
+<div class="h-64 bg-surface-container-high rounded-xl"></div>
+</div>
+<!-- Main Active Content Wrapper -->
+<div class="flex flex-col gap-space-xl" id="state-content-view">
+<!-- Large KPI Metric Bento Row -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-space-md">
+<!-- KPI 1: Energy Shifted -->
+<div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+<div class="flex items-center justify-between mb-space-sm">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Total Shifted</span>
+<div class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary-container">
+<span class="material-symbols-outlined text-[20px]">swap_horiz</span>
+</div>
+</div>
+<div>
+<span class="font-headline-lg text-headline-lg text-on-surface block tracking-tight" id="metric-kwh">420.5</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1 mt-1">
+<span class="font-semibold text-secondary">+18.2%</span> vs last month baseline
+          </span>
+</div>
+<div class="mt-space-md pt-space-xs">
+<div class="w-full bg-surface-container-high h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary-container h-full rounded-full" id="bar-kwh" style="width: 78%;"></div>
+</div>
+</div>
+</div>
+<!-- KPI 2: Renewable Ratio -->
+<div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+<div class="flex items-center justify-between mb-space-sm">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Renewables</span>
+<div class="w-8 h-8 rounded-lg bg-secondary-container flex items-center justify-center text-on-secondary-fixed">
+<span class="material-symbols-outlined text-[20px]">solar_power</span>
+</div>
+</div>
+<div>
+<span class="font-headline-lg text-headline-lg text-on-surface block tracking-tight" id="metric-renewables">86.4%</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1 mt-1">
+<span class="w-2 h-2 rounded-full bg-secondary inline-block"></span> Local solar &amp; wind match
+          </span>
+</div>
+<div class="mt-space-md pt-space-xs">
+<div class="w-full bg-surface-container-high h-1.5 rounded-full overflow-hidden">
+<div class="bg-secondary h-full rounded-full" id="bar-renewables" style="width: 86.4%;"></div>
+</div>
+</div>
+</div>
+<!-- KPI 3: CO2 Avoided + Equiv -->
+<div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+<div class="flex items-center justify-between mb-space-sm">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">CO₂ Avoided</span>
+<div class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[20px]">cloud_off</span>
+</div>
+</div>
+<div>
+<span class="font-headline-lg text-headline-lg text-on-surface block tracking-tight" id="metric-co2">184.2 <span class="text-headline-sm font-headline-sm font-normal">kg</span></span>
+<div class="flex flex-col gap-0.5 mt-1 font-body-sm text-body-sm text-on-surface-variant" id="metric-co2-equiv">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[15px] text-secondary">park</span> 8.4 urban trees planted
+            </span>
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[15px] text-on-surface-variant">directions_car</span> 462 car miles offset
+            </span>
+</div>
+</div>
+<div class="mt-space-md pt-space-xs">
+<span class="font-label-sm text-label-sm text-secondary font-semibold">Scope 2 Emissions Reduction</span>
+</div>
+</div>
+<!-- KPI 4: Peak Relieved -->
+<div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+<div class="flex items-center justify-between mb-space-sm">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Peak Relieved</span>
+<div class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary-container">
+<span class="material-symbols-outlined text-[20px]">bolt</span>
+</div>
+</div>
+<div>
+<span class="font-headline-lg text-headline-lg text-on-surface block tracking-tight" id="metric-peak">5.4 <span class="text-headline-sm font-headline-sm font-normal">kW</span></span>
+<span class="font-body-sm text-body-sm text-on-surface-variant block mt-1">
+            Max curtailment during critical peak call
+          </span>
+</div>
+<div class="mt-space-md pt-space-xs">
+<div class="flex items-center gap-1 text-on-surface-variant font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px] text-secondary">schedule</span> 17:00 - 20:00 Window
+          </div>
+</div>
+</div>
+<!-- KPI 5: FlexCoins (Prominent Simulation Badge) -->
+<div class="bg-primary-container text-on-primary p-space-lg rounded-xl shadow-md flex flex-col justify-between relative overflow-hidden">
+<div class="flex items-center justify-between mb-space-sm">
+<span class="font-label-md text-label-md text-primary-fixed uppercase tracking-wider">FlexCoins</span>
+<span class="px-2 py-0.5 rounded-full bg-secondary text-on-secondary font-label-sm text-label-sm">Impact Sim</span>
+</div>
+<div>
+<div class="flex items-baseline gap-2">
+<span class="font-headline-lg text-headline-lg text-on-primary tracking-tight" id="metric-coins">1,420</span>
+<span class="font-title-sm text-title-sm text-secondary-container">FC</span>
+</div>
+<span class="font-body-sm text-body-sm text-primary-fixed block mt-1">
+            Virtual eco-currency accrued via grid flexibility
+          </span>
+</div>
+<div class="mt-space-md pt-space-xs flex items-center justify-between text-label-sm font-label-sm text-secondary-container">
+<span>Tier: Catalyst</span>
+<span class="material-symbols-outlined text-[18px]">stars</span>
+</div>
+</div>
+</div>
+<!-- Impact History Chart & Telemetry Module -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-space-lg">
+<!-- Chart Card (2 Cols) -->
+<div class="lg:col-span-2 bg-surface-container-lowest p-space-lg rounded-xl shadow-sm flex flex-col justify-between">
+<div class="flex flex-wrap items-center justify-between gap-space-md mb-space-lg">
+<div>
+<h2 class="font-title-md text-title-md text-on-surface">Monthly Shifting &amp; Renewable Ratio</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Aggregated energy redirected into renewable solar/wind peaks</p>
+</div>
+<div class="flex items-center gap-space-md">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-sm bg-primary-container inline-block"></span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Shifted Energy (kWh)</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-3 h-1.5 rounded-full bg-secondary inline-block"></span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Renewable % Target</span>
+</div>
+</div>
+</div>
+<!-- SVG Energy Performance Chart -->
+<div class="w-full h-72 relative">
+<svg class="w-full h-full" fill="none" preserveaspectratio="none" viewbox="0 0 700 240">
+<!-- Subtle Guide Lines -->
+<line stroke="#E8E0EB" stroke-dasharray="4 4" stroke-width="1" x1="40" x2="680" y1="30" y2="30"></line>
+<line stroke="#E8E0EB" stroke-dasharray="4 4" stroke-width="1" x1="40" x2="680" y1="85" y2="85"></line>
+<line stroke="#E8E0EB" stroke-dasharray="4 4" stroke-width="1" x1="40" x2="680" y1="140" y2="140"></line>
+<line stroke="#E8E0EB" stroke-width="1" x1="40" x2="680" y1="195" y2="195"></line>
+<!-- Y-Axis Labels -->
+<text fill="#81737C" font-family="Inter" font-size="11" text-anchor="end" x="30" y="34">120k</text>
+<text fill="#81737C" font-family="Inter" font-size="11" text-anchor="end" x="30" y="89">80k</text>
+<text fill="#81737C" font-family="Inter" font-size="11" text-anchor="end" x="30" y="144">40k</text>
+<text fill="#81737C" font-family="Inter" font-size="11" text-anchor="end" x="30" y="198">0</text>
+<!-- Month 1: Nov -->
+<g class="transition-all hover:opacity-90 cursor-pointer">
+<rect fill="#450C3F" height="80" rx="3" width="46" x="75" y="115"></rect>
+<text fill="#50434B" font-family="Inter" font-size="12" text-anchor="middle" x="98" y="215">Nov</text>
+<text fill="#450C3F" font-family="Inter" font-size="11" font-weight="600" text-anchor="middle" x="98" y="105">48 kWh</text>
+</g>
+<!-- Month 2: Dec -->
+<g class="transition-all hover:opacity-90 cursor-pointer">
+<rect fill="#450C3F" height="100" rx="3" width="46" x="175" y="95"></rect>
+<text fill="#50434B" font-family="Inter" font-size="12" text-anchor="middle" x="198" y="215">Dec</text>
+<text fill="#450C3F" font-family="Inter" font-size="11" font-weight="600" text-anchor="middle" x="198" y="85">62 kWh</text>
+</g>
+<!-- Month 3: Jan -->
+<g class="transition-all hover:opacity-90 cursor-pointer">
+<rect fill="#450C3F" height="115" rx="3" width="46" x="275" y="80"></rect>
+<text fill="#50434B" font-family="Inter" font-size="12" text-anchor="middle" x="298" y="215">Jan</text>
+<text fill="#450C3F" font-family="Inter" font-size="11" font-weight="600" text-anchor="middle" x="298" y="70">74 kWh</text>
+</g>
+<!-- Month 4: Feb -->
+<g class="transition-all hover:opacity-90 cursor-pointer">
+<rect fill="#450C3F" height="130" rx="3" width="46" x="375" y="65"></rect>
+<text fill="#50434B" font-family="Inter" font-size="12" text-anchor="middle" x="398" y="215">Feb</text>
+<text fill="#450C3F" font-family="Inter" font-size="11" font-weight="600" text-anchor="middle" x="398" y="55">89 kWh</text>
+</g>
+<!-- Month 5: Mar -->
+<g class="transition-all hover:opacity-90 cursor-pointer">
+<rect fill="#450C3F" height="123" rx="3" width="46" x="475" y="72"></rect>
+<text fill="#50434B" font-family="Inter" font-size="12" text-anchor="middle" x="498" y="215">Mar</text>
+<text fill="#450C3F" font-family="Inter" font-size="11" font-weight="600" text-anchor="middle" x="498" y="62">82 kWh</text>
+</g>
+<!-- Month 6: Apr (Current Peak) -->
+<g class="transition-all hover:opacity-90 cursor-pointer">
+<rect fill="#450C3F" height="150" rx="3" width="46" x="575" y="45"></rect>
+<text fill="#450C3F" font-family="Inter" font-size="12" font-weight="600" text-anchor="middle" x="598" y="215">Apr (Live)</text>
+<text fill="#450C3F" font-family="Inter" font-size="11" font-weight="600" text-anchor="middle" x="598" y="35">105 kWh</text>
+</g>
+<!-- Renewable Target Trend Line overlay -->
+<path d="M 98 120 L 198 100 L 298 90 L 398 62 L 498 70 L 598 40" fill="none" stroke="#526615" stroke-linecap="round" stroke-width="3"></path>
+<!-- Nodes on line -->
+<circle cx="98" cy="120" fill="#d4ed8d" r="4" stroke="#526615" stroke-width="2"></circle>
+<circle cx="198" cy="100" fill="#d4ed8d" r="4" stroke="#526615" stroke-width="2"></circle>
+<circle cx="298" cy="90" fill="#d4ed8d" r="4" stroke="#526615" stroke-width="2"></circle>
+<circle cx="398" cy="62" fill="#d4ed8d" r="4" stroke="#526615" stroke-width="2"></circle>
+<circle cx="498" cy="70" fill="#d4ed8d" r="4" stroke="#526615" stroke-width="2"></circle>
+<circle cx="598" cy="40" fill="#526615" r="5" stroke="#ffffff" stroke-width="2"></circle>
+</svg>
+</div>
+<div class="pt-space-md flex flex-wrap items-center justify-between gap-space-sm">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Telemetry verified against CAISO Regional Grid Signal</span>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span class="font-label-sm text-label-sm text-secondary font-semibold">Synced in real-time</span>
+</div>
+</div>
+</div>
+<!-- Real-Time Peaker Plant Offset Breakdown -->
+<div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-space-md">
+<h2 class="font-title-md text-title-md text-on-surface">Grid Peak Suppression</h2>
+<span class="px-2 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm">Live Dispatch</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-space-lg">
+            During local stress intervals (5-8 PM), your equipment curtailed demand, mitigating the need to fire gas turbine peakers.
+          </p>
+<div class="space-y-space-md">
+<div class="bg-surface-container-low p-space-md rounded-lg">
+<div class="flex justify-between items-center mb-1">
+<span class="font-title-sm text-title-sm text-on-surface">HVAC Chiller Load Shift</span>
+<span class="font-label-md text-label-md text-primary-container">2.8 kW curtailed</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Pre-cooling thermal buffer engaged at 15:30</p>
+</div>
+<div class="bg-surface-container-low p-space-md rounded-lg">
+<div class="flex justify-between items-center mb-1">
+<span class="font-title-sm text-title-sm text-on-surface">EV Fleet Depot Bank</span>
+<span class="font-label-md text-label-md text-primary-container">1.9 kW deferred</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Charging ramp postponed until 22:00 solar excess</p>
+</div>
+<div class="bg-surface-container-low p-space-md rounded-lg">
+<div class="flex justify-between items-center mb-1">
+<span class="font-title-sm text-title-sm text-on-surface">Thermal Storage Hot Water</span>
+<span class="font-label-md text-label-md text-primary-container">0.7 kW reduced</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Zero comfort degradation across workplace</p>
+</div>
+</div>
+</div>
+<div class="mt-space-lg pt-space-md bg-secondary-container p-space-md rounded-lg flex items-center gap-space-md">
+<span class="material-symbols-outlined text-secondary text-[28px]">electric_meter</span>
+<div>
+<span class="block font-title-sm text-title-sm text-on-secondary-fixed">Calculated Net Avoidance</span>
+<span class="font-body-sm text-body-sm text-on-secondary-fixed-variant">Equivalent to 4.2 hours of single peaker idling.</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Rewards & Milestones Section -->
+<div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-md pb-space-lg mb-space-lg">
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Milestones &amp; Achievement Badges</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Recognizing continuous participation in regional grid balance</p>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-label-md text-label-md text-primary-container font-semibold">3 Unlocked</span>
+<span class="text-on-surface-variant">•</span>
+<span class="font-label-md text-label-md text-on-surface-variant">1 In Progress</span>
+</div>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
+<!-- Badge 1: Off-Peak Hero -->
+<div class="bg-surface-container-low p-space-md rounded-xl flex flex-col justify-between group hover:bg-surface-container transition-colors">
+<div class="flex items-start justify-between mb-space-md">
+<div class="w-12 h-12 rounded-xl bg-secondary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary text-[24px]">nightlight</span>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-fixed font-label-sm text-label-sm font-semibold">Unlocked</span>
+</div>
+<div>
+<h3 class="font-title-sm text-title-sm text-on-surface mb-1">Off-Peak Hero</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Shifted over 200 kWh out of the high-stress evening peak hours.</p>
+</div>
+<div class="mt-space-md pt-space-xs text-secondary text-label-sm font-label-sm flex items-center gap-1 font-semibold">
+<span class="material-symbols-outlined text-[16px]">check_circle</span> Awarded Mar 12
+          </div>
+</div>
+<!-- Badge 2: Solar Surfer -->
+<div class="bg-surface-container-low p-space-md rounded-xl flex flex-col justify-between group hover:bg-surface-container transition-colors">
+<div class="flex items-start justify-between mb-space-md">
+<div class="w-12 h-12 rounded-xl bg-secondary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary text-[24px]">wb_sunny</span>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-fixed font-label-sm text-label-sm font-semibold">Unlocked</span>
+</div>
+<div>
+<h3 class="font-title-sm text-title-sm text-on-surface mb-1">Solar Surfer</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Achieved &gt;80% energy consumption during renewable generation surplus.</p>
+</div>
+<div class="mt-space-md pt-space-xs text-secondary text-label-sm font-label-sm flex items-center gap-1 font-semibold">
+<span class="material-symbols-outlined text-[16px]">check_circle</span> Awarded Apr 02
+          </div>
+</div>
+<!-- Badge 3: Grid Guardian Level 2 -->
+<div class="bg-surface-container-low p-space-md rounded-xl flex flex-col justify-between group hover:bg-surface-container transition-colors">
+<div class="flex items-start justify-between mb-space-md">
+<div class="w-12 h-12 rounded-xl bg-secondary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary text-[24px]">shield</span>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-fixed font-label-sm text-label-sm font-semibold">Level 2</span>
+</div>
+<div>
+<h3 class="font-title-sm text-title-sm text-on-surface mb-1">Grid Guardian</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Automated instantaneous emergency shed during 3 red-alert grid events.</p>
+</div>
+<div class="mt-space-md pt-space-xs text-secondary text-label-sm font-label-sm flex items-center gap-1 font-semibold">
+<span class="material-symbols-outlined text-[16px]">check_circle</span> Awarded Apr 18
+          </div>
+</div>
+<!-- Badge 4: Centurion Shift (In progress) -->
+<div class="bg-surface-container-low p-space-md rounded-xl flex flex-col justify-between">
+<div class="flex items-start justify-between mb-space-md">
+<div class="w-12 h-12 rounded-xl bg-surface-container-high flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined text-[24px]">military_tech</span>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm font-semibold">82% Completed</span>
+</div>
+<div>
+<h3 class="font-title-sm text-title-sm text-on-surface mb-1">Centurion Shift</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Execute 100 successful dynamic load shifts. (82 of 100 logged).</p>
+</div>
+<div class="mt-space-md pt-space-xs">
+<div class="w-full bg-surface-container-highest h-2 rounded-full overflow-hidden">
+<div class="bg-primary-container h-full rounded-full" style="width: 82%;"></div>
+</div>
+<span class="block mt-1 text-right font-label-sm text-label-sm text-on-surface-variant">18 shifts remaining</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Impact Simulation & Future Redemption Section -->
+<div class="bg-surface-container-low rounded-xl p-space-lg shadow-sm">
+<div class="flex flex-col lg:flex-row gap-space-xl items-center">
+<div class="flex-1">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary-container text-on-secondary-fixed mb-space-md">
+<span class="material-symbols-outlined text-[16px] text-secondary">token</span>
+<span class="font-label-sm text-label-sm uppercase tracking-wider">Future Utility Program</span>
+</div>
+<h2 class="font-headline-md text-headline-md text-on-surface mb-space-sm tracking-tight">FlexCoin Community Impact Simulation</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mb-space-md">
+            FlexCoins represent your cumulative positive contribution to regional grid stability. While current operations run under research pilot status, upcoming phases will empower you to channel accrued tokens toward verified community decarbonization projects.
+          </p>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-space-md mb-space-lg">
+<div class="bg-surface-container-lowest p-space-md rounded-lg shadow-sm">
+<div class="flex items-center gap-2 mb-1">
+<span class="material-symbols-outlined text-secondary text-[20px]">forest</span>
+<span class="font-title-sm text-title-sm text-on-surface">Urban Reforestation</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Exchange 500 FC to fund local neighborhood shade canopy expansion.</p>
+</div>
+<div class="bg-surface-container-lowest p-space-md rounded-lg shadow-sm">
+<div class="flex items-center gap-2 mb-1">
+<span class="material-symbols-outlined text-secondary text-[20px]">solar_power</span>
+<span class="font-title-sm text-title-sm text-on-surface">Community Solar Shares</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Pool FlexCoins toward community school microgrid batteries.</p>
+</div>
+</div>
+<div class="flex flex-wrap items-center gap-space-md">
+<button class="bg-primary-container text-on-primary px-space-lg py-2.5 rounded font-title-sm text-title-sm hover:opacity-95 transition-opacity shadow-sm" type="button">
+              Explore Pilot Roadmap
+            </button>
+<button class="bg-surface-container-lowest text-on-surface px-space-lg py-2.5 rounded font-title-sm text-title-sm hover:bg-surface-container transition-colors" type="button">
+              Read Decarbonization Methodology
+            </button>
+</div>
+</div>
+<div class="w-full lg:w-96 rounded-xl overflow-hidden bg-surface-container-lowest shadow-sm p-space-md flex flex-col gap-space-md">
+<div class="relative h-48 rounded-lg overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Modern sustainable microgrid solar installation in an urban community park with lush green grass, solar arrays, clean architectural lines, sunny blue sky, in a clean photography style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDr6kVgBQZGu0LA9REod4BOKRwjhePZt6s1nzVO3jP5fGdxaCxeHAfUFPyGWdP1mKoyY4e8RHHNRzNHCp-wcze6hwYmOlKBJBTAmS6oBjEdY_1zzw-4dcReWG-gZ2u3htKx6Im3YJ9MQCeV9KyCWUlyrTFgfj34-_j9UUb-w82lcp6L5gsHGjV-32XGp8FtWGPacxMXBbRUCvNMAYgKo1cKg5sWEvk_KBJzJeHU1bOSuC1pS603EH6q"/>
+<div class="absolute bottom-2 left-2 bg-primary-container/90 backdrop-blur px-2.5 py-1 rounded text-on-primary font-label-sm text-label-sm">
+              Pilot Project Target: District 4 Solar Array
+            </div>
+</div>
+<div>
+<div class="flex justify-between items-baseline mb-1">
+<span class="font-title-sm text-title-sm text-on-surface">Community Pool Progress</span>
+<span class="font-label-md text-label-md text-secondary font-semibold">68% Funded</span>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden mb-2">
+<div class="bg-secondary h-full rounded-full" style="width: 68%;"></div>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+              14,200 FlexCoins committed across 38 regional enterprise facilities.
+            </p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Empty State View Alternative (Controlled via Switcher) -->
+<div class="hidden flex-col items-center justify-center p-space-xl bg-surface-container-lowest rounded-xl shadow-sm text-center py-20" id="state-empty-view">
+<div class="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant mb-space-md">
+<span class="material-symbols-outlined text-[36px]">energy_savings_leaf</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-space-xs">No Load Shifts Logged Yet</h3>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-md mb-space-lg">
+      Connect your flexible assets or enable automated schedule recommendations to start relieving peak grid stress and earning FlexCoins.
+    </p>
+<a class="bg-primary-container text-on-primary px-space-lg py-2.5 rounded font-title-sm text-title-sm hover:opacity-95 shadow-sm inline-flex items-center gap-2" href="#">
+<span class="material-symbols-outlined text-[18px]">add_circle</span>
+      Configure First Flexible Device
+    </a>
+</div>
+<script>
+    function setViewMode(mode) {
+      const populatedBtn = document.getElementById('btn-state-populated');
+      const emptyBtn = document.getElementById('btn-state-empty');
+      const loadingBtn = document.getElementById('btn-state-loading');
+
+      const contentView = document.getElementById('state-content-view');
+      const emptyView = document.getElementById('state-empty-view');
+      const loadingView = document.getElementById('state-loading-view');
+
+      // Reset button styles
+      [populatedBtn, emptyBtn, loadingBtn].forEach(b => {
+        b.className = 'state-btn px-space-md py-1.5 rounded text-label-md font-label-md transition-colors text-on-surface-variant hover:text-on-surface';
+      });
+
+      // Hide all states
+      contentView.classList.add('hidden');
+      emptyView.classList.add('hidden');
+      loadingView.classList.add('hidden');
+
+      if (mode === 'populated') {
+        populatedBtn.className = 'state-btn px-space-md py-1.5 rounded text-label-md font-label-md transition-colors bg-primary-container text-on-primary';
+        contentView.classList.remove('hidden');
+      } else if (mode === 'empty') {
+        emptyBtn.className = 'state-btn px-space-md py-1.5 rounded text-label-md font-label-md transition-colors bg-primary-container text-on-primary';
+        emptyView.classList.remove('hidden');
+      } else if (mode === 'loading') {
+        loadingBtn.className = 'state-btn px-space-md py-1.5 rounded text-label-md font-label-md transition-colors bg-primary-container text-on-primary';
+        loadingView.classList.remove('hidden');
+      }
+    }
+  </script>
+</div></main></div></body></html>

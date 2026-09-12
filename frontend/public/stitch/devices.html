@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@600;700&amp;family=Inter:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: 'class', theme: { extend: { 'colors': { 'inverse-primary': '#fbaee9', 'surface-variant': '#e8e0eb', 'inverse-on-surface': '#f7eef9', 'secondary-fixed-dim': '#b8d074', 'on-primary-fixed-variant': '#6c3063', 'primary-fixed-dim': '#fbaee9', 'secondary': '#526615', 'surface-tint': '#88487c', 'primary': '#260023', 'surface-bright': '#fff7ff', 'tertiary': '#0a1300', 'on-tertiary': '#ffffff', 'tertiary-fixed-dim': '#b9ce91', 'tertiary-fixed': '#d5ebaa', 'tertiary-container': '#1b2a00', 'inverse-surface': '#332f37', 'outline': '#81737c', 'surface-dim': '#e0d7e3', 'outline-variant': '#d3c2cc', 'error': '#ba1a1a', 'on-error-container': '#93000a', 'on-secondary-fixed-variant': '#3b4d00', 'background': '#fff7ff', 'surface': '#fff7ff', 'primary-fixed': '#ffd7f2', 'error-container': '#ffdad6', 'on-secondary-container': '#586c1b', 'on-surface-variant': '#50434b', 'on-secondary': '#ffffff', 'on-primary-container': '#bc75ad', 'on-tertiary-container': '#80945c', 'on-error': '#ffffff', 'secondary-container': '#d4ed8d', 'surface-container': '#f4ebf7', 'surface-container-high': '#eee5f1', 'on-tertiary-fixed-variant': '#3b4c1c', 'on-tertiary-fixed': '#131f00', 'surface-container-lowest': '#ffffff', 'on-primary': '#ffffff', 'on-primary-fixed': '#390134', 'on-surface': '#1e1a22', 'on-secondary-fixed': '#161f00', 'secondary-fixed': '#d4ed8d', 'primary-container': '#450c3f', 'surface-container-low': '#faf1fc', 'surface-container-highest': '#e8e0eb', 'on-background': '#1e1a22' }, 'borderRadius': { 'DEFAULT': '0.125rem', 'lg': '0.25rem', 'xl': '0.5rem', 'full': '0.75rem' }, 'spacing': { 'gutter': '1.5rem', 'margin-mobile': '1rem', 'space-xl': '2.5rem', 'space-md': '1rem', 'margin': '2rem', 'space-xs': '0.25rem', 'space-sm': '0.5rem', 'space-lg': '1.5rem', 'gutter-mobile': '1rem' }, 'fontFamily': { 'title-sm': ['Inter'], 'headline-lg': ['Hanken Grotesk'], 'headline-md': ['Hanken Grotesk'], 'title-md': ['Inter'], 'body-md': ['Inter'], 'headline-sm': ['Hanken Grotesk'], 'body-sm': ['Inter'], 'display': ['Hanken Grotesk'], 'label-sm': ['Inter'], 'label-md': ['Inter'], 'headline-lg-mobile': ['Hanken Grotesk'], 'display-mobile': ['Hanken Grotesk'], 'body-lg': ['Inter'] }, 'fontSize': { 'title-sm': ['14px', {'lineHeight': '20px', 'fontWeight': '600'}], 'headline-lg': ['32px', {'lineHeight': '40px', 'letterSpacing': '-0.015em', 'fontWeight': '700'}], 'headline-md': ['24px', {'lineHeight': '32px', 'letterSpacing': '-0.01em', 'fontWeight': '600'}], 'title-md': ['16px', {'lineHeight': '24px', 'fontWeight': '600'}], 'body-md': ['15px', {'lineHeight': '22px', 'fontWeight': '400'}], 'headline-sm': ['20px', {'lineHeight': '28px', 'fontWeight': '600'}], 'body-sm': ['13px', {'lineHeight': '18px', 'fontWeight': '400'}], 'display': ['48px', {'lineHeight': '56px', 'letterSpacing': '-0.02em', 'fontWeight': '700'}], 'label-sm': ['11px', {'lineHeight': '14px', 'letterSpacing': '0.04em', 'fontWeight': '600'}], 'label-md': ['13px', {'lineHeight': '16px', 'letterSpacing': '0.01em', 'fontWeight': '600'}], 'headline-lg-mobile': ['26px', {'lineHeight': '34px', 'letterSpacing': '-0.01em', 'fontWeight': '600'}], 'display-mobile': ['36px', {'lineHeight': '44px', 'letterSpacing': '-0.02em', 'fontWeight': '700'}], 'body-lg': ['18px', {'lineHeight': '28px', 'fontWeight': '400'}] } } } };</script></head><body class="bg-surface font-body-md text-on-surface antialiased"><header class="fixed top-0 left-0 right-0 z-50 bg-surface-container-lowest border-b border-surface-variant"><div class="h-16 w-full px-gutter flex items-center justify-between"><div class="flex items-center gap-space-md"><img alt="GreenSync Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1Xa-uYDZDJUPOxjIXg4SDipWcIcXQdawOBTMdaQReTF4qA347DOTIXphndYcLWLv2PHlKUlkZY7whLZ4oaCXq4Yzfs9QQlZLzyn74Zqj9uJ2QJtD9oh4DjBp2zR3a4D7VfIi_kGtK71fS4Jd9RX36ZAAa_YUIuTBchtwUijpwCPhcov6GmmrT9d9xi_TOU9BpDzekYrvj72lqeqaqXmB94dDornjj1-_hU1MpRNDPKybmC0eXQBSdjLrP0"/><span class="font-headline-sm text-headline-sm text-primary-container tracking-tight">GreenSync</span></div><div class="flex items-center gap-space-lg"><div class="hidden sm:flex items-center gap-space-xs px-3 py-1 rounded-full bg-secondary-container text-on-secondary-fixed border border-secondary-fixed-dim"><span class="w-2 h-2 rounded-full bg-secondary inline-block animate-pulse"></span><span class="font-label-md text-label-md">Grid Status: Balanced • 68% Renewable</span></div><div class="flex items-center gap-space-sm"><button class="w-9 h-9 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" type="button"><span class="material-symbols-outlined text-[20px]">notifications</span></button><div class="h-5 w-[1px] bg-surface-variant"></div><div class="flex items-center gap-space-sm pl-space-xs"><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div><div class="hidden md:flex flex-col text-left"><span class="font-label-md text-label-md text-on-surface leading-tight">Alex Mercer</span><span class="font-label-sm text-label-sm text-on-surface-variant leading-tight">Enterprise Facility</span></div></div></div></div></div></header><aside class="fixed left-0 top-16 bottom-0 w-64 bg-surface-container-lowest border-r border-surface-variant z-40 flex flex-col justify-between overflow-y-auto"><div class="p-space-md"><div class="px-space-sm py-space-xs mb-space-sm text-label-sm font-label-sm uppercase tracking-wider text-on-surface-variant">Navigation</div><nav class="flex flex-col gap-1" data-active-classes="bg-primary-container text-on-primary font-title-sm"><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors font-body-md text-body-md" data-path="dashboard" href="#"><span class="material-symbols-outlined text-[20px]">grid_view</span><span>Dashboard</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors font-body-md text-body-md" data-path="my-loads-devices" href="#"><span class="material-symbols-outlined text-[20px]">devices</span><span>My Loads / Devices</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors font-body-md text-body-md" data-path="add-flexible-load" href="#"><span class="material-symbols-outlined text-[20px]">add_circle</span><span>Add Flexible Load</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors font-body-md text-body-md" data-path="schedule-recommendations" href="#"><span class="material-symbols-outlined text-[20px]">calendar_clock</span><span>Schedule &amp; Recommendations</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors font-body-md text-body-md" data-path="impact" href="#"><span class="material-symbols-outlined text-[20px]">energy_savings_leaf</span><span>Impact</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors font-body-md text-body-md" data-path="rewards-flexcoins" href="#"><span class="material-symbols-outlined text-[20px]">monetization_on</span><span>Rewards &amp; FlexCoins</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors font-body-md text-body-md" data-path="admin-grid" href="#"><span class="material-symbols-outlined text-[20px]">tune</span><span>Admin Grid</span></a><a class="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors font-body-md text-body-md" data-path="profile-settings" href="#"><span class="material-symbols-outlined text-[20px]">settings</span><span>Profile &amp; Settings</span></a></nav></div><div class="p-space-md border-t border-surface-variant bg-surface-container-low"><div class="flex items-center justify-between"><div class="flex flex-col"><span class="font-label-sm text-label-sm text-on-surface-variant">Active Flex Capacity</span><span class="font-title-sm text-title-sm text-primary-container">142.8 kW</span></div><span class="material-symbols-outlined text-secondary text-[22px]">bolt</span></div></div></aside><div class="pl-64"><main class="w-full min-h-[calc(100vh-4rem)] pt-16 px-gutter py-space-lg bg-surface"><div class="flex flex-col w-full">
+<div class="flex flex-col lg:flex-row lg:items-end justify-between gap-space-md mb-space-lg">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center gap-space-sm text-secondary">
+<span class="material-symbols-outlined text-[18px]">sync_alt</span>
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-secondary">Telemetry &amp; Dispatch Control</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-primary-container tracking-tight">Flexible Loads &amp; Connected Devices</h1>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-2xl">
+        Manage automated grid-synced energy assets. Responsive dispatch schedules optimize for negative carbon hours, lower wholesale rates, and maximum FlexCoin yields.
+      </p>
+</div>
+<div class="flex items-center gap-space-sm self-start lg:self-auto">
+<div class="bg-surface-container-high p-1 rounded-lg flex items-center gap-1 shadow-sm">
+<button class="px-space-sm py-1 rounded text-label-md font-label-md transition-colors bg-surface-container-lowest text-primary-container shadow-sm" id="viewStateDevices" onclick="switchViewState('devices')">
+          All Devices (4)
+        </button>
+<button class="px-space-sm py-1 rounded text-label-md font-label-md transition-colors text-on-surface-variant hover:text-on-surface" id="viewStateEmpty" onclick="switchViewState('empty')">
+          Empty State
+        </button>
+<button class="px-space-sm py-1 rounded text-label-md font-label-md transition-colors text-on-surface-variant hover:text-on-surface" id="viewStateSkeleton" onclick="switchViewState('skeleton')">
+          Loading Skeleton
+        </button>
+</div>
+<button class="bg-primary-container hover:bg-primary text-on-primary font-title-sm text-title-sm px-space-lg py-2.5 rounded-lg flex items-center gap-space-xs shadow-sm transition-colors" id="openDrawerBtn" onclick="toggleDrawer(true)">
+<span class="material-symbols-outlined text-[20px]">add</span>
+<span>+ Add Flexible Load</span>
+</button>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-4 gap-space-md mb-space-lg">
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm uppercase text-on-surface-variant">Active Load Capacity</span>
+<span class="font-headline-md text-headline-md text-on-surface mt-1">21.0 kW</span>
+<span class="font-label-sm text-label-sm text-secondary flex items-center gap-1 mt-0.5">
+<span class="material-symbols-outlined text-[14px]">bolt</span> 4 of 4 devices online
+        </span>
+</div>
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary-container">
+<span class="material-symbols-outlined">power</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm uppercase text-on-surface-variant">FlexCoins Earned</span>
+<span class="font-headline-md text-headline-md text-on-surface mt-1">530 FC</span>
+<span class="font-label-sm text-label-sm text-secondary flex items-center gap-1 mt-0.5">
+<span class="material-symbols-outlined text-[14px]">trending_up</span> +84 FC this cycle
+        </span>
+</div>
+<div class="w-10 h-10 rounded-lg bg-secondary-container flex items-center justify-center text-on-secondary-fixed">
+<span class="material-symbols-outlined">toll</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm uppercase text-on-surface-variant">Automated Shifts</span>
+<span class="font-headline-md text-headline-md text-on-surface mt-1">92.4%</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant mt-0.5">Zero manual override</span>
+</div>
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary-container">
+<span class="material-symbols-outlined">published_with_changes</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm uppercase text-on-surface-variant">Grid Renewable Index</span>
+<span class="font-headline-md text-headline-md text-secondary mt-1">74%</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant mt-0.5">Solar + Wind baseline</span>
+</div>
+<div class="w-10 h-10 rounded-lg bg-secondary-container flex items-center justify-center text-on-secondary-fixed">
+<span class="material-symbols-outlined">solar_power</span>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm mb-space-lg flex flex-col md:flex-row items-stretch md:items-center justify-between gap-space-md">
+<div class="flex flex-wrap items-center gap-space-xs" id="filterPills">
+<button class="filter-pill px-space-md py-1.5 rounded-full text-label-md font-label-md bg-primary-container text-on-primary transition-colors" onclick="setFilter(this, 'all')">
+        All devices (4)
+      </button>
+<button class="filter-pill px-space-md py-1.5 rounded-full text-label-md font-label-md bg-surface-container text-on-surface-variant hover:text-on-surface transition-colors" onclick="setFilter(this, 'ev')">
+        EV Chargers
+      </button>
+<button class="filter-pill px-space-md py-1.5 rounded-full text-label-md font-label-md bg-surface-container text-on-surface-variant hover:text-on-surface transition-colors" onclick="setFilter(this, 'water')">
+        Water Heaters
+      </button>
+<button class="filter-pill px-space-md py-1.5 rounded-full text-label-md font-label-md bg-surface-container text-on-surface-variant hover:text-on-surface transition-colors" onclick="setFilter(this, 'hvac')">
+        Heat Pumps
+      </button>
+<button class="filter-pill px-space-md py-1.5 rounded-full text-label-md font-label-md bg-surface-container text-on-surface-variant hover:text-on-surface transition-colors" onclick="setFilter(this, 'appliances')">
+        Appliances
+      </button>
+</div>
+<div class="relative w-full md:w-72">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
+<input class="w-full h-10 pl-10 pr-space-md rounded-lg bg-surface text-on-surface font-body-sm text-body-sm placeholder:text-on-surface-variant/60 shadow-inner focus:outline-none focus:ring-2 focus:ring-secondary-fixed-dim" id="deviceSearchInput" oninput="handleSearch(this.value)" placeholder="Search load by name, type..." type="text"/>
+</div>
+</div>
+<div class="flex flex-col gap-space-md" id="devicesContainer">
+<div class="device-card bg-surface-container-lowest rounded-xl p-space-lg shadow-sm hover:shadow-md transition-shadow" data-category="ev">
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
+<div class="flex items-start gap-space-md">
+<div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center text-primary-container shrink-0">
+<span class="material-symbols-outlined text-[28px]">electric_car</span>
+</div>
+<div class="flex flex-col">
+<div class="flex flex-wrap items-center gap-space-xs">
+<span class="font-title-md text-title-md text-on-surface">Tesla Model 3</span>
+<span class="px-2.5 py-0.5 rounded-full text-label-sm font-label-sm bg-surface-container text-on-surface-variant">EV Charger</span>
+<span class="px-2.5 py-0.5 rounded-full text-label-sm font-label-sm bg-secondary-container text-on-secondary-fixed font-title-sm flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary inline-block animate-ping"></span>
+                Scheduled for 11:30 PM
+              </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Level 2 Wall Connector (32A split phase) • Target: 90% SOC by 06:30 AM</p>
+<div class="flex flex-wrap items-center gap-space-md mt-space-sm text-label-sm font-label-sm text-on-surface-variant">
+<span class="flex items-center gap-1 text-primary-container font-title-sm">
+<span class="material-symbols-outlined text-[16px]">bolt</span> 11.0 kW Peak
+              </span>
+<span>•</span>
+<span class="flex items-center gap-1 text-secondary font-title-sm">
+<span class="material-symbols-outlined text-[16px]">toll</span> 320 FC earned
+              </span>
+<span>•</span>
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">tune</span> High Flexibility
+              </span>
+<span>•</span>
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">schedule</span> Priority: High
+              </span>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between lg:justify-end gap-space-lg pt-space-sm lg:pt-0">
+<div class="flex items-center gap-space-sm">
+<span class="font-label-md text-label-md text-on-surface-variant">Auto-Dispatch</span>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary"></div>
+</label>
+</div>
+<div class="flex items-center gap-1">
+<button class="w-9 h-9 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" onclick="editDeviceMock('Tesla Model 3')" title="Edit Load">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="w-9 h-9 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" onclick="duplicateDeviceMock('Tesla Model 3')" title="Duplicate Settings">
+<span class="material-symbols-outlined text-[20px]">content_copy</span>
+</button>
+<button class="w-9 h-9 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-error-container hover:text-error transition-colors" onclick="deleteDeviceMock(this)" title="Delete Device">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</div>
+</div>
+<div class="mt-space-md pt-space-md flex flex-col md:flex-row md:items-center justify-between gap-space-sm text-label-sm font-label-sm bg-surface-container-low p-space-sm rounded-lg">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[18px]">eco</span>
+<span class="text-on-surface">Grid window alignment: 11:30 PM - 05:00 AM matches wind output peak (0.04 kg CO₂/kWh).</span>
+</div>
+<span class="text-on-surface-variant">Next event in 4h 12m</span>
+</div>
+</div>
+<div class="device-card bg-surface-container-lowest rounded-xl p-space-lg shadow-sm hover:shadow-md transition-shadow" data-category="water">
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
+<div class="flex items-start gap-space-md">
+<div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center text-primary-container shrink-0">
+<span class="material-symbols-outlined text-[28px]">water_heater</span>
+</div>
+<div class="flex flex-col">
+<div class="flex flex-wrap items-center gap-space-xs">
+<span class="font-title-md text-title-md text-on-surface">Rheem ProTerra</span>
+<span class="px-2.5 py-0.5 rounded-full text-label-sm font-label-sm bg-surface-container text-on-surface-variant">Hybrid Water Heater</span>
+<span class="px-2.5 py-0.5 rounded-full text-label-sm font-label-sm bg-secondary-container text-on-secondary-fixed font-title-sm flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary inline-block"></span>
+                Pre-heating at 2:00 PM
+              </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">EcoNet Smart Inverter • 65 Gal Tank • Solar absorption pre-heat mode active</p>
+<div class="flex flex-wrap items-center gap-space-md mt-space-sm text-label-sm font-label-sm text-on-surface-variant">
+<span class="flex items-center gap-1 text-primary-container font-title-sm">
+<span class="material-symbols-outlined text-[16px]">bolt</span> 3.5 kW Peak
+              </span>
+<span>•</span>
+<span class="flex items-center gap-1 text-secondary font-title-sm">
+<span class="material-symbols-outlined text-[16px]">toll</span> 210 FC earned
+              </span>
+<span>•</span>
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">tune</span> High Flexibility
+              </span>
+<span>•</span>
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">schedule</span> Priority: Standard
+              </span>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between lg:justify-end gap-space-lg pt-space-sm lg:pt-0">
+<div class="flex items-center gap-space-sm">
+<span class="font-label-md text-label-md text-on-surface-variant">Auto-Dispatch</span>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary"></div>
+</label>
+</div>
+<div class="flex items-center gap-1">
+<button class="w-9 h-9 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" onclick="editDeviceMock('Rheem ProTerra')" title="Edit Load">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="w-9 h-9 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" onclick="duplicateDeviceMock('Rheem ProTerra')" title="Duplicate Settings">
+<span class="material-symbols-outlined text-[20px]">content_copy</span>
+</button>
+<button class="w-9 h-9 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-error-container hover:text-error transition-colors" onclick="deleteDeviceMock(this)" title="Delete Device">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<div class="device-card bg-surface-container-lowest rounded-xl p-space-lg shadow-sm hover:shadow-md transition-shadow" data-category="appliances">
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
+<div class="flex items-start gap-space-md">
+<div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center text-primary-container shrink-0">
+<span class="material-symbols-outlined text-[28px]">local_laundry_service</span>
+</div>
+<div class="flex flex-col">
+<div class="flex flex-wrap items-center gap-space-xs">
+<span class="font-title-md text-title-md text-on-surface">Bosch 800 Series</span>
+<span class="px-2.5 py-0.5 rounded-full text-label-sm font-label-sm bg-surface-container text-on-surface-variant">Washing Machine</span>
+<span class="px-2.5 py-0.5 rounded-full text-label-sm font-label-sm bg-surface-container-high text-on-surface-variant font-title-sm flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-outline inline-block"></span>
+                Awaiting Schedule
+              </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Home Connect IoT • Heavy Duty cycle queued • Deadline: 7:00 PM today</p>
+<div class="flex flex-wrap items-center gap-space-md mt-space-sm text-label-sm font-label-sm text-on-surface-variant">
+<span class="flex items-center gap-1 text-primary-container font-title-sm">
+<span class="material-symbols-outlined text-[16px]">bolt</span> 2.0 kW Peak
+              </span>
+<span>•</span>
+<span class="flex items-center gap-1 text-on-surface-variant font-title-sm">
+<span class="material-symbols-outlined text-[16px]">toll</span> 0 FC (pending cycle)
+              </span>
+<span>•</span>
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">tune</span> Medium Flexibility
+              </span>
+<span>•</span>
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">schedule</span> Priority: Low
+              </span>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between lg:justify-end gap-space-lg pt-space-sm lg:pt-0">
+<div class="flex items-center gap-space-sm">
+<span class="font-label-md text-label-md text-on-surface-variant">Auto-Dispatch</span>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary"></div>
+</label>
+</div>
+<div class="flex items-center gap-1">
+<button class="w-9 h-9 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" onclick="editDeviceMock('Bosch 800 Series')" title="Edit Load">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="w-9 h-9 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" onclick="duplicateDeviceMock('Bosch 800 Series')" title="Duplicate Settings">
+<span class="material-symbols-outlined text-[20px]">content_copy</span>
+</button>
+<button class="w-9 h-9 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-error-container hover:text-error transition-colors" onclick="deleteDeviceMock(this)" title="Delete Device">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<div class="device-card bg-surface-container-lowest rounded-xl p-space-lg shadow-sm hover:shadow-md transition-shadow" data-category="hvac">
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
+<div class="flex items-start gap-space-md">
+<div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center text-primary-container shrink-0">
+<span class="material-symbols-outlined text-[28px]">mode_fan</span>
+</div>
+<div class="flex flex-col">
+<div class="flex flex-wrap items-center gap-space-xs">
+<span class="font-title-md text-title-md text-on-surface">Carrier Infinity</span>
+<span class="px-2.5 py-0.5 rounded-full text-label-sm font-label-sm bg-surface-container text-on-surface-variant">Heat Pump HVAC</span>
+<span class="px-2.5 py-0.5 rounded-full text-label-sm font-label-sm bg-surface-variant text-on-surface-variant font-title-sm flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-error inline-block"></span>
+                Paused during peak
+              </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Multi-stage 24V Greenspeed Intelligence • Setpoint locked 71°F ±2°F dynamic drift band</p>
+<div class="flex flex-wrap items-center gap-space-md mt-space-sm text-label-sm font-label-sm text-on-surface-variant">
+<span class="flex items-center gap-1 text-primary-container font-title-sm">
+<span class="material-symbols-outlined text-[16px]">bolt</span> 4.5 kW Peak
+              </span>
+<span>•</span>
+<span class="flex items-center gap-1 text-secondary font-title-sm">
+<span class="material-symbols-outlined text-[16px]">toll</span> 180 FC earned
+              </span>
+<span>•</span>
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">tune</span> Fixed Constraints
+              </span>
+<span>•</span>
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">schedule</span> Priority: High
+              </span>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between lg:justify-end gap-space-lg pt-space-sm lg:pt-0">
+<div class="flex items-center gap-space-sm">
+<span class="font-label-md text-label-md text-on-surface-variant">Auto-Dispatch</span>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary"></div>
+</label>
+</div>
+<div class="flex items-center gap-1">
+<button class="w-9 h-9 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" onclick="editDeviceMock('Carrier Infinity')" title="Edit Load">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="w-9 h-9 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" onclick="duplicateDeviceMock('Carrier Infinity')" title="Duplicate Settings">
+<span class="material-symbols-outlined text-[20px]">content_copy</span>
+</button>
+<button class="w-9 h-9 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-error-container hover:text-error transition-colors" onclick="deleteDeviceMock(this)" title="Delete Device">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="hidden flex-col items-center justify-center py-20 px-space-md bg-surface-container-lowest rounded-xl shadow-sm text-center" id="emptyStateView">
+<div class="w-16 h-16 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-fixed mb-space-md">
+<span class="material-symbols-outlined text-[32px]">electrical_services</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-space-xs">No Flexible Loads Registered Yet</h3>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-md mb-space-lg">
+      Connect smart devices, chargers, or heat pumps to unlock dynamic grid incentives, reduce curtailment, and harvest FlexCoins.
+    </p>
+<button class="bg-primary-container hover:bg-primary text-on-primary font-title-sm text-title-sm px-space-lg py-2.5 rounded-lg flex items-center gap-space-xs shadow-sm transition-colors" onclick="toggleDrawer(true)">
+<span class="material-symbols-outlined text-[20px]">add</span>
+<span>Add Your First Load</span>
+</button>
+</div>
+<div class="hidden flex-col gap-space-md animate-pulse" id="skeletonStateView">
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm">
+<div class="flex items-start gap-space-md">
+<div class="w-12 h-12 rounded-xl bg-surface-variant shrink-0"></div>
+<div class="flex-1 flex flex-col gap-2">
+<div class="h-5 bg-surface-variant rounded w-48"></div>
+<div class="h-4 bg-surface-variant rounded w-80"></div>
+<div class="h-3 bg-surface-variant rounded w-64 mt-2"></div>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm">
+<div class="flex items-start gap-space-md">
+<div class="w-12 h-12 rounded-xl bg-surface-variant shrink-0"></div>
+<div class="flex-1 flex flex-col gap-2">
+<div class="h-5 bg-surface-variant rounded w-56"></div>
+<div class="h-4 bg-surface-variant rounded w-96"></div>
+<div class="h-3 bg-surface-variant rounded w-72 mt-2"></div>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm">
+<div class="flex items-start gap-space-md">
+<div class="w-12 h-12 rounded-xl bg-surface-variant shrink-0"></div>
+<div class="flex-1 flex flex-col gap-2">
+<div class="h-5 bg-surface-variant rounded w-40"></div>
+<div class="h-4 bg-surface-variant rounded w-60"></div>
+<div class="h-3 bg-surface-variant rounded w-48 mt-2"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="fixed inset-0 bg-primary/40 backdrop-blur-sm z-50 hidden transition-opacity duration-300 opacity-0" id="drawerBackdrop" onclick="toggleDrawer(false)"></div>
+<aside class="fixed top-0 right-0 bottom-0 w-full max-w-xl bg-surface-container-lowest shadow-2xl z-50 transform translate-x-full transition-transform duration-300 flex flex-col overflow-y-auto" id="addLoadDrawer">
+<div class="p-space-lg bg-surface-container-lowest flex items-center justify-between shadow-sm sticky top-0 z-10">
+<div class="flex items-center gap-space-sm">
+<div class="w-9 h-9 rounded-lg bg-primary-container text-on-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">tune</span>
+</div>
+<div>
+<h2 class="font-headline-sm text-headline-sm text-primary-container" id="drawerTitle">Add Flexible Load</h2>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Configure demand response parameters</span>
+</div>
+</div>
+<button class="w-9 h-9 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" onclick="toggleDrawer(false)">
+<span class="material-symbols-outlined text-[22px]">close</span>
+</button>
+</div>
+<form class="p-space-lg flex flex-col gap-space-lg flex-1" id="flexibleLoadForm" onsubmit="handleFormSubmit(event)">
+<div class="flex flex-col gap-space-xs">
+<label class="font-label-md text-label-md text-on-surface flex items-center justify-between" for="deviceName">
+<span>Device Name <span class="text-error">*</span></span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">e.g. Model Y Home Garage</span>
+</label>
+<input class="h-10 px-space-md rounded-lg bg-surface text-on-surface font-body-sm text-body-sm shadow-sm focus:ring-2 focus:ring-secondary-fixed-dim focus:outline-none" id="deviceName" placeholder="Enter device identifier..." required="" type="text"/>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Assign an easily identifiable title for notifications.</span>
+</div>
+<div class="flex flex-col gap-space-xs">
+<label class="font-label-md text-label-md text-on-surface" for="deviceType">Device Type <span class="text-error">*</span></label>
+<div class="relative">
+<select class="w-full h-10 px-space-md appearance-none rounded-lg bg-surface text-on-surface font-body-sm text-body-sm shadow-sm focus:ring-2 focus:ring-secondary-fixed-dim focus:outline-none pr-10" id="deviceType" required="">
+<option disabled="" selected="" value="">Select category...</option>
+<option value="ev">Electric Vehicle (EV Charger)</option>
+<option value="water">Hybrid / Heat Pump Water Heater</option>
+<option value="hvac">Heat Pump HVAC System</option>
+<option value="battery">Residential / C&amp;I Battery Storage</option>
+<option value="appliances">Smart Appliance (Washer / Dryer / Dishwasher)</option>
+</select>
+<span class="material-symbols-outlined pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">expand_more</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Type dictates API integration protocols (OCPP, CTA-2045, or Matter).</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-space-md">
+<div class="flex flex-col gap-space-xs">
+<label class="font-label-md text-label-md text-on-surface" for="energyReq">Energy Required (kWh) <span class="text-error">*</span></label>
+<div class="relative">
+<input class="w-full h-10 px-space-md pr-12 rounded-lg bg-surface text-on-surface font-body-sm text-body-sm shadow-sm focus:ring-2 focus:ring-secondary-fixed-dim focus:outline-none" id="energyReq" min="0.5" placeholder="28.5" required="" step="0.1" type="number"/>
+<span class="absolute right-3 top-1/2 -translate-y-1/2 text-label-sm font-label-sm text-on-surface-variant">kWh</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Total energy budget needed per cycle.</span>
+</div>
+<div class="flex flex-col gap-space-xs">
+<label class="font-label-md text-label-md text-on-surface" for="peakPower">Nominal Power Draw</label>
+<div class="relative">
+<input class="w-full h-10 px-space-md pr-12 rounded-lg bg-surface text-on-surface font-body-sm text-body-sm shadow-sm focus:ring-2 focus:ring-secondary-fixed-dim focus:outline-none" id="peakPower" min="0.5" placeholder="9.6" step="0.1" type="number"/>
+<span class="absolute right-3 top-1/2 -translate-y-1/2 text-label-sm font-label-sm text-on-surface-variant">kW</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Used to evaluate circuit limits.</span>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-space-md">
+<div class="flex flex-col gap-space-xs">
+<label class="font-label-md text-label-md text-on-surface" for="startTime">Earliest Start Time <span class="text-error">*</span></label>
+<input class="h-10 px-space-md rounded-lg bg-surface text-on-surface font-body-sm text-body-sm shadow-sm focus:ring-2 focus:ring-secondary-fixed-dim focus:outline-none" id="startTime" required="" type="time" value="22:00"/>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Earliest boundary for dispatch.</span>
+</div>
+<div class="flex flex-col gap-space-xs">
+<label class="font-label-md text-label-md text-on-surface" for="deadline">Completion Deadline <span class="text-error">*</span></label>
+<input class="h-10 px-space-md rounded-lg bg-surface text-on-surface font-body-sm text-body-sm shadow-sm focus:ring-2 focus:ring-secondary-fixed-dim focus:outline-none" id="deadline" required="" type="time" value="06:30"/>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Hard stop when asset must finish.</span>
+</div>
+</div>
+<div class="flex flex-col gap-space-xs">
+<label class="font-label-md text-label-md text-on-surface">Flexibility Level</label>
+<div class="grid grid-cols-3 gap-space-sm">
+<label class="flex flex-col items-center justify-center p-space-sm rounded-lg bg-surface hover:bg-surface-container cursor-pointer transition-colors text-center">
+<input checked="" class="sr-only peer" name="flexibility" type="radio" value="high"/>
+<div class="w-full h-full flex flex-col items-center p-1 rounded peer-checked:bg-secondary-container peer-checked:text-on-secondary-fixed">
+<span class="material-symbols-outlined text-[20px] mb-1">all_inclusive</span>
+<span class="font-title-sm text-title-sm">High</span>
+<span class="font-label-sm text-label-sm opacity-80 mt-0.5">±4h Shiftable</span>
+</div>
+</label>
+<label class="flex flex-col items-center justify-center p-space-sm rounded-lg bg-surface hover:bg-surface-container cursor-pointer transition-colors text-center">
+<input class="sr-only peer" name="flexibility" type="radio" value="medium"/>
+<div class="w-full h-full flex flex-col items-center p-1 rounded peer-checked:bg-secondary-container peer-checked:text-on-secondary-fixed">
+<span class="material-symbols-outlined text-[20px] mb-1">timelapse</span>
+<span class="font-title-sm text-title-sm">Medium</span>
+<span class="font-label-sm text-label-sm opacity-80 mt-0.5">±2h Shiftable</span>
+</div>
+</label>
+<label class="flex flex-col items-center justify-center p-space-sm rounded-lg bg-surface hover:bg-surface-container cursor-pointer transition-colors text-center">
+<input class="sr-only peer" name="flexibility" type="radio" value="fixed"/>
+<div class="w-full h-full flex flex-col items-center p-1 rounded peer-checked:bg-secondary-container peer-checked:text-on-secondary-fixed">
+<span class="material-symbols-outlined text-[20px] mb-1">lock_clock</span>
+<span class="font-title-sm text-title-sm">Fixed</span>
+<span class="font-label-sm text-label-sm opacity-80 mt-0.5">Strict Window</span>
+</div>
+</label>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Higher flexibility tiers generate up to 2.4x higher FlexCoins per event.</span>
+</div>
+<div class="flex flex-col gap-space-xs">
+<label class="font-label-md text-label-md text-on-surface">Dispatch Priority</label>
+<div class="flex items-center gap-space-md">
+<label class="flex items-center gap-2 cursor-pointer">
+<input class="accent-primary-container" name="priority" type="radio" value="high"/>
+<span class="font-body-md text-body-md text-on-surface">High Priority</span>
+</label>
+<label class="flex items-center gap-2 cursor-pointer">
+<input checked="" class="accent-primary-container" name="priority" type="radio" value="standard"/>
+<span class="font-body-md text-body-md text-on-surface">Standard</span>
+</label>
+<label class="flex items-center gap-2 cursor-pointer">
+<input class="accent-primary-container" name="priority" type="radio" value="low"/>
+<span class="font-body-md text-body-md text-on-surface">Low (Curtailable)</span>
+</label>
+</div>
+</div>
+<div class="bg-secondary-container/40 p-space-md rounded-xl flex items-start gap-space-sm">
+<span class="material-symbols-outlined text-secondary text-[22px] shrink-0">insights</span>
+<div class="flex flex-col">
+<span class="font-title-sm text-title-sm text-on-secondary-fixed">Estimated Annual Carbon Offset</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
+            Registering this flexible asset helps prevent approximately <strong>380 kg CO₂e</strong> grid emissions each year through curtailment avoidance.
+          </span>
+</div>
+</div>
+<div class="mt-auto pt-space-md flex items-center justify-end gap-space-sm">
+<button class="px-space-lg py-2.5 rounded-lg font-title-sm text-title-sm text-on-surface-variant hover:bg-surface-container transition-colors" onclick="toggleDrawer(false)" type="button">
+          Cancel
+        </button>
+<button class="bg-primary-container hover:bg-primary text-on-primary font-title-sm text-title-sm px-space-lg py-2.5 rounded-lg shadow-sm transition-colors flex items-center gap-space-xs" type="submit">
+<span class="material-symbols-outlined text-[18px]">check_circle</span>
+<span>Save Flexible Load</span>
+</button>
+</div>
+</form>
+</aside>
+<div class="fixed bottom-6 right-6 z-50 transform translate-y-24 opacity-0 transition-all duration-300 bg-surface-container-lowest p-space-md rounded-xl shadow-xl flex items-center gap-space-sm" id="toastNotification">
+<div class="w-8 h-8 rounded-full bg-secondary-container text-on-secondary-fixed flex items-center justify-center" id="toastIconContainer">
+<span class="material-symbols-outlined text-[18px]">check</span>
+</div>
+<div class="flex flex-col pr-4">
+<span class="font-title-sm text-title-sm text-on-surface" id="toastTitle">Load Updated</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant" id="toastMessage">Changes synchronized across aggregator.</span>
+</div>
+</div>
+</div>
+<script>
+  function switchViewState(mode) {
+    const devicesDiv = document.getElementById('devicesContainer');
+    const emptyDiv = document.getElementById('emptyStateView');
+    const skeletonDiv = document.getElementById('skeletonStateView');
+
+    const btnDevices = document.getElementById('viewStateDevices');
+    const btnEmpty = document.getElementById('viewStateEmpty');
+    const btnSkeleton = document.getElementById('viewStateSkeleton');
+
+    const activeClass = ['bg-surface-container-lowest', 'text-primary-container', 'shadow-sm'];
+    const inactiveClass = ['text-on-surface-variant', 'hover:text-on-surface'];
+
+    [btnDevices, btnEmpty, btnSkeleton].forEach(b => {
+      b.classList.remove(...activeClass);
+      b.classList.add(...inactiveClass);
+    });
+
+    devicesDiv.classList.add('hidden');
+    emptyDiv.classList.add('hidden');
+    skeletonDiv.classList.add('hidden');
+
+    if (mode === 'devices') {
+      devicesDiv.classList.remove('hidden');
+      btnDevices.classList.add(...activeClass);
+      btnDevices.classList.remove(...inactiveClass);
+    } else if (mode === 'empty') {
+      emptyDiv.classList.remove('hidden');
+      btnEmpty.classList.add(...activeClass);
+      btnEmpty.classList.remove(...inactiveClass);
+    } else if (mode === 'skeleton') {
+      skeletonDiv.classList.remove('hidden');
+      btnSkeleton.classList.add(...activeClass);
+      btnSkeleton.classList.remove(...inactiveClass);
+    }
+  }
+
+  function toggleDrawer(open) {
+    const drawer = document.getElementById('addLoadDrawer');
+    const backdrop = document.getElementById('drawerBackdrop');
+
+    if (open) {
+      backdrop.classList.remove('hidden');
+      setTimeout(() => {
+        backdrop.classList.remove('opacity-0');
+        backdrop.classList.add('opacity-100');
+        drawer.classList.remove('translate-x-full');
+      }, 10);
+    } else {
+      drawer.classList.add('translate-x-full');
+      backdrop.classList.remove('opacity-100');
+      backdrop.classList.add('opacity-0');
+      setTimeout(() => {
+        backdrop.classList.add('hidden');
+      }, 300);
+    }
+  }
+
+  function setFilter(el, category) {
+    const pills = document.querySelectorAll('.filter-pill');
+    pills.forEach(p => {
+      p.className = 'filter-pill px-space-md py-1.5 rounded-full text-label-md font-label-md bg-surface-container text-on-surface-variant hover:text-on-surface transition-colors';
+    });
+
+    el.className = 'filter-pill px-space-md py-1.5 rounded-full text-label-md font-label-md bg-primary-container text-on-primary transition-colors';
+
+    const cards = document.querySelectorAll('.device-card');
+    cards.forEach(c => {
+      if (category === 'all' || c.getAttribute('data-category') === category) {
+        c.style.display = 'block';
+      } else {
+        c.style.display = 'none';
+      }
+    });
+  }
+
+  function handleSearch(query) {
+    const q = query.toLowerCase().trim();
+    const cards = document.querySelectorAll('.device-card');
+
+    cards.forEach(c => {
+      const text = c.innerText.toLowerCase();
+      if (!q || text.includes(q)) {
+        c.style.display = 'block';
+      } else {
+        c.style.display = 'none';
+      }
+    });
+  }
+
+  function showToast(title, message) {
+    const toast = document.getElementById('toastNotification');
+    document.getElementById('toastTitle').textContent = title;
+    document.getElementById('toastMessage').textContent = message;
+
+    toast.classList.remove('translate-y-24', 'opacity-0');
+    toast.classList.add('translate-y-0', 'opacity-100');
+
+    setTimeout(() => {
+      toast.classList.add('translate-y-24', 'opacity-0');
+      toast.classList.remove('translate-y-0', 'opacity-100');
+    }, 3500);
+  }
+
+  function handleFormSubmit(e) {
+    e.preventDefault();
+    const name = document.getElementById('deviceName').value;
+    toggleDrawer(false);
+    showToast('Device Configured', `${name} added to auto-dispatch mesh.`);
+    e.target.reset();
+  }
+
+  function editDeviceMock(name) {
+    document.getElementById('drawerTitle').innerText = 'Edit Flexible Load';
+    document.getElementById('deviceName').value = name;
+    toggleDrawer(true);
+  }
+
+  function duplicateDeviceMock(name) {
+    showToast('Load Cloned', `Created copy of ${name} profile.`);
+  }
+
+  function deleteDeviceMock(btn) {
+    const card = btn.closest('.device-card');
+    if (card) {
+      card.style.opacity = '0.4';
+      setTimeout(() => {
+        card.remove();
+        showToast('Device Removed', 'Load successfully disconnected from dispatch.');
+      }, 250);
+    }
+  }
+</script></main></div></body></html>
