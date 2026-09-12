@@ -1,6 +1,9 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import AppLayout from './layouts/AppLayout';
+import LandingPage from './pages/LandingPage';
+import SignIn from './pages/SignIn';
+import SignUp from './pages/SignUp';
 import Dashboard from './pages/Dashboard';
 import MyLoadsDevices from './pages/MyLoadsDevices';
 import ScheduleRecommendations from './pages/ScheduleRecommendations';
@@ -38,8 +41,17 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<AppLayout />}>
-          <Route index element={<Navigate to="/dashboard" replace />} />
+        {/* Public Marketing Landing Page (The Main Page) */}
+        <Route path="/" element={<LandingPage />} />
+
+        {/* Authentication Pages */}
+        <Route path="/sign-in" element={<SignIn />} />
+        <Route path="/login" element={<SignIn />} />
+        <Route path="/sign-up" element={<SignUp />} />
+        <Route path="/register" element={<SignUp />} />
+
+        {/* In-App Authenticated Console Routes */}
+        <Route element={<AppLayout />}>
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="my-loads-devices" element={<MyLoadsDevices />} />
           <Route path="schedule-recommendations" element={<ScheduleRecommendations />} />
@@ -47,8 +59,10 @@ export default function App() {
           <Route path="rewards-flexcoins" element={<ImpactRewards />} />
           <Route path="admin-grid" element={<AdminGridPlaceholder />} />
           <Route path="profile-settings" element={<ProfileSettingsPlaceholder />} />
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Route>
+
+        {/* Fallback to Main Landing Page */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );
