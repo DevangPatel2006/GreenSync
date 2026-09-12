@@ -122,11 +122,16 @@ function parseFlexibleDate(val, baseDate = new Date()) {
     return next(new AppError('deadline must be a valid date.', 400, 'VALIDATION_ERROR'));
   }
 
+  const isTimeStr = (v) => typeof v === 'string' && /^\d{1,2}:\d{2}(:\d{2})?$/.test(v.trim());
   if (parsedEarliestStart && parsedDeadline && parsedDeadline <= parsedEarliestStart) {
-    parsedDeadline = new Date(parsedDeadline.getTime() + 24 * 60 * 60 * 1000);
+    if (isTimeStr(earliestStart) || isTimeStr(deadline)) {
+      parsedDeadline = new Date(parsedDeadline.getTime() + 24 * 60 * 60 * 1000);
+    } else {
+      return next(new AppError('deadline cannot be earlier than earliestStart.', 400, 'VALIDATION_ERROR'));
+    }
   }
 
-  if (parsedDeadline && parsedDeadline.getTime() <= Date.now()) {
+  if ((isTimeStr(earliestStart) || isTimeStr(deadline)) && parsedDeadline && parsedDeadline.getTime() <= Date.now()) {
     if (parsedEarliestStart) {
       parsedEarliestStart = new Date(parsedEarliestStart.getTime() + 24 * 60 * 60 * 1000);
     }

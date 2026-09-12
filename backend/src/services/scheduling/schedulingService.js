@@ -52,6 +52,21 @@ async function recommendSchedule(userId, deviceId) {
     throw new SchedulingServiceError('Access denied: Device belongs to another user', 'FORBIDDEN', 403);
   }
 
+  // Idempotency: Check if an active (accepted or unexpired proposed) schedule already exists for this device
+  const existingActive = await Schedule.findOne({
+    deviceId: device._id,
+    userId,
+    status: { $in: ['accepted', 'proposed'] },
+  }).populate('deviceId').sort({ createdAt: -1 });
+
+  if (existingActive) {
+    const isExpired = new Date(existingActive.recommendedEnd).getTime() <= Date.now();
+    if (!isExpired) {
+      logger.info(`[SchedulingService] Active schedule ${existingActive._id} (${existingActive.status}) already exists for device ${deviceId}. Reusing.`);
+      return existingActive;
+    }
+  }
+
   // 2. Request Validation: Verify deadlines, status, and horizons
   const validation = validateSchedulingRequest(device, new Date());
   if (!validation.valid) {
@@ -139,7 +154,11 @@ async function acceptSchedule(userId, scheduleId) {
   }
 
   // Transition validation: Only 'proposed' schedules can be accepted
+  // (Idempotency: if already accepted, return existing accepted schedule)
   if (schedule.status !== 'proposed') {
+    if (schedule.status === 'accepted') {
+      return schedule;
+    }
     throw new SchedulingServiceError(
       `Cannot accept schedule with status "${schedule.status}". Only proposed schedules can be accepted.`,
       'VALIDATION_ERROR',
@@ -219,11 +238,17 @@ async function getScheduleHistory(userId) {
  * @returns {Promise<object|null>} Pending Schedule document or null
  */
 async function getPendingSchedule(userId) {
-  let pending = await Schedule.findOne({ userId, status: 'proposed' })
+  let pending = await Schedule.findOne({
+    userId,
+    status: { $in: ['proposed', 'accepted'] },
+  })
     .populate('deviceId')
     .sort({ createdAt: -1 });
 
-  if (pending) return pending;
+  if (pending) {
+    const isExpired = new Date(pending.recommendedEnd).getTime() <= Date.now();
+    if (!isExpired) return pending;
+  }
 
   // Check if user has active devices and create a fresh recommendation for the first active one
   const activeDevice = await Device.findOne({ userId, status: 'active' });

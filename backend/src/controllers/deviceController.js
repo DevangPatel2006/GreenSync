@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const Device = require('../models/Device');
+const Schedule = require('../models/Schedule');
 const { success } = require('../utils/response');
 const AppError = require('../utils/AppError');
 
@@ -47,7 +48,7 @@ const createDevice = async (req, res, next) => {
       return next(new AppError('Unauthorized access.', 401, 'UNAUTHORIZED'));
     }
 
-    const {
+    let {
       name,
       type,
       energyRequired,
@@ -58,6 +59,10 @@ const createDevice = async (req, res, next) => {
       currentState,
       status,
     } = req.body || {};
+
+    if (status === undefined && req.body && req.body.active !== undefined) {
+      status = req.body.active ? 'active' : 'disabled';
+    }
 
     // Validate required fields
     if (!name || typeof name !== 'string' || !name.trim()) {
@@ -114,11 +119,16 @@ function parseFlexibleDate(val, baseDate = new Date()) {
       );
     }
 
+    const isTimeStr = (v) => typeof v === 'string' && /^\d{1,2}:\d{2}(:\d{2})?$/.test(v.trim());
     if (parsedEarliestStart && parsedDeadline && parsedDeadline <= parsedEarliestStart) {
-      parsedDeadline = new Date(parsedDeadline.getTime() + 24 * 60 * 60 * 1000);
+      if (isTimeStr(earliestStart) || isTimeStr(deadline)) {
+        parsedDeadline = new Date(parsedDeadline.getTime() + 24 * 60 * 60 * 1000);
+      } else {
+        return next(new AppError('deadline cannot be earlier than earliestStart.', 400, 'VALIDATION_ERROR'));
+      }
     }
 
-    if (parsedDeadline && parsedDeadline.getTime() <= Date.now()) {
+    if ((isTimeStr(earliestStart) || isTimeStr(deadline)) && parsedDeadline && parsedDeadline.getTime() <= Date.now()) {
       if (parsedEarliestStart) {
         parsedEarliestStart = new Date(parsedEarliestStart.getTime() + 24 * 60 * 60 * 1000);
       }
@@ -212,7 +222,7 @@ const updateDevice = async (req, res, next) => {
       return next(new AppError('Access forbidden: You do not own this device.', 403, 'FORBIDDEN'));
     }
 
-    const {
+    let {
       name,
       type,
       energyRequired,
@@ -223,6 +233,10 @@ const updateDevice = async (req, res, next) => {
       currentState,
       status,
     } = req.body || {};
+
+    if (status === undefined && req.body && req.body.active !== undefined) {
+      status = req.body.active ? 'active' : 'disabled';
+    }
 
     // Validate partial updates if provided
     if (name !== undefined) {
@@ -377,6 +391,7 @@ const deleteDevice = async (req, res, next) => {
       return next(new AppError('Access forbidden: You do not own this device.', 403, 'FORBIDDEN'));
     }
 
+    await Schedule.deleteMany({ deviceId: id, status: { $in: ['proposed', 'accepted'] } });
     await Device.findByIdAndDelete(id);
 
     return success(res, {}, 'Device deleted successfully');

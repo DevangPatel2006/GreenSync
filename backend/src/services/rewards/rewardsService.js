@@ -127,7 +127,10 @@ async function getRewardHistory(userId) {
  * @returns {Promise<object>} User impact summary
  */
 async function getUserImpactSummary(userId) {
-  const schedules = await Schedule.find({ userId }).lean();
+  const schedules = await Schedule.find({
+    userId,
+    status: { $in: ['completed', 'accepted'] },
+  }).lean();
   const transactions = await RewardTransaction.find({ userId }).lean();
 
   return computeUserImpactSummary(schedules, transactions);
@@ -139,7 +142,9 @@ async function getUserImpactSummary(userId) {
  * @returns {Promise<object>} Admin impact summary
  */
 async function getAdminImpactSummary() {
-  const allSchedules = await Schedule.find({}).lean();
+  const allSchedules = await Schedule.find({
+    status: { $in: ['completed', 'accepted'] },
+  }).lean();
   const allUsers = await User.find({}).lean();
 
   return computeAdminImpactSummary(allSchedules, allUsers);

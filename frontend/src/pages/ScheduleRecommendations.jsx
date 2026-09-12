@@ -13,6 +13,7 @@ export default function ScheduleRecommendations() {
   const [loadingRecommendation, setLoadingRecommendation] = useState(false);
   const [noFeasibleSlot, setNoFeasibleSlot] = useState(false);
   const [recommendation, setRecommendation] = useState(null);
+  const [scheduledDeviceIds, setScheduledDeviceIds] = useState(new Set());
 
   const formatAndSetRecommendation = (rec, plan = selectedPlan) => {
     if (!rec || rec.noFeasibleSlot || rec.status === 'NO_FEASIBLE_SLOT') {
@@ -48,30 +49,51 @@ export default function ScheduleRecommendations() {
       confidence: `${Math.min(99.9, Math.max(90, (rec.renewableUtilization || 90) + (plan === 'clean' ? 5 : 2))).toFixed(1)}%`,
       status: rec.status,
     });
-    if (rec.status === 'accepted') {
-      setIsAccepted(true);
-    }
+    const isNowAccepted = rec.status === 'accepted';
+    setIsAccepted(isNowAccepted);
+    setScreenState(isNowAccepted ? 'accepted' : 'live');
   };
 
   useEffect(() => {
     async function init() {
       if (devices && devices.length > 0) {
+        let activeScheduledSet = new Set();
         try {
-          const pendingRes = await api.get('/schedule/pending');
-          const p = pendingRes?.data || pendingRes;
-          if (p && p._id) {
-            const devId = typeof p.deviceId === 'object' ? (p.deviceId._id || p.deviceId.id) : p.deviceId;
-            if (devId) setSelectedDeviceId(devId);
-            formatAndSetRecommendation(p);
-            return;
-          }
+          const histRes = await api.get('/schedule/history');
+          const history = Array.isArray(histRes) ? histRes : (histRes?.data || []);
+          history.forEach((s) => {
+            if (s.status === 'accepted') {
+              const isExpired = s.recommendedEnd && new Date(s.recommendedEnd).getTime() <= Date.now();
+              if (!isExpired) {
+                const devId = typeof s.deviceId === 'object' ? (s.deviceId?._id || s.deviceId?.id) : s.deviceId;
+                if (devId) activeScheduledSet.add(String(devId));
+              }
+            }
+          });
+          setScheduledDeviceIds(activeScheduledSet);
         } catch {
-          // No pending schedule
+          // history fetch fallback
         }
 
-        const devId = selectedDeviceId || devices[0].id || devices[0]._id;
-        setSelectedDeviceId(devId);
-        fetchRecommendation(devId);
+        const unscheduled = devices.filter((d) => !activeScheduledSet.has(String(d.id || d._id)));
+
+        if (unscheduled.length > 0) {
+          const targetDevId = unscheduled[0].id || unscheduled[0]._id;
+          setSelectedDeviceId(targetDevId);
+          fetchRecommendation(targetDevId);
+        } else {
+          try {
+            const pendingRes = await api.get('/schedule/pending');
+            const p = pendingRes?.data || pendingRes;
+            if (p && p._id) {
+              const devId = typeof p.deviceId === 'object' ? (p.deviceId._id || p.deviceId.id) : p.deviceId;
+              if (devId) setSelectedDeviceId(devId);
+              formatAndSetRecommendation(p);
+            }
+          } catch {
+            // No pending
+          }
+        }
       }
     }
     init();
@@ -88,7 +110,6 @@ export default function ScheduleRecommendations() {
     if (!devId) return;
     setLoadingRecommendation(true);
     setNoFeasibleSlot(false);
-    setIsAccepted(false);
     try {
       const res = await api.post('/schedule/recommend', { deviceId: devId });
       const rec = res?.schedule || res?.data?.schedule || res?.data || res;
@@ -125,6 +146,9 @@ export default function ScheduleRecommendations() {
       await api.post(`/schedule/${recommendation.id}/accept`);
       setIsAccepted(true);
       setScreenState('accepted');
+      if (selectedDeviceId) {
+        setScheduledDeviceIds((prev) => new Set([...prev, String(selectedDeviceId)]));
+      }
       showToast(`Schedule locked! Asset scheduled for ${recommendation.recommendedTime} (+${recommendation.flexCoins} FlexCoins)`);
     } catch (err) {
       showToast(err.message || 'Could not accept schedule');
@@ -138,13 +162,40 @@ export default function ScheduleRecommendations() {
       showToast(`Shift cycle completed! +${recommendation.flexCoins} FlexCoins credited to wallet.`);
       setIsAccepted(false);
       setScreenState('live');
-      if (selectedDeviceId) fetchRecommendation(selectedDeviceId);
+      if (selectedDeviceId) {
+        setScheduledDeviceIds((prev) => {
+          const next = new Set(prev);
+          next.delete(String(selectedDeviceId));
+          return next;
+        });
+        fetchRecommendation(selectedDeviceId);
+      }
     } catch (err) {
       showToast(err.message || 'Could not complete schedule');
     }
   };
 
-  const selectedDevice = devices.find((d) => (d.id || d._id) === selectedDeviceId) || devices[0];
+  const handleReviewOtherLoads = () => {
+    const updatedScheduled = new Set([...scheduledDeviceIds, String(selectedDeviceId)]);
+    setScheduledDeviceIds(updatedScheduled);
+    const nextRemaining = devices.filter((d) => !updatedScheduled.has(String(d.id || d._id)));
+
+    setScreenState('live');
+    if (nextRemaining.length > 0) {
+      const nextDevId = nextRemaining[0].id || nextRemaining[0]._id;
+      setSelectedDeviceId(nextDevId);
+      fetchRecommendation(nextDevId);
+    } else {
+      setRecommendation(null);
+    }
+  };
+
+  const availableDevices = devices.filter((d) => !scheduledDeviceIds.has(String(d.id || d._id)));
+  const selectedDevice = availableDevices.find((d) => (d.id || d._id) === selectedDeviceId)
+    || devices.find((d) => (d.id || d._id) === selectedDeviceId)
+    || availableDevices[0]
+    || devices[0];
+
   const requestedStartFormatted = selectedDevice?.earliestStart
     ? new Date(selectedDevice.earliestStart).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
     : 'Immediate Peak';
@@ -173,32 +224,6 @@ export default function ScheduleRecommendations() {
           <p className="font-body-md text-body-md text-on-surface-variant mt-1">
             Find a better time to use electricity, lower peak congestion, and reduce system carbon emissions.
           </p>
-        </div>
-
-        {/* Prototype State Switcher */}
-        <div className="flex items-center p-1 bg-surface-container rounded-lg border border-surface-variant">
-          <button
-            className={`px-space-sm py-1.5 rounded text-label-md font-label-md transition-all flex items-center gap-1.5 ${
-              screenState === 'live'
-                ? 'bg-surface-container-lowest text-primary-container shadow-sm font-semibold'
-                : 'text-on-surface-variant hover:text-on-surface'
-            }`}
-            onClick={() => setScreenState('live')}
-            type="button"
-          >
-            Live Schedule
-          </button>
-          <button
-            className={`px-space-sm py-1.5 rounded text-label-md font-label-md transition-all flex items-center gap-1.5 ${
-              screenState === 'accepted'
-                ? 'bg-surface-container-lowest text-primary-container shadow-sm font-semibold'
-                : 'text-on-surface-variant hover:text-on-surface'
-            }`}
-            onClick={() => setScreenState('accepted')}
-            type="button"
-          >
-            Accepted View
-          </button>
         </div>
       </div>
 
@@ -288,10 +313,7 @@ export default function ScheduleRecommendations() {
             </button>
             <button
               className="px-5 py-2.5 rounded border border-surface-variant text-on-surface font-title-sm text-title-sm hover:border-primary-container transition-colors"
-              onClick={() => {
-                setScreenState('live');
-                if (selectedDeviceId) fetchRecommendation(selectedDeviceId);
-              }}
+              onClick={handleReviewOtherLoads}
               type="button"
             >
               Review Other Loads
@@ -300,8 +322,30 @@ export default function ScheduleRecommendations() {
         </div>
       )}
 
+      {/* ALL LOADS SCHEDULED STATE */}
+      {!devicesLoading && devices.length > 0 && availableDevices.length === 0 && screenState === 'live' && (
+        <div className="bg-surface-container-lowest border border-surface-variant rounded-xl p-space-xl text-center flex flex-col items-center justify-center my-space-md">
+          <div className="w-16 h-16 rounded-full bg-secondary-container/40 flex items-center justify-center mb-space-md text-secondary">
+            <span className="material-symbols-outlined text-[36px]">verified</span>
+          </div>
+          <h3 className="font-headline-sm text-headline-sm text-primary-container mb-space-xs">
+            All Connected Loads Dispatched
+          </h3>
+          <p className="font-body-md text-body-md text-on-surface-variant max-w-md mb-space-lg">
+            Every registered flexible device has an active clean-energy schedule locked in. Monitor their progress or view rewards on the Dashboard.
+          </p>
+          <a
+            className="px-5 py-2.5 rounded bg-primary-container text-on-primary font-title-sm text-title-sm hover:opacity-95 transition-opacity inline-flex items-center gap-space-xs"
+            href="/dashboard"
+          >
+            <span className="material-symbols-outlined text-[18px]">dashboard</span>
+            Return to Dashboard
+          </a>
+        </div>
+      )}
+
       {/* VIEW STATE: POPULATED & LIVE */}
-      {!devicesLoading && !loadingRecommendation && screenState === 'live' && recommendation && (
+      {!devicesLoading && !loadingRecommendation && screenState === 'live' && availableDevices.length > 0 && recommendation && (
         <div className="flex flex-col gap-space-xl">
           {/* Top Level Load Selector & Summary Bar */}
           <div className="bg-surface-container-lowest border border-surface-variant rounded-xl p-space-md flex flex-wrap items-center justify-between gap-space-md">
@@ -311,20 +355,20 @@ export default function ScheduleRecommendations() {
               </div>
               <div>
                 <div className="flex items-center gap-space-xs">
-                  {devices.length > 0 ? (
+                  {availableDevices.length > 0 ? (
                     <select
                       className="font-title-md text-title-md text-on-surface bg-transparent border-b border-surface-variant focus:outline-none focus:border-primary-container cursor-pointer pr-4"
                       value={selectedDeviceId}
                       onChange={handleDeviceChange}
                     >
-                      {devices.map((d) => (
+                      {availableDevices.map((d) => (
                         <option key={d.id || d._id} value={d.id || d._id}>
                           {d.name} ({d.energyRequired} kWh)
                         </option>
                       ))}
                     </select>
                   ) : (
-                    <span className="font-title-md text-title-md text-on-surface">Select a Device</span>
+                    <span className="font-title-md text-title-md text-on-surface">All loads are scheduled</span>
                   )}
                   <span className="px-2 py-0.5 rounded-full text-label-sm font-label-sm bg-surface-container text-on-surface-variant uppercase">
                     {selectedDevice?.flexibility || 'High'} Flexibility
