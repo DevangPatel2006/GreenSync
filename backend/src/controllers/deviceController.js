@@ -87,30 +87,42 @@ const createDevice = async (req, res, next) => {
     }
 
     // Validate optional date fields
-    let parsedEarliestStart;
-    if (earliestStart !== undefined && earliestStart !== null) {
-      parsedEarliestStart = new Date(earliestStart);
-      if (isNaN(parsedEarliestStart.getTime())) {
-        return next(
-          new AppError('earliestStart must be a valid date.', 400, 'VALIDATION_ERROR')
-        );
-      }
-    }
+function parseFlexibleDate(val, baseDate = new Date()) {
+  if (val === undefined || val === null) return undefined;
+  if (val instanceof Date) return isNaN(val.getTime()) ? null : val;
+  if (typeof val === 'string' && /^\d{1,2}:\d{2}(:\d{2})?$/.test(val.trim())) {
+    const parts = val.trim().split(':').map(Number);
+    const d = new Date(baseDate);
+    d.setHours(parts[0], parts[1], parts[2] || 0, 0);
+    return d;
+  }
+  const d = new Date(val);
+  return isNaN(d.getTime()) ? null : d;
+}
 
-    let parsedDeadline;
-    if (deadline !== undefined && deadline !== null) {
-      parsedDeadline = new Date(deadline);
-      if (isNaN(parsedDeadline.getTime())) {
-        return next(
-          new AppError('deadline must be a valid date.', 400, 'VALIDATION_ERROR')
-        );
-      }
-    }
-
-    if (parsedEarliestStart && parsedDeadline && parsedDeadline < parsedEarliestStart) {
+    let parsedEarliestStart = parseFlexibleDate(earliestStart);
+    if (earliestStart !== undefined && earliestStart !== null && !parsedEarliestStart) {
       return next(
-        new AppError('deadline cannot be earlier than earliestStart.', 400, 'VALIDATION_ERROR')
+        new AppError('earliestStart must be a valid date.', 400, 'VALIDATION_ERROR')
       );
+    }
+
+    let parsedDeadline = parseFlexibleDate(deadline);
+    if (deadline !== undefined && deadline !== null && !parsedDeadline) {
+      return next(
+        new AppError('deadline must be a valid date.', 400, 'VALIDATION_ERROR')
+      );
+    }
+
+    if (parsedEarliestStart && parsedDeadline && parsedDeadline <= parsedEarliestStart) {
+      parsedDeadline = new Date(parsedDeadline.getTime() + 24 * 60 * 60 * 1000);
+    }
+
+    if (parsedDeadline && parsedDeadline.getTime() <= Date.now()) {
+      if (parsedEarliestStart) {
+        parsedEarliestStart = new Date(parsedEarliestStart.getTime() + 24 * 60 * 60 * 1000);
+      }
+      parsedDeadline = new Date(parsedDeadline.getTime() + 24 * 60 * 60 * 1000);
     }
 
     // Validate optional enum fields

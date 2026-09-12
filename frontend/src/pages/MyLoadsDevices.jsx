@@ -90,12 +90,35 @@ export default function MyLoadsDevices() {
 
     setIsSubmitting(true);
     try {
+      // Convert time strings (HH:mm) into upcoming timestamps
+      const now = new Date();
+      let startIso = formData.earliestStart;
+      let deadlineIso = formData.deadline;
+
+      if (startIso && /^\d{1,2}:\d{2}$/.test(startIso.trim())) {
+        const [sh, sm] = startIso.split(':').map(Number);
+        const s = new Date(now);
+        s.setHours(sh, sm, 0, 0);
+        startIso = s.toISOString();
+      }
+
+      if (deadlineIso && /^\d{1,2}:\d{2}$/.test(deadlineIso.trim())) {
+        const [dh, dm] = deadlineIso.split(':').map(Number);
+        const d = new Date(now);
+        d.setHours(dh, dm, 0, 0);
+        const startDateObj = new Date(startIso);
+        if (d.getTime() <= startDateObj.getTime()) {
+          d.setDate(d.getDate() + 1);
+        }
+        deadlineIso = d.toISOString();
+      }
+
       await addDevice({
         name: formData.name.trim(),
         type: formData.type,
         energyRequired: parseFloat(formData.energyRequired),
-        earliestStart: formData.earliestStart,
-        deadline: formData.deadline,
+        earliestStart: startIso,
+        deadline: deadlineIso,
         flexibility: formData.flexibility,
         priority: formData.priority,
         power: `${(parseFloat(formData.energyRequired) / 4).toFixed(1)} kW`,

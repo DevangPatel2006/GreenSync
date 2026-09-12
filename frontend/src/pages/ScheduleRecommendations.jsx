@@ -5,6 +5,7 @@ import useDevices from '../hooks/useDevices';
 export default function ScheduleRecommendations() {
   const { devices, loading: devicesLoading } = useDevices();
   const [selectedDeviceId, setSelectedDeviceId] = useState('');
+  const [selectedPlan, setSelectedPlan] = useState('clean');
 
   const [screenState, setScreenState] = useState('live');
   const [isAccepted, setIsAccepted] = useState(false);
@@ -13,13 +14,68 @@ export default function ScheduleRecommendations() {
   const [noFeasibleSlot, setNoFeasibleSlot] = useState(false);
   const [recommendation, setRecommendation] = useState(null);
 
-  useEffect(() => {
-    if (devices && devices.length > 0 && !selectedDeviceId) {
-      const devId = devices[0].id || devices[0]._id;
-      setSelectedDeviceId(devId);
-      fetchRecommendation(devId);
+  const formatAndSetRecommendation = (rec, plan = selectedPlan) => {
+    if (!rec || rec.noFeasibleSlot || rec.status === 'NO_FEASIBLE_SLOT') {
+      setNoFeasibleSlot(true);
+      setRecommendation(null);
+      return;
     }
-  }, [devices, selectedDeviceId]);
+    const baseCoins = rec.flexCoinsEarned || Math.round((Number(rec.energyShifted) || 10) * 3.5);
+    const planMultiplier = plan === 'clean' ? 1.0 : (plan === 'cost' ? 0.9 : 0.85);
+    const coins = Math.round(baseCoins * planMultiplier);
+
+    const startStr = rec.recommendedStart
+      ? new Date(rec.recommendedStart).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+      : 'Tonight';
+    const endStr = rec.recommendedEnd
+      ? new Date(rec.recommendedEnd).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+      : '';
+
+    setRecommendation({
+      id: rec._id,
+      recommendedStart: rec.recommendedStart,
+      recommendedEnd: rec.recommendedEnd,
+      recommendedTime: endStr ? `${startStr} – ${endStr}` : startStr,
+      requestedRate: '$0.342 / kWh (Peak Tier)',
+      recommendedRate: plan === 'cost' ? '$0.098 / kWh (Super Off-Peak)' : '$0.118 / kWh (Off-Peak)',
+      requestedCarbon: '540 g CO₂ / kWh',
+      recommendedCarbon: `${Math.round(540 * (1 - (rec.renewableUtilization || 80) / 100))} g CO₂ / kWh (-${rec.renewableUtilization || 80}%)`,
+      energyShifted: Number(rec.energyShifted) || 0,
+      peakReduction: Number(rec.peakReduction) || 0,
+      co2Avoided: Number(rec.co2Avoided) || 0,
+      flexCoins: coins,
+      reason: rec.reason || (plan === 'clean' ? 'Optimized for high regional clean power generation (solar + wind).' : (plan === 'cost' ? 'Optimized for lowest wholesale tariff rates.' : 'Balanced dispatch window with minimal lead time.')),
+      confidence: `${Math.min(99.9, Math.max(90, (rec.renewableUtilization || 90) + (plan === 'clean' ? 5 : 2))).toFixed(1)}%`,
+      status: rec.status,
+    });
+    if (rec.status === 'accepted') {
+      setIsAccepted(true);
+    }
+  };
+
+  useEffect(() => {
+    async function init() {
+      if (devices && devices.length > 0) {
+        try {
+          const pendingRes = await api.get('/schedule/pending');
+          const p = pendingRes?.data || pendingRes;
+          if (p && p._id) {
+            const devId = typeof p.deviceId === 'object' ? (p.deviceId._id || p.deviceId.id) : p.deviceId;
+            if (devId) setSelectedDeviceId(devId);
+            formatAndSetRecommendation(p);
+            return;
+          }
+        } catch {
+          // No pending schedule
+        }
+
+        const devId = selectedDeviceId || devices[0].id || devices[0]._id;
+        setSelectedDeviceId(devId);
+        fetchRecommendation(devId);
+      }
+    }
+    init();
+  }, [devices]);
 
   const showToast = (msg) => {
     setToastMessage(msg);
@@ -28,7 +84,7 @@ export default function ScheduleRecommendations() {
     }, 3500);
   };
 
-  const fetchRecommendation = async (devId) => {
+  const fetchRecommendation = async (devId, plan = selectedPlan) => {
     if (!devId) return;
     setLoadingRecommendation(true);
     setNoFeasibleSlot(false);
@@ -36,39 +92,7 @@ export default function ScheduleRecommendations() {
     try {
       const res = await api.post('/schedule/recommend', { deviceId: devId });
       const rec = res?.schedule || res?.data?.schedule || res?.data || res;
-      if (!rec || rec.noFeasibleSlot || rec.status === 'NO_FEASIBLE_SLOT') {
-        setNoFeasibleSlot(true);
-        setRecommendation(null);
-      } else {
-        const coins = rec.flexCoinsEarned || Math.round((Number(rec.energyShifted) || 10) * 3.5);
-        const startStr = rec.recommendedStart
-          ? new Date(rec.recommendedStart).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
-          : 'Tonight';
-        const endStr = rec.recommendedEnd
-          ? new Date(rec.recommendedEnd).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
-          : '';
-
-        setRecommendation({
-          id: rec._id,
-          recommendedStart: rec.recommendedStart,
-          recommendedEnd: rec.recommendedEnd,
-          recommendedTime: endStr ? `${startStr} – ${endStr}` : startStr,
-          requestedRate: '$0.342 / kWh (Peak Tier)',
-          recommendedRate: '$0.118 / kWh (Super Off-Peak)',
-          requestedCarbon: '540 g CO₂ / kWh',
-          recommendedCarbon: `${Math.round(540 * (1 - (rec.renewableUtilization || 80) / 100))} g CO₂ / kWh (-${rec.renewableUtilization || 80}%)`,
-          energyShifted: Number(rec.energyShifted) || 0,
-          peakReduction: Number(rec.peakReduction) || 0,
-          co2Avoided: Number(rec.co2Avoided) || 0,
-          flexCoins: coins,
-          reason: rec.reason || 'Optimized for high regional clean power generation, displacing peak peaker activation.',
-          confidence: `${Math.min(99.9, Math.max(90, (rec.renewableUtilization || 90) + 5)).toFixed(1)}%`,
-          status: rec.status,
-        });
-        if (rec.status === 'accepted') {
-          setIsAccepted(true);
-        }
-      }
+      formatAndSetRecommendation(rec, plan);
     } catch (err) {
       if (err.response?.data?.code === 'NO_FEASIBLE_SLOT' || err.response?.status === 400) {
         setNoFeasibleSlot(true);
@@ -84,7 +108,15 @@ export default function ScheduleRecommendations() {
   const handleDeviceChange = (e) => {
     const devId = e.target.value;
     setSelectedDeviceId(devId);
-    fetchRecommendation(devId);
+    fetchRecommendation(devId, selectedPlan);
+  };
+
+  const handlePlanChange = (planId) => {
+    setSelectedPlan(planId);
+    if (recommendation) {
+      formatAndSetRecommendation(recommendation, planId);
+      showToast(`Switched plan to: ${planId === 'clean' ? 'Max Clean Energy' : (planId === 'cost' ? 'Lowest Tariff' : 'Balanced Dispatch')}`);
+    }
   };
 
   const handleAccept = async () => {
@@ -96,6 +128,19 @@ export default function ScheduleRecommendations() {
       showToast(`Schedule locked! Asset scheduled for ${recommendation.recommendedTime} (+${recommendation.flexCoins} FlexCoins)`);
     } catch (err) {
       showToast(err.message || 'Could not accept schedule');
+    }
+  };
+
+  const handleCompleteNow = async () => {
+    if (!recommendation?.id) return;
+    try {
+      await api.post(`/schedule/${recommendation.id}/complete`);
+      showToast(`Shift cycle completed! +${recommendation.flexCoins} FlexCoins credited to wallet.`);
+      setIsAccepted(false);
+      setScreenState('live');
+      if (selectedDeviceId) fetchRecommendation(selectedDeviceId);
+    } catch (err) {
+      showToast(err.message || 'Could not complete schedule');
     }
   };
 
@@ -232,13 +277,26 @@ export default function ScheduleRecommendations() {
               +{recommendation?.flexCoins || 65} FlexCoins Credited Upon Cycle Completion
             </span>
           </div>
-          <button
-            className="px-5 py-2.5 rounded border border-surface-variant text-on-surface font-title-sm text-title-sm hover:border-primary-container transition-colors"
-            onClick={() => setScreenState('live')}
-            type="button"
-          >
-            Review Other Loads
-          </button>
+          <div className="flex flex-wrap items-center justify-center gap-space-md">
+            <button
+              className="px-5 py-2.5 rounded bg-primary-container hover:bg-primary text-on-primary font-title-sm text-title-sm flex items-center gap-2 shadow-sm transition-colors"
+              onClick={handleCompleteNow}
+              type="button"
+            >
+              <span className="material-symbols-outlined text-[18px]">bolt</span>
+              <span>Fast-Forward &amp; Claim FlexCoins Now</span>
+            </button>
+            <button
+              className="px-5 py-2.5 rounded border border-surface-variant text-on-surface font-title-sm text-title-sm hover:border-primary-container transition-colors"
+              onClick={() => {
+                setScreenState('live');
+                if (selectedDeviceId) fetchRecommendation(selectedDeviceId);
+              }}
+              type="button"
+            >
+              Review Other Loads
+            </button>
+          </div>
         </div>
       )}
 
@@ -286,6 +344,35 @@ export default function ScheduleRecommendations() {
                 <span className="material-symbols-outlined text-[16px]">tune</span>
                 Load Constraints
               </a>
+            </div>
+          </div>
+
+          {/* Dispatch Plan Selector */}
+          <div className="bg-surface-container-lowest border border-surface-variant rounded-xl p-space-md flex flex-wrap items-center justify-between gap-space-md">
+            <div className="flex items-center gap-space-xs text-on-surface-variant font-label-md text-label-md font-semibold">
+              <span className="material-symbols-outlined text-secondary text-[20px]">tune</span>
+              <span>Optimization Plan:</span>
+            </div>
+            <div className="flex flex-wrap items-center gap-space-xs">
+              {[
+                { id: 'clean', label: 'Max Clean Energy', icon: 'solar_power' },
+                { id: 'cost', label: 'Lowest Tariff', icon: 'savings' },
+                { id: 'balanced', label: 'Balanced Dispatch', icon: 'speed' },
+              ].map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => handlePlanChange(p.id)}
+                  className={`px-3 py-1.5 rounded-lg text-label-md font-label-md flex items-center gap-1.5 transition-all ${
+                    selectedPlan === p.id
+                      ? 'bg-primary-container text-on-primary font-semibold shadow-sm'
+                      : 'bg-surface-container text-on-surface-variant hover:text-on-surface'
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-[16px]">{p.icon}</span>
+                  <span>{p.label}</span>
+                </button>
+              ))}
             </div>
           </div>
 
