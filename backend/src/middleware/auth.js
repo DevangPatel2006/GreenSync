@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const AppError = require('../utils/AppError');
 
 /**
  * Authentication Middleware
@@ -7,7 +8,7 @@ const jwt = require('jsonwebtoken');
 const auth = (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ success: false, message: 'Access denied. No token provided.' });
+    return next(new AppError('Access denied. No token provided.', 401, 'UNAUTHORIZED'));
   }
 
   const token = authHeader.split(' ')[1];
@@ -16,7 +17,7 @@ const auth = (req, res, next) => {
     req.user = decoded;
     next();
   } catch (ex) {
-    res.status(400).json({ success: false, message: 'Invalid token.' });
+    return next(new AppError('Invalid token.', 401, 'UNAUTHORIZED'));
   }
 };
 
