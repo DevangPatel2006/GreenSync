@@ -190,6 +190,23 @@ export default function ScheduleRecommendations() {
     }
   };
 
+  const getTypeIcon = (type) => {
+    switch (type) {
+      case 'ev_charging':
+        return 'electric_car';
+      case 'water_heater':
+        return 'water_heater';
+      case 'washing_machine':
+        return 'local_laundry_service';
+      case 'battery':
+        return 'battery_charging_full';
+      case 'industrial':
+        return 'precision_manufacturing';
+      default:
+        return 'power';
+    }
+  };
+
   const availableDevices = devices.filter((d) => !scheduledDeviceIds.has(String(d.id || d._id)));
   const selectedDevice = availableDevices.find((d) => (d.id || d._id) === selectedDeviceId)
     || devices.find((d) => (d.id || d._id) === selectedDeviceId)
@@ -260,6 +277,77 @@ export default function ScheduleRecommendations() {
         </div>
       )}
 
+      {/* PERSISTENT LOAD SELECTOR: User can first select any device and check recommendations */}
+      {!devicesLoading && devices.length > 0 && (
+        <div className="bg-surface-container-lowest border border-surface-variant rounded-xl p-space-md flex flex-wrap items-center justify-between gap-space-md mb-space-lg shadow-sm">
+          <div className="flex items-center gap-space-md">
+            <div className="w-12 h-12 rounded-lg bg-surface-container-low flex items-center justify-center border border-surface-variant text-primary-container shrink-0">
+              <span className="material-symbols-outlined text-[28px]">
+                {getTypeIcon(selectedDevice?.type)}
+              </span>
+            </div>
+            <div>
+              <div className="flex flex-wrap items-center gap-space-xs">
+                <label htmlFor="schedule-device-select" className="text-label-sm font-semibold uppercase text-on-surface-variant mr-1">
+                  Select Device:
+                </label>
+                <select
+                  id="schedule-device-select"
+                  className="font-title-md text-title-md text-on-surface bg-surface border border-surface-variant rounded-lg px-2.5 py-1 focus:outline-none focus:ring-2 focus:ring-primary-container cursor-pointer"
+                  value={selectedDeviceId}
+                  onChange={handleDeviceChange}
+                >
+                  {devices.map((d) => {
+                    const devId = d.id || d._id;
+                    const isScheduled = scheduledDeviceIds.has(String(devId));
+                    return (
+                      <option key={devId} value={devId}>
+                        {d.name} ({d.energyRequired} kWh){isScheduled ? ' • [Active Schedule]' : ''}
+                      </option>
+                    );
+                  })}
+                </select>
+                <span className="px-2 py-0.5 rounded-full text-label-sm font-label-sm bg-surface-container text-on-surface-variant uppercase">
+                  {selectedDevice?.flexibility || 'High'} Flexibility
+                </span>
+              </div>
+              <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">
+                Target delivery: <strong>{selectedDevice?.energyRequired || 10} kWh</strong> by{' '}
+                <strong>
+                  {selectedDevice?.deadline
+                    ? new Date(selectedDevice.deadline).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+                    : 'Flexible'}
+                </strong>
+                {scheduledDeviceIds.has(String(selectedDevice?.id || selectedDevice?._id)) && (
+                  <span className="ml-2 text-secondary font-semibold">✓ Dispatch Active</span>
+                )}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-space-sm">
+            <button
+              type="button"
+              onClick={() => fetchRecommendation(selectedDeviceId, selectedPlan)}
+              disabled={loadingRecommendation}
+              className="px-3.5 py-1.5 bg-primary-container hover:bg-primary text-on-primary font-label-md text-label-md rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm disabled:opacity-50"
+            >
+              <span className="material-symbols-outlined text-[18px]">
+                {loadingRecommendation ? 'refresh' : 'sync'}
+              </span>
+              <span>{loadingRecommendation ? 'Optimizing...' : 'Calculate Schedule'}</span>
+            </button>
+            <a
+              href="/my-loads-devices"
+              className="px-3 py-1.5 border border-surface-variant hover:border-primary-container text-on-surface font-label-md text-label-md rounded-lg flex items-center gap-1 transition-colors"
+            >
+              <span className="material-symbols-outlined text-[16px]">tune</span>
+              Load Constraints
+            </a>
+          </div>
+        </div>
+      )}
+
       {/* INFEASIBLE SENTINEL STATE */}
       {!devicesLoading && devices.length > 0 && noFeasibleSlot && (
         <div className="bg-surface-container-lowest border border-warning/30 rounded-xl p-space-xl text-center flex flex-col items-center justify-center my-space-md">
@@ -267,16 +355,17 @@ export default function ScheduleRecommendations() {
             <span className="material-symbols-outlined text-[32px]">event_busy</span>
           </div>
           <h3 className="font-headline-sm text-headline-sm text-primary-container mb-space-xs">
-            No Feasible Schedule Window
+            No Feasible Schedule Window for {selectedDevice?.name || 'Selected Device'}
           </h3>
           <p className="font-body-md text-body-md text-on-surface-variant max-w-md mb-space-lg">
-            The deadline set for {selectedDevice?.name || 'this appliance'} is too narrow for its required energy run-time. Broaden the deadline or adjust earliest start to allow algorithmic optimization.
+            The deadline set for <strong>{selectedDevice?.name || 'this appliance'}</strong> is too narrow for its required energy run-time. You can select another device from the dropdown above, or adjust this device's deadline window.
           </p>
           <a
-            className="px-5 py-2.5 rounded border border-surface-variant text-on-surface font-title-sm text-title-sm hover:border-primary-container transition-colors"
+            className="px-5 py-2.5 rounded bg-primary-container text-on-primary font-title-sm text-title-sm hover:bg-primary transition-colors inline-flex items-center gap-2 shadow-sm"
             href="/my-loads-devices"
           >
-            Adjust Device Window
+            <span className="material-symbols-outlined text-[18px]">edit_calendar</span>
+            Adjust Device Deadline
           </a>
         </div>
       )}
@@ -347,50 +436,6 @@ export default function ScheduleRecommendations() {
       {/* VIEW STATE: POPULATED & LIVE */}
       {!devicesLoading && !loadingRecommendation && screenState === 'live' && availableDevices.length > 0 && recommendation && (
         <div className="flex flex-col gap-space-xl">
-          {/* Top Level Load Selector & Summary Bar */}
-          <div className="bg-surface-container-lowest border border-surface-variant rounded-xl p-space-md flex flex-wrap items-center justify-between gap-space-md">
-            <div className="flex items-center gap-space-md">
-              <div className="w-12 h-12 rounded-lg bg-surface-container-low flex items-center justify-center border border-surface-variant text-primary-container">
-                <span className="material-symbols-outlined text-[28px]">electric_car</span>
-              </div>
-              <div>
-                <div className="flex items-center gap-space-xs">
-                  {availableDevices.length > 0 ? (
-                    <select
-                      className="font-title-md text-title-md text-on-surface bg-transparent border-b border-surface-variant focus:outline-none focus:border-primary-container cursor-pointer pr-4"
-                      value={selectedDeviceId}
-                      onChange={handleDeviceChange}
-                    >
-                      {availableDevices.map((d) => (
-                        <option key={d.id || d._id} value={d.id || d._id}>
-                          {d.name} ({d.energyRequired} kWh)
-                        </option>
-                      ))}
-                    </select>
-                  ) : (
-                    <span className="font-title-md text-title-md text-on-surface">All loads are scheduled</span>
-                  )}
-                  <span className="px-2 py-0.5 rounded-full text-label-sm font-label-sm bg-surface-container text-on-surface-variant uppercase">
-                    {selectedDevice?.flexibility || 'High'} Flexibility
-                  </span>
-                </div>
-                <p className="font-body-sm text-body-sm text-on-surface-variant">
-                  Target delivery: {selectedDevice?.energyRequired || 10} kWh by {selectedDevice?.deadline ? new Date(selectedDevice.deadline).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : 'Flexible'}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-space-md">
-              <a
-                href="/my-loads-devices"
-                className="px-3 py-1.5 border border-surface-variant hover:border-primary-container text-on-surface font-label-md text-label-md rounded flex items-center gap-1 transition-colors"
-              >
-                <span className="material-symbols-outlined text-[16px]">tune</span>
-                Load Constraints
-              </a>
-            </div>
-          </div>
-
           {/* Dispatch Plan Selector */}
           <div className="bg-surface-container-lowest border border-surface-variant rounded-xl p-space-md flex flex-wrap items-center justify-between gap-space-md">
             <div className="flex items-center gap-space-xs text-on-surface-variant font-label-md text-label-md font-semibold">

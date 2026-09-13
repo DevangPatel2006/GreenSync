@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import useAuth from '../hooks/useAuth';
 import api from '../services/api';
 import { mapBackendError } from '../utils/errorMapper';
@@ -7,6 +7,10 @@ import { mapBackendError } from '../utils/errorMapper';
 export default function ProfileSettings() {
   const { user, logout, updateProfile } = useAuth();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Selected tab: 'profile' | 'settings' | 'all'
+  const currentTab = searchParams.get('tab') || 'profile';
 
   const [name, setName] = useState(user?.name || '');
   const [loading, setLoading] = useState(false);
@@ -79,25 +83,69 @@ export default function ProfileSettings() {
   return (
     <div className="flex flex-col w-full">
       {/* Header pattern matching Dashboard.jsx & MyLoadsDevices.jsx */}
-      <div className="flex flex-wrap items-center justify-between pb-space-lg border-b border-surface-variant gap-space-sm mb-space-lg">
+      <div className="flex flex-wrap items-center justify-between pb-space-lg border-b border-surface-variant gap-space-sm mb-space-md">
         <div>
           <div className="flex items-center gap-space-xs text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider">
             <span>Account Management</span>
             <span>•</span>
-            <span className="text-secondary font-title-sm">Operator Preferences</span>
+            <span className="text-secondary font-title-sm">
+              {currentTab === 'settings' ? 'Settings & Preferences' : 'Profile Overview'}
+            </span>
           </div>
           <h1 className="font-headline-md text-headline-md text-primary-container mt-0.5 tracking-tight">
-            Profile &amp; Settings
+            {currentTab === 'settings' ? 'Account Settings' : currentTab === 'all' ? 'Profile & Settings' : 'Operator Profile'}
           </h1>
         </div>
 
         <button
           onClick={handleLogout}
-          className="px-4 py-2 rounded-lg border border-surface-variant hover:bg-error-container hover:text-on-error-container text-on-surface text-label-md font-label-md flex items-center gap-2 transition-colors"
+          className="px-4 py-2 rounded-lg border border-surface-variant hover:bg-error-container hover:text-on-error-container text-on-surface text-label-md font-label-md flex items-center gap-2 transition-colors cursor-pointer"
           type="button"
         >
           <span className="material-symbols-outlined text-[18px]">logout</span>
           <span>Sign Out</span>
+        </button>
+      </div>
+
+      {/* Tabs Filter Bar (Profile vs Settings vs View All) */}
+      <div className="flex flex-wrap items-center gap-2 mb-space-lg">
+        <button
+          type="button"
+          onClick={() => setSearchParams({ tab: 'profile' })}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-label-md font-label-md transition-colors cursor-pointer ${
+            currentTab === 'profile'
+              ? 'bg-primary-container text-on-primary shadow-sm font-semibold'
+              : 'bg-surface-container text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'
+          }`}
+        >
+          <span className="material-symbols-outlined text-[18px]">person</span>
+          <span>Profile Overview</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setSearchParams({ tab: 'settings' })}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-label-md font-label-md transition-colors cursor-pointer ${
+            currentTab === 'settings'
+              ? 'bg-primary-container text-on-primary shadow-sm font-semibold'
+              : 'bg-surface-container text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'
+          }`}
+        >
+          <span className="material-symbols-outlined text-[18px]">settings</span>
+          <span>Account Settings</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setSearchParams({ tab: 'all' })}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-label-md font-label-md transition-colors cursor-pointer ${
+            currentTab === 'all'
+              ? 'bg-primary-container text-on-primary shadow-sm font-semibold'
+              : 'bg-surface-container text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'
+          }`}
+        >
+          <span className="material-symbols-outlined text-[18px]">view_agenda</span>
+          <span>View All</span>
         </button>
       </div>
 
@@ -118,7 +166,7 @@ export default function ProfileSettings() {
           </div>
           <button
             onClick={() => setError(null)}
-            className="text-label-sm font-label-sm text-on-error-container hover:underline ml-2"
+            className="text-label-sm font-label-sm text-on-error-container hover:underline ml-2 cursor-pointer"
             type="button"
           >
             Dismiss
@@ -126,174 +174,204 @@ export default function ProfileSettings() {
         </div>
       )}
 
-      {/* Main Grid: User Profile Cards */}
+      {/* Main Grid: Dynamically displays Profile, Settings, or Both */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
-        {/* Left 5 Cols: Account Summary Card */}
-        <div className="lg:col-span-5 flex flex-col gap-space-md">
-          <div className="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm border border-surface-variant">
-            <div className="flex items-center gap-space-md mb-space-md pb-space-md border-b border-surface-variant">
-              <div className="w-14 h-14 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-headline-sm font-bold shadow-sm">
-                {(displayUser.name || 'U').slice(0, 2).toUpperCase()}
-              </div>
-              <div className="min-w-0 flex-1">
-                <h2 className="font-title-lg text-title-lg text-primary-container truncate font-bold">
-                  {displayUser.name}
-                </h2>
-                <p className="font-body-sm text-body-sm text-on-surface-variant truncate">
-                  {displayUser.email}
-                </p>
-                <div className="flex items-center gap-1.5 mt-1">
-                  <span className="inline-flex items-center px-2 py-0.5 rounded text-label-sm font-label-sm uppercase bg-secondary-container text-on-secondary-fixed">
-                    {displayUser.role || 'residential'}
-                  </span>
-                  {displayUser.role === 'admin' && (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded text-label-sm font-label-sm bg-primary-container text-on-primary">
-                      Grid Admin
+        {/* Left Column: Account Profile Summary Card */}
+        {(currentTab === 'profile' || currentTab === 'all') && (
+          <div className={`${currentTab === 'profile' ? 'lg:col-span-8 lg:col-start-3' : 'lg:col-span-5'} flex flex-col gap-space-md`}>
+            <div className="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm border border-surface-variant">
+              <div className="flex items-center gap-space-md mb-space-md pb-space-md border-b border-surface-variant">
+                <div className="w-14 h-14 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-headline-sm font-bold shadow-sm">
+                  {(displayUser.name || 'U').slice(0, 2).toUpperCase()}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h2 className="font-title-lg text-title-lg text-primary-container truncate font-bold">
+                    {displayUser.name}
+                  </h2>
+                  <p className="font-body-sm text-body-sm text-on-surface-variant truncate">
+                    {displayUser.email}
+                  </p>
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-label-sm font-label-sm uppercase bg-secondary-container text-on-secondary-fixed">
+                      {displayUser.role || 'residential'}
                     </span>
-                  )}
+                    {displayUser.role === 'admin' && (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-label-sm font-label-sm bg-primary-container text-on-primary">
+                        Grid Admin
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
+
+              <div className="space-y-space-sm">
+                <div className="flex items-center justify-between text-body-sm font-body-sm py-1 border-b border-surface-variant/60">
+                  <span className="text-on-surface-variant">Registered Email</span>
+                  <span className="font-medium text-on-surface">{displayUser.email}</span>
+                </div>
+                <div className="flex items-center justify-between text-body-sm font-body-sm py-1 border-b border-surface-variant/60">
+                  <span className="text-on-surface-variant">Account Type</span>
+                  <span className="font-medium text-on-surface capitalize">{displayUser.role || 'Residential Prosumer'}</span>
+                </div>
+                <div className="flex items-center justify-between text-body-sm font-body-sm py-1 border-b border-surface-variant/60">
+                  <span className="text-on-surface-variant">FlexCoin Balance</span>
+                  <Link to="/rewards-flexcoins" className="font-bold text-secondary flex items-center gap-1 hover:underline">
+                    <span>{displayUser.flexCoins ?? 0} FC</span>
+                    <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                  </Link>
+                </div>
+                <div className="flex items-center justify-between text-body-sm font-body-sm py-1">
+                  <span className="text-on-surface-variant">Grid Dispatch Status</span>
+                  <span className="inline-flex items-center gap-1 text-secondary font-medium">
+                    <span className="w-2 h-2 rounded-full bg-secondary"></span>
+                    Active Telemetry
+                  </span>
+                </div>
+              </div>
+
+              {/* Quick switch to settings if viewing in profile tab */}
+              {currentTab === 'profile' && (
+                <div className="mt-space-md pt-space-md border-t border-surface-variant flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setSearchParams({ tab: 'settings' })}
+                    className="text-label-md font-label-md text-primary-container hover:underline flex items-center gap-1 cursor-pointer"
+                  >
+                    <span>Edit Profile in Settings</span>
+                    <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                  </button>
+                </div>
+              )}
             </div>
 
-            <div className="space-y-space-sm">
-              <div className="flex items-center justify-between text-body-sm font-body-sm py-1 border-b border-surface-variant/60">
-                <span className="text-on-surface-variant">Registered Email</span>
-                <span className="font-medium text-on-surface">{displayUser.email}</span>
-              </div>
-              <div className="flex items-center justify-between text-body-sm font-body-sm py-1 border-b border-surface-variant/60">
-                <span className="text-on-surface-variant">Account Type</span>
-                <span className="font-medium text-on-surface capitalize">{displayUser.role || 'Residential Prosumer'}</span>
-              </div>
-              <div className="flex items-center justify-between text-body-sm font-body-sm py-1 border-b border-surface-variant/60">
-                <span className="text-on-surface-variant">FlexCoin Balance</span>
-                <Link to="/rewards-flexcoins" className="font-bold text-secondary flex items-center gap-1 hover:underline">
-                  <span>{displayUser.flexCoins ?? 0} FC</span>
-                  <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
-                </Link>
-              </div>
-              <div className="flex items-center justify-between text-body-sm font-body-sm py-1">
-                <span className="text-on-surface-variant">Grid Dispatch Status</span>
-                <span className="inline-flex items-center gap-1 text-secondary font-medium">
-                  <span className="w-2 h-2 rounded-full bg-secondary"></span>
-                  Active Telemetry
+            {/* Security / Enterprise Auth Note */}
+            <div className="bg-surface-container p-space-md rounded-xl border border-surface-variant flex items-start gap-space-sm">
+              <span className="material-symbols-outlined text-secondary text-[20px] mt-0.5">verified_user</span>
+              <div>
+                <span className="font-label-md text-label-md text-on-surface font-semibold block">
+                  Enterprise TLS &amp; Token Auth
                 </span>
+                <p className="font-body-sm text-body-sm text-on-surface-variant">
+                  Session credentials are authenticated via JWT tokens stored in your browser session. Role-based privileges are strictly enforced.
+                </p>
               </div>
             </div>
           </div>
+        )}
 
-          {/* Security / Honesty Note */}
-          <div className="bg-surface-container p-space-md rounded-xl border border-surface-variant flex items-start gap-space-sm">
-            <span className="material-symbols-outlined text-secondary text-[20px] mt-0.5">verified_user</span>
-            <div>
-              <span className="font-label-md text-label-md text-on-surface font-semibold block">
-                Enterprise TLS &amp; Token Auth
-              </span>
-              <p className="font-body-sm text-body-sm text-on-surface-variant">
-                Session credentials are authenticated via JWT tokens stored in your browser session. Role-based privileges are strictly enforced.
-              </p>
+        {/* Right Column: Settings & Personal Information Form */}
+        {(currentTab === 'settings' || currentTab === 'all') && (
+          <div className={`${currentTab === 'settings' ? 'lg:col-span-8 lg:col-start-3' : 'lg:col-span-7'}`}>
+            <div className="bg-surface-container-lowest p-space-lg sm:p-space-xl rounded-xl shadow-sm border border-surface-variant">
+              <div className="mb-space-md pb-space-sm border-b border-surface-variant flex items-center justify-between">
+                <div>
+                  <h3 className="font-headline-sm text-headline-sm text-primary-container">
+                    Personal Information &amp; Preferences
+                  </h3>
+                  <p className="font-body-sm text-body-sm text-on-surface-variant">
+                    Update your operator display name. Email and system role are provisioned by your organization administrator.
+                  </p>
+                </div>
+                {currentTab === 'settings' && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchParams({ tab: 'profile' })}
+                    className="text-label-sm font-label-sm text-on-surface-variant hover:text-primary-container flex items-center gap-1 shrink-0 ml-2 cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">person</span>
+                    <span>View Profile</span>
+                  </button>
+                )}
+              </div>
+
+              <form onSubmit={handleUpdateName} className="space-y-space-md">
+                <div className="space-y-1.5">
+                  <label className="block text-label-md font-label-md text-on-surface" htmlFor="operator-name">
+                    Display Name
+                  </label>
+                  <div className="relative">
+                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]">
+                      person
+                    </span>
+                    <input
+                      id="operator-name"
+                      type="text"
+                      required
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="w-full h-11 pl-10 pr-4 bg-surface-container-lowest text-on-surface text-body-md font-body-md rounded-lg border border-surface-variant outline-none transition-all shadow-sm focus:border-primary"
+                      placeholder="Your Full Name"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="block text-label-md font-label-md text-on-surface" htmlFor="account-email">
+                    Work Email (Read-only)
+                  </label>
+                  <div className="relative">
+                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]">
+                      alternate_email
+                    </span>
+                    <input
+                      id="account-email"
+                      type="email"
+                      disabled
+                      value={displayUser.email || ''}
+                      className="w-full h-11 pl-10 pr-4 bg-surface-container-low text-on-surface-variant text-body-md font-body-md rounded-lg border border-surface-variant outline-none cursor-not-allowed opacity-80"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="block text-label-md font-label-md text-on-surface" htmlFor="account-role">
+                    System Role (Read-only)
+                  </label>
+                  <div className="relative">
+                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]">
+                      badge
+                    </span>
+                    <input
+                      id="account-role"
+                      type="text"
+                      disabled
+                      value={displayUser.role === 'admin' ? 'Grid Administrator' : displayUser.role || 'Residential Prosumer'}
+                      className="w-full h-11 pl-10 pr-4 bg-surface-container-low text-on-surface-variant text-body-md font-body-md rounded-lg border border-surface-variant outline-none cursor-not-allowed opacity-80 capitalize"
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-space-sm flex items-center justify-between">
+                  <button
+                    type="submit"
+                    disabled={saving || loading}
+                    className="px-6 py-2.5 bg-primary-container hover:bg-primary text-on-primary font-title-sm text-title-sm rounded-lg transition-all flex items-center gap-2 shadow-md disabled:opacity-60 cursor-pointer"
+                  >
+                    {saving ? (
+                      <>
+                        <span className="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
+                        <span>Saving changes...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="material-symbols-outlined text-[18px]">save</span>
+                        <span>Save Changes</span>
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setName(user?.name || '')}
+                    className="text-label-md font-label-md text-on-surface-variant hover:text-on-surface px-3 py-1.5 cursor-pointer"
+                  >
+                    Reset
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
-        </div>
-
-        {/* Right 7 Cols: Profile Update Form */}
-        <div className="lg:col-span-7">
-          <div className="bg-surface-container-lowest p-space-lg sm:p-space-xl rounded-xl shadow-sm border border-surface-variant">
-            <div className="mb-space-md pb-space-sm border-b border-surface-variant">
-              <h3 className="font-headline-sm text-headline-sm text-primary-container">
-                Personal Information
-              </h3>
-              <p className="font-body-sm text-body-sm text-on-surface-variant">
-                Update your operator display name. Per Section 15 contract, email and role are provisioned by your organization administrator.
-              </p>
-            </div>
-
-            <form onSubmit={handleUpdateName} className="space-y-space-md">
-              <div className="space-y-1.5">
-                <label className="block text-label-md font-label-md text-on-surface" htmlFor="operator-name">
-                  Display Name
-                </label>
-                <div className="relative">
-                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]">
-                    person
-                  </span>
-                  <input
-                    id="operator-name"
-                    type="text"
-                    required
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="w-full h-11 pl-10 pr-4 bg-surface-container-lowest text-on-surface text-body-md font-body-md rounded-lg border border-surface-variant outline-none transition-all shadow-sm focus:border-primary"
-                    placeholder="Your Full Name"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="block text-label-md font-label-md text-on-surface" htmlFor="account-email">
-                  Work Email (Read-only)
-                </label>
-                <div className="relative">
-                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]">
-                    alternate_email
-                  </span>
-                  <input
-                    id="account-email"
-                    type="email"
-                    disabled
-                    value={displayUser.email || ''}
-                    className="w-full h-11 pl-10 pr-4 bg-surface-container-low text-on-surface-variant text-body-md font-body-md rounded-lg border border-surface-variant outline-none cursor-not-allowed opacity-80"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="block text-label-md font-label-md text-on-surface" htmlFor="account-role">
-                  System Role (Read-only)
-                </label>
-                <div className="relative">
-                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]">
-                    badge
-                  </span>
-                  <input
-                    id="account-role"
-                    type="text"
-                    disabled
-                    value={displayUser.role === 'admin' ? 'Grid Administrator' : displayUser.role || 'Residential Prosumer'}
-                    className="w-full h-11 pl-10 pr-4 bg-surface-container-low text-on-surface-variant text-body-md font-body-md rounded-lg border border-surface-variant outline-none cursor-not-allowed opacity-80 capitalize"
-                  />
-                </div>
-              </div>
-
-              <div className="pt-space-sm flex items-center justify-between">
-                <button
-                  type="submit"
-                  disabled={saving || loading}
-                  className="px-6 py-2.5 bg-primary-container hover:bg-primary text-on-primary font-title-sm text-title-sm rounded-lg transition-all flex items-center gap-2 shadow-md disabled:opacity-60"
-                >
-                  {saving ? (
-                    <>
-                      <span className="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
-                      <span>Saving changes...</span>
-                    </>
-                  ) : (
-                    <>
-                      <span className="material-symbols-outlined text-[18px]">save</span>
-                      <span>Save Changes</span>
-                    </>
-                  )}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setName(user?.name || '')}
-                  className="text-label-md font-label-md text-on-surface-variant hover:text-on-surface px-3 py-1.5"
-                >
-                  Reset
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );

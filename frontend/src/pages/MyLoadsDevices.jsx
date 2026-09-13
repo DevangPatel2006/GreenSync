@@ -7,7 +7,6 @@ export default function MyLoadsDevices() {
   const location = useLocation();
   const { devices, loading, error, refetch, addDevice, updateDevice, deleteDevice, toggleDevice } = useDevices();
 
-  const [viewState, setViewState] = useState('devices');
   const [filterCategory, setFilterCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -270,8 +269,8 @@ export default function MyLoadsDevices() {
 
   return (
     <div className="flex flex-col w-full">
-      {/* Top Title & View State Controls */}
-      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-space-md mb-space-lg">
+      {/* Top Title & Action Button */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-space-md mb-space-lg">
         <div className="flex flex-col gap-space-xs">
           <div className="flex items-center gap-space-sm text-secondary">
             <span className="material-symbols-outlined text-[18px]">sync_alt</span>
@@ -288,46 +287,13 @@ export default function MyLoadsDevices() {
           </p>
         </div>
 
-        <div className="flex items-center gap-space-sm self-start lg:self-auto">
-          <div className="bg-surface-container-high p-1 rounded-lg flex items-center gap-1 shadow-sm">
-            <button
-              className={`px-space-sm py-1 rounded text-label-md font-label-md transition-colors ${
-                viewState === 'devices'
-                  ? 'bg-surface-container-lowest text-primary-container shadow-sm'
-                  : 'text-on-surface-variant hover:text-on-surface'
-              }`}
-              onClick={() => setViewState('devices')}
-            >
-              All Devices ({devices.length})
-            </button>
-            <button
-              className={`px-space-sm py-1 rounded text-label-md font-label-md transition-colors ${
-                viewState === 'empty'
-                  ? 'bg-surface-container-lowest text-primary-container shadow-sm'
-                  : 'text-on-surface-variant hover:text-on-surface'
-              }`}
-              onClick={() => setViewState('empty')}
-            >
-              Empty State
-            </button>
-            <button
-              className={`px-space-sm py-1 rounded text-label-md font-label-md transition-colors ${
-                viewState === 'skeleton'
-                  ? 'bg-surface-container-lowest text-primary-container shadow-sm'
-                  : 'text-on-surface-variant hover:text-on-surface'
-              }`}
-              onClick={() => setViewState('skeleton')}
-            >
-              Loading Skeleton
-            </button>
-          </div>
-
+        <div className="flex items-center gap-space-sm shrink-0 self-start sm:self-auto">
           <button
-            className="bg-primary-container hover:bg-primary text-on-primary font-title-sm text-title-sm px-space-lg py-2.5 rounded-lg flex items-center gap-space-xs shadow-sm transition-colors"
+            className="bg-primary-container hover:bg-primary text-on-primary font-title-sm text-title-sm px-space-lg py-2.5 rounded-lg flex items-center gap-space-xs shadow-sm transition-colors cursor-pointer"
             onClick={handleOpenAddDrawer}
           >
             <span className="material-symbols-outlined text-[20px]">add</span>
-            <span>+ Add Flexible Load</span>
+            <span>Add Flexible Load</span>
           </button>
         </div>
       </div>
@@ -444,7 +410,7 @@ export default function MyLoadsDevices() {
       )}
 
       {/* SKELETON LOADING STATE */}
-      {(loading || viewState === 'skeleton') && (
+      {loading && (
         <div className="flex flex-col gap-space-md animate-pulse">
           <div className="h-32 bg-surface-container-high rounded-xl"></div>
           <div className="h-32 bg-surface-container-high rounded-xl"></div>
@@ -453,7 +419,7 @@ export default function MyLoadsDevices() {
       )}
 
       {/* EMPTY STATE */}
-      {!loading && (viewState === 'empty' || devices.length === 0) && (
+      {!loading && devices.length === 0 && (
         <div className="bg-surface-container-lowest rounded-xl p-space-xl text-center border border-surface-variant flex flex-col items-center justify-center my-space-md">
           <div className="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center mb-space-md text-on-surface-variant">
             <span className="material-symbols-outlined text-[32px]">devices_other</span>
@@ -465,17 +431,17 @@ export default function MyLoadsDevices() {
             Connect smart breakers, heat pumps, or electric vehicle chargers to start shifting loads to cleaner hours.
           </p>
           <button
-            className="bg-primary-container text-on-primary font-title-sm text-title-sm px-space-lg py-2.5 rounded-lg flex items-center gap-space-xs"
+            className="bg-primary-container text-on-primary font-title-sm text-title-sm px-space-lg py-2.5 rounded-lg flex items-center gap-space-xs hover:bg-primary transition-colors cursor-pointer"
             onClick={handleOpenAddDrawer}
           >
             <span className="material-symbols-outlined text-[20px]">add</span>
-            <span>+ Add First Device</span>
+            <span>Add First Device</span>
           </button>
         </div>
       )}
 
       {/* POPULATED DEVICE LIST */}
-      {!loading && viewState === 'devices' && devices.length > 0 && (
+      {!loading && devices.length > 0 && (
         <div className="flex flex-col gap-space-md">
           {filteredDevices.length === 0 ? (
             <div className="p-space-lg bg-surface-container-lowest rounded-xl text-center text-on-surface-variant border border-surface-variant">

@@ -82,6 +82,8 @@ export default function App() {
                 }
               />
               <Route path="profile-settings" element={<ProfileSettings />} />
+              <Route path="profile" element={<Navigate to="/profile-settings?tab=profile" replace />} />
+              <Route path="settings" element={<Navigate to="/profile-settings?tab=settings" replace />} />
             </Route>
 
             {/* Fallback to Main Landing Page */}
