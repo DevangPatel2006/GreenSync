@@ -225,11 +225,8 @@ export default function AppLayout() {
         {/* Top Section: Navigation Section & Items */}
         <div className="p-space-sm flex flex-col overflow-y-auto flex-1">
           {!isCollapsed ? (
-            <div className="px-space-sm py-space-xs mb-space-xs text-label-sm font-label-sm uppercase tracking-wider text-on-surface-variant flex items-center justify-between">
-              <span>Navigation</span>
-              <span className="text-[10px] text-on-surface-variant/60 font-mono">
-                {sidebarWidth}px
-              </span>
+            <div className="px-space-sm py-space-xs mb-space-xs text-label-sm font-label-sm uppercase tracking-wider text-on-surface-variant">
+              Navigation
             </div>
           ) : (
             <div className="py-space-xs mb-space-xs text-center text-label-sm text-on-surface-variant/60 font-mono text-[10px]">
@@ -323,7 +320,7 @@ export default function AppLayout() {
         <div
           onMouseDown={handleMouseDown}
           onDoubleClick={handleResetWidth}
-          title="Drag to adjust navbar width • Double-click to reset (256px)"
+          title="Drag to adjust navbar width"
           className="absolute top-0 right-0 bottom-0 w-1.5 hover:w-2 bg-transparent hover:bg-primary/20 active:bg-primary/40 cursor-col-resize transition-all z-50 group flex items-center justify-center"
         >
           <div className="w-[2px] h-10 rounded-full bg-surface-variant group-hover:bg-primary opacity-0 group-hover:opacity-100 transition-opacity"></div>
