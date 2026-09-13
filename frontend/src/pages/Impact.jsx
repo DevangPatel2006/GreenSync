@@ -398,18 +398,6 @@ export default function Impact() {
         </div>
       )}
 
-      {/* Honesty Banner: Section 6 Compliance */}
-      <div className="mb-space-md p-space-md rounded-xl bg-surface-container border border-surface-variant flex items-start gap-space-sm">
-        <span className="material-symbols-outlined text-secondary text-[20px] mt-0.5">info</span>
-        <div>
-          <span className="font-label-md text-label-md text-on-surface font-semibold block">
-            Impact Simulation &amp; Future Redemption Notice
-          </span>
-          <p className="font-body-sm text-body-sm text-on-surface-variant">
-            Environmental metrics and FlexCoin balances are part of the GreenSync Impact Simulation. Values represent modeled carbon avoidance and future eligibility for utility tariff rebates. They do not constitute fiat currency or automated NGO donations.
-          </p>
-        </div>
-      </div>
 
       {/* Hero Impact Header */}
       <div className="relative overflow-hidden bg-primary-container text-on-primary rounded-xl p-space-xl mb-space-xl shadow-md">
